@@ -18,7 +18,7 @@ def format_duration(ms: Optional[int]) -> str:
     Returns:
         格式化后的时间字符串，如 "1:23" 或 "45.6s"
     """
-    if ms is None:
+    if ms is None or not isinstance(ms, (int, float)):
         return "0s"
 
     if ms < 1000:

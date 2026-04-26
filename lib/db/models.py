@@ -4,6 +4,7 @@ ORM 模型定义
 提供模型基类、字段类型和查询构建器。
 """
 
+import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 from enum import Enum as PyEnum
@@ -11,6 +12,43 @@ from enum import Enum as PyEnum
 from lib.db.core import DatabaseConnection
 
 T = TypeVar("T", bound="Model")
+
+_IDENTIFIER_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_.]*$')
+_ORDER_DIR_RE = re.compile(r'^(ASC|DESC)$', re.IGNORECASE)
+_AGGREGATE_RE = re.compile(
+    r'^(COUNT|SUM|AVG|MAX|MIN)\(\s*(\*|[a-zA-Z_][a-zA-Z0-9_.]*)\s*\)'
+    r'(\s*,\s*(COUNT|SUM|AVG|MAX|MIN)\(\s*(\*|[a-zA-Z_][a-zA-Z0-9_.]*)\s*\))*'
+    r'(\s+AS\s+[a-zA-Z_][a-zA-Z0-9_]*)?$',
+    re.IGNORECASE
+)
+_SQL_DANGEROUS_RE = re.compile(r';\s*\w|--|\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE)\b', re.IGNORECASE)
+
+
+def _validate_sql_clause(clause: str, clause_name: str) -> None:
+    if _SQL_DANGEROUS_RE.search(clause):
+        raise ValueError(f"Potentially dangerous SQL in {clause_name}: {clause[:50]}")
+
+
+def _validate_order_by(order_by: str) -> None:
+    for part in order_by.split(','):
+        tokens = part.strip().split()
+        if not tokens or not _IDENTIFIER_RE.match(tokens[0]):
+            raise ValueError(f"Invalid ORDER BY column: {part.strip()}")
+        if len(tokens) > 1 and not _ORDER_DIR_RE.match(tokens[1]):
+            raise ValueError(f"Invalid ORDER BY direction: {tokens[1]}")
+
+
+def _validate_group_by(group_by: str) -> None:
+    for part in group_by.split(','):
+        if not _IDENTIFIER_RE.match(part.strip()):
+            raise ValueError(f"Invalid GROUP BY column: {part.strip()}")
+
+
+def _validate_aggregate_select(select: str) -> None:
+    for expr in select.split(','):
+        expr = expr.strip()
+        if not _AGGREGATE_RE.match(expr) and not _IDENTIFIER_RE.match(expr):
+            raise ValueError(f"Invalid aggregate expression: {expr}")
 
 
 class FieldType(PyEnum):
@@ -296,18 +334,23 @@ class Model(metaclass=ModelMeta):
         if joins:
             for join in joins:
                 join_type = join.get("type", "INNER").upper()
+                if join_type not in ("INNER", "LEFT", "RIGHT", "CROSS"):
+                    raise ValueError(f"Invalid join type: {join_type}")
                 join_table = adapter.quote_identifier(join["table"])
                 join_alias = join.get("alias", "")
                 join_on = join["on"]
+                _validate_sql_clause(join_on, "JOIN ON")
                 if join_alias:
                     sql += f" {join_type} JOIN {join_table} AS {adapter.quote_identifier(join_alias)} ON {join_on}"
                 else:
                     sql += f" {join_type} JOIN {join_table} ON {join_on}"
 
         if where:
+            _validate_sql_clause(where, "WHERE")
             sql += f" WHERE {where}"
 
         if order_by:
+            _validate_order_by(order_by)
             sql += f" ORDER BY {order_by}"
 
         sql += " LIMIT 1"
@@ -347,22 +390,26 @@ class Model(metaclass=ModelMeta):
                     sql += f" {join_type} JOIN {join_table} ON {join_on}"
 
         if where:
+            _validate_sql_clause(where, "WHERE")
             sql += f" WHERE {where}"
 
         if group_by:
+            _validate_group_by(group_by)
             sql += f" GROUP BY {group_by}"
 
         if having:
+            _validate_sql_clause(having, "HAVING")
             sql += f" HAVING {having}"
 
         if order_by:
+            _validate_order_by(order_by)
             sql += f" ORDER BY {order_by}"
 
         if limit:
-            sql += f" LIMIT {limit}"
+            sql += f" LIMIT {int(limit)}"
 
         if offset:
-            sql += f" OFFSET {offset}"
+            sql += f" OFFSET {int(offset)}"
 
         rows = await adapter.fetch_all(sql, params)
         return [cls(**row) for row in rows]
@@ -380,26 +427,33 @@ class Model(metaclass=ModelMeta):
         adapter = DatabaseConnection.get_adapter()
         table_name = adapter.quote_identifier(cls.get_table_name())
 
+        _validate_aggregate_select(select)
         sql = f"SELECT {select} FROM {table_name}"
 
         if joins:
             for join in joins:
                 join_type = join.get("type", "INNER").upper()
+                if join_type not in ("INNER", "LEFT", "RIGHT", "CROSS"):
+                    raise ValueError(f"Invalid join type: {join_type}")
                 join_table = adapter.quote_identifier(join["table"])
                 join_alias = join.get("alias", "")
                 join_on = join["on"]
+                _validate_sql_clause(join_on, "JOIN ON")
                 if join_alias:
                     sql += f" {join_type} JOIN {join_table} AS {adapter.quote_identifier(join_alias)} ON {join_on}"
                 else:
                     sql += f" {join_type} JOIN {join_table} ON {join_on}"
 
         if where:
+            _validate_sql_clause(where, "WHERE")
             sql += f" WHERE {where}"
 
         if group_by:
+            _validate_group_by(group_by)
             sql += f" GROUP BY {group_by}"
 
         if having:
+            _validate_sql_clause(having, "HAVING")
             sql += f" HAVING {having}"
 
         rows = await adapter.fetch_all(sql, params)
@@ -411,8 +465,10 @@ class Model(metaclass=ModelMeta):
         defaults: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Tuple[T, bool]:
+        adapter = DatabaseConnection.get_adapter()
+        ph = adapter.get_placeholder()
         instance = await cls.first(
-            where=" AND ".join([f"{k} = ?" for k in kwargs.keys()]),
+            where=" AND ".join([f"{adapter.quote_identifier(k)} = {ph}" for k in kwargs.keys()]),
             params=tuple(kwargs.values()),
         )
 
@@ -429,8 +485,10 @@ class Model(metaclass=ModelMeta):
         defaults: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Tuple[T, bool]:
+        adapter = DatabaseConnection.get_adapter()
+        ph = adapter.get_placeholder()
         instance = await cls.first(
-            where=" AND ".join([f"{k} = ?" for k in kwargs.keys()]),
+            where=" AND ".join([f"{adapter.quote_identifier(k)} = {ph}" for k in kwargs.keys()]),
             params=tuple(kwargs.values()),
         )
 

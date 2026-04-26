@@ -4,10 +4,16 @@
 提供数据库连接、模型定义和查询构建的核心接口。
 """
 
+import threading
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, Protocol, TypeVar
+
+
+class ExecuteResult(Protocol):
+    lastrowid: Optional[int]
+    rowcount: int
 
 T = TypeVar("T")
 
@@ -90,7 +96,7 @@ class DatabaseAdapter(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, sql: str, params: Optional[tuple] = None) -> Any:
+    async def execute(self, sql: str, params: Optional[tuple] = None) -> ExecuteResult:
         pass
 
     @abstractmethod
@@ -129,10 +135,13 @@ class DatabaseAdapter(ABC):
 class DatabaseConnection:
     _instance: Optional["DatabaseConnection"] = None
     _adapter: Optional[DatabaseAdapter] = None
+    _lock = threading.Lock()
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
         return cls._instance
 
     @classmethod

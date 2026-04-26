@@ -310,12 +310,14 @@ def expand_env_vars(text: str, plugin_path: Path) -> str:
 	Returns:
 		String with environment variables expanded
 	"""
+	_ALLOWED_ENV = {'HOME', 'USER', 'PATH', 'SHELL', 'LANG', 'TERM',
+		'PROXY_URL', 'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY'}
 	env_vars = {
 		'CLAUDE_PLUGIN_ROOT': str(plugin_path),
 		'CLAUDE_PROJECT_DIR': str(plugin_path),
 	}
 
-	env_vars.update(os.environ)
+	env_vars.update({k: v for k, v in os.environ.items() if k in _ALLOWED_ENV})
 
 	def replace_var(match: re.Match) -> str:
 		var_name = match.group(1) or match.group(2)

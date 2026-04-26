@@ -78,9 +78,11 @@ class IncrementalParser:
         if not chunk:
             return []
 
-        # 添加到缓冲区
+        _MAX_BUFFER = 10 * 1024 * 1024  # 10MB
         self._context.buffer += chunk
         self._context.position += len(chunk)
+        if len(self._context.buffer) > _MAX_BUFFER:
+            self._context.buffer = self._context.buffer[-_MAX_BUFFER:]
 
         # 解析缓冲区
         events = self._parse_buffer()

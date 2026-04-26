@@ -107,14 +107,22 @@ def get_asset_path(name: str) -> Path:
     local_path = ASSETS_DIR / asset["local"]
 
     if not local_path.exists():
-        typer.echo(f"Downloading {name} {asset['version']}...")
+        lock_path = local_path.with_suffix(local_path.suffix + ".lock")
         try:
-            download_with_mirrors(name, asset["mirrors"], local_path)
-        except RuntimeError as e:
-            # Clean up partial download
-            if local_path.exists():
-                local_path.unlink()
-            raise RuntimeError(f"Failed to download {name}: {e}")
+            lock_path.touch(exist_ok=True)
+            import fcntl
+            with open(lock_path, "w") as lock_f:
+                fcntl.flock(lock_f, fcntl.LOCK_EX)
+                if not local_path.exists():
+                    typer.echo(f"Downloading {name} {asset['version']}...")
+                    try:
+                        download_with_mirrors(name, asset["mirrors"], local_path)
+                    except RuntimeError as e:
+                        if local_path.exists():
+                            local_path.unlink()
+                        raise RuntimeError(f"Failed to download {name}: {e}")
+        finally:
+            lock_path.unlink(missing_ok=True)
 
     return local_path
 

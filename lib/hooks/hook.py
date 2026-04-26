@@ -5,18 +5,17 @@ import sys
 from typing import Any, Dict
 
 
-def _truncate_value_for_log(value: Any, max_length: int = 100) -> Any:
-	"""递归截断值用于日志输出，避免日志过长
+_SENSITIVE_KEYS = frozenset({
+	'password', 'token', 'secret', 'api_key', 'credential',
+	'authorization', 'cookie', 'session', 'private_key',
+})
 
-	Args:
-		value: 要处理的值（可以是 dict、list、str 或其他类型）
-		max_length: 最大长度限制
 
-	Returns:
-		处理后的值，字符串会被截断并添加 "..."，字典和列表会递归处理
-	"""
+def _truncate_value_for_log(value: Any, max_length: int = 100, _key: str = "") -> Any:
+	if _key.lower() in _SENSITIVE_KEYS:
+		return "***REDACTED***"
 	if isinstance(value, dict):
-		return {k: _truncate_value_for_log(v, max_length) for k, v in value.items()}
+		return {k: _truncate_value_for_log(v, max_length, _key=k) for k, v in value.items()}
 	elif isinstance(value, list):
 		return [_truncate_value_for_log(item, max_length) for item in value]
 	elif isinstance(value, str):
@@ -24,7 +23,6 @@ def _truncate_value_for_log(value: Any, max_length: int = 100) -> Any:
 			return value[:max_length] + "..."
 		return value
 	else:
-		# 对于其他类型（int、float、bool、None），直接返回
 		return value
 
 

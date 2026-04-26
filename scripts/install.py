@@ -78,19 +78,21 @@ def run_claude_command_with_progress(
 
 	def run_command():
 		try:
-			proc = subprocess.run(
-				["claude"] + args,
-				stdout=open(temp_path, "w"),
-				stderr=subprocess.PIPE,
-				text=True,
-				cwd=get_project_dir(),
-			)
+			with open(temp_path, "w") as out_f:
+				proc = subprocess.run(
+					["claude"] + args,
+					stdout=out_f,
+					stderr=subprocess.PIPE,
+					text=True,
+					cwd=get_project_dir(),
+					timeout=120,
+				)
 			if proc.returncode == 0:
 				with open(temp_path, "r", encoding="utf-8") as f:
 					content = f.read()
 					if content.strip():
 						result_container["data"] = json.loads(content)
-		except (subprocess.CalledProcessError, json.JSONDecodeError, OSError):
+		except (subprocess.CalledProcessError, json.JSONDecodeError, OSError, subprocess.TimeoutExpired):
 			pass
 		finally:
 			result_container["done"] = True

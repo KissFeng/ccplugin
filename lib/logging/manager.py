@@ -62,8 +62,9 @@ class RichLoggerManager:
 
 		# 创建主控制台（文件输出）
 		# 设置 width=99999 防止长消息自动换行
+		self._log_file_handle = open(str(self._get_log_file()), "a", encoding="utf-8")
 		self.file_console = Console(
-			file=open(str(self._get_log_file()), "a", encoding="utf-8"),
+			file=self._log_file_handle,
 			force_terminal=False,
 			legacy_windows=False,
 			width=99999,
@@ -72,6 +73,11 @@ class RichLoggerManager:
 		# 创建控制台输出器（默认关闭）
 		self.console_console: Optional[Console] = Console(force_terminal=True, width=99999)
 		self.debug_enabled = False
+
+	def close(self):
+		if hasattr(self, '_log_file_handle') and self._log_file_handle:
+			self._log_file_handle.close()
+			self._log_file_handle = None
 		self.console_output_enabled = False  # 控制台输出总开关
 		self._last_hour = self._get_current_hour()
 

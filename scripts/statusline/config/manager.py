@@ -7,7 +7,7 @@
 import os
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Callable, Dict, Any, Optional, List
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 
@@ -118,7 +118,7 @@ class ConfigManager:
         """
         self.config_path = config_path
         self._config: Optional[Config] = None
-        self._watchers: List[callable] = []
+        self._watchers: List[Callable] = []
 
     def load(self, config_path: Optional[Path] = None) -> Config:
         """
@@ -218,7 +218,7 @@ class ConfigManager:
         self._config = None
         return self.load()
 
-    def watch(self, callback: callable) -> None:
+    def watch(self, callback: Callable) -> None:
         """
         监听配置变化
 
@@ -242,7 +242,12 @@ class ConfigManager:
         if 'STATUSLINE_THEME' in os.environ:
             config.theme = os.environ['STATUSLINE_THEME']
         if 'STATUSLINE_WIDTH' in os.environ:
-            config.layout_width = int(os.environ['STATUSLINE_WIDTH'])
+            try:
+                w = int(os.environ['STATUSLINE_WIDTH'])
+                if w > 0:
+                    config.layout_width = w
+            except ValueError:
+                pass
         if 'STATUSLINE_VERBOSE' in os.environ:
             config.verbose = os.environ['STATUSLINE_VERBOSE'].lower() == 'true'
         if 'STATUSLINE_DEBUG' in os.environ:

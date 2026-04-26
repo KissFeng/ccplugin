@@ -33,9 +33,8 @@ class CacheKey:
     filters: Dict[str, Any] = field(default_factory=dict)
 
     def __hash__(self) -> int:
-        """生成哈希值"""
         key_str = f"{self.dimension.value}:{self.time_window}:{sorted(self.filters.items())}"
-        return hashlib.md5(key_str.encode()).hexdigest()
+        return int(hashlib.md5(key_str.encode()).hexdigest()[:16], 16)
 
     def __eq__(self, other) -> bool:
         """比较相等"""

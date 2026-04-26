@@ -130,12 +130,12 @@ class StatuslineLoop:
             return ""
 
         try:
-            # 尝试读取可用数据
             import select
-            if select.select([sys.stdin], [], [], 0)[0]:
-                return sys.stdin.read()
-        except Exception:
-            pass
+            if select.select([sys.stdin], [], [], 0.1)[0]:
+                return sys.stdin.readline()
+        except (OSError, ValueError) as e:
+            import logging
+            logging.warning(f"stdin read error: {e}")
 
         return ""
 
@@ -168,9 +168,11 @@ class StatuslineLoop:
             return
 
         # 检查缓存
+        now = time.time()
+        bucket = int(now)
         cache_key = CacheKey(
             dimension=main_state.dimension,
-            time_window=(self._last_update, time.time()),
+            time_window=(bucket, bucket),
         )
 
         if self._config.cache.enabled:

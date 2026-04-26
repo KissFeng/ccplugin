@@ -138,14 +138,15 @@ def run_claude_command_with_progress(
 
     def run_command():
         try:
-            proc = subprocess.run(
-                ["claude"] + args,
-                stdout=open(temp_path, "w"),
-                stderr=subprocess.PIPE,
-                text=True,
-                cwd=get_project_dir(),
-                timeout=60,  # Add 60 second timeout
-            )
+            with open(temp_path, "w") as out_f:
+                proc = subprocess.run(
+                    ["claude"] + args,
+                    stdout=out_f,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    cwd=get_project_dir(),
+                    timeout=120,
+                )
             if proc.returncode == 0:
                 with open(temp_path, "r", encoding="utf-8") as f:
                     content = f.read()

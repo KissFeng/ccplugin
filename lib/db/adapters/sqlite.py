@@ -106,6 +106,13 @@ class SQLiteAdapter(BaseAdapter):
 
         db_path = self.config.path
         if db_path and db_path != ":memory:":
+            abs_path = os.path.abspath(os.path.realpath(db_path))
+            home = os.path.expanduser("~")
+            cwd = os.getcwd()
+            if not (abs_path.startswith(home) or abs_path.startswith(cwd)):
+                raise ValueError(f"Database path must be inside home or project directory: {db_path}")
+            db_path = abs_path
+            self.config.path = db_path
             os.makedirs(os.path.dirname(db_path) if os.path.dirname(db_path) else ".", exist_ok=True)
 
         if db_path == ":memory:":
