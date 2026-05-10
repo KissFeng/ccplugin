@@ -1,0 +1,13 @@
+# Runtime and temporary files
+*.tmp
+*.log
+*.new
+*.backup
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Personal overrides (if any)
+config.local.toml

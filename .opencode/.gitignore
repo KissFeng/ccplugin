@@ -1,0 +1,16 @@
+# Runtime and temporary files
+*.tmp
+*.log
+*.new
+*.backup
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Node modules (if any scripts add them)
+node_modules/
+
+# Personal overrides (if any)
+config.local.yaml
