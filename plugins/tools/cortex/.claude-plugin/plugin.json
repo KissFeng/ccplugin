@@ -1,0 +1,54 @@
+{
+  "name": "cortex",
+  "version": "0.0.195",
+  "description": "Cortex — Obsidian 知识库协作插件: hooks 注入、CLI/MCP 操作、模板/lint/refactor、SessionStart 协作约定 + Stop 自动落档",
+  "author": {
+    "name": "lazygophers",
+    "email": "admin@lazygophers.dev",
+    "url": "https://github.com/lazygophers"
+  },
+  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/cortex",
+  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/cortex",
+  "license": "AGPL-3.0-or-later",
+  "keywords": [
+    "obsidian",
+    "knowledge-base",
+    "pkm",
+    "wiki",
+    "zettelkasten",
+    "lyt",
+    "para",
+    "second-brain",
+    "auto-archive",
+    "session-recap"
+  ],
+  "commands": "./commands/",
+  "skills": "./skills/",
+  "agents": [],
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session_start.sh",
+            "timeout": 1500
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop.sh",
+            "async": true,
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
