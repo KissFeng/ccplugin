@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `scripts/check.py --marketplace`: 仓库级名称对齐校验（marketplace.json ↔ plugin.json ↔ 目录名），检测 drifts/ghosts/orphans
 
+### Removed
+- Removed unused `scripts/statusline/` modular package and `tests/statusline/` (1666+ LOC of unreferenced experimental code). Production statusline lives in `scripts/statusline.py`.
+- Removed `examples/statusline/` and `docs/statusline/` which only documented the removed modular package.
+
 ## [0.0.193] - 2026-04-25
 
 ### Changed
