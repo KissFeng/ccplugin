@@ -44,3 +44,36 @@ Deep-studied entire ccplugin repo (Trellis system, plugins, lib, scripts, deskto
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Languages 插件 hooks 全量移除
+
+**Date**: 2026-05-10
+**Task**: Languages 插件 hooks 全量移除
+**Branch**: `master`
+
+### Summary
+
+深度审查 plugins/languages/* 12 插件后，按用户决议移除全部插件级 hooks：删 scripts/ 目录与 plugin.json hooks 字段，补全 languages/llms.txt 索引至 12 条。净 -873/+24，54 文件。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `07e713d4` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
