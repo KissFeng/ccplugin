@@ -31,7 +31,6 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Iterable
 
 BACKLINKS_HEADER = "## Backlinks"
 AUTO_TAG = "(cortex-auto)"

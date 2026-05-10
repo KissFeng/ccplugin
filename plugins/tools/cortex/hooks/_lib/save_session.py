@@ -300,7 +300,7 @@ def build_body(
         "",
         f"# {title}",
         "",
-        f"> [!info]+ 来源",
+        "> [!info]+ 来源",
         f"> {label} · UTC {dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%MZ')}",
         "",
     ]
