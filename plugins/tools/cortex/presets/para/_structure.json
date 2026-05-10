@@ -1,0 +1,17 @@
+{
+  "preset": "para",
+  "version": "1.0",
+  "description": "PARA (Tiago Forte) — 按行动距离组织: Projects / Areas / Resources / Archive。",
+  "directories": [
+    "1_projects",
+    "2_areas",
+    "3_resources",
+    "4_archive"
+  ],
+  "seed_files": [
+    {"src": "seed/1_projects/_index.md", "dst": "1_projects/_index.md"},
+    {"src": "seed/2_areas/_index.md", "dst": "2_areas/_index.md"},
+    {"src": "seed/3_resources/_index.md", "dst": "3_resources/_index.md"},
+    {"src": "seed/4_archive/_index.md", "dst": "4_archive/_index.md"}
+  ]
+}

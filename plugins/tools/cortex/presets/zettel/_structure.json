@@ -1,0 +1,17 @@
+{
+  "preset": "zettel",
+  "version": "1.0",
+  "description": "Zettelkasten — 扁平 + UID。每篇单一原子概念, 文件名 YYYYMMDDHHMM-<slug>.md, frontmatter 必含 uid。",
+  "directories": [
+    "zettels",
+    "structure-notes",
+    "inbox",
+    "references"
+  ],
+  "seed_files": [
+    {"src": "seed/zettels/_index.md", "dst": "zettels/_index.md"},
+    {"src": "seed/structure-notes/_index.md", "dst": "structure-notes/_index.md"},
+    {"src": "seed/inbox/_index.md", "dst": "inbox/_index.md"},
+    {"src": "seed/references/_index.md", "dst": "references/_index.md"}
+  ]
+}

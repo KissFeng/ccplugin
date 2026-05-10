@@ -1,0 +1,29 @@
+{
+  "preset": "lyt",
+  "version": "1.0",
+  "description": "Linking Your Thinking — 8-bucket + MOC 主导。默认 preset。",
+  "directories": [
+    "00_MOC",
+    "10_concepts",
+    "20_entities",
+    "30_domains",
+    "40_sources",
+    "50_questions",
+    "60_dashboards",
+    "70_fleeting",
+    "80_archive"
+  ],
+  "seed_files": [
+    {"src": "seed/00_MOC/home.md", "dst": "00_MOC/home.md"},
+    {"src": "seed/00_MOC/topics-moc.md", "dst": "00_MOC/topics-moc.md"},
+    {"src": "seed/00_MOC/projects-moc.md", "dst": "00_MOC/projects-moc.md"},
+    {"src": "seed/10_concepts/_index.md", "dst": "10_concepts/_index.md"},
+    {"src": "seed/20_entities/_index.md", "dst": "20_entities/_index.md"},
+    {"src": "seed/30_domains/_index.md", "dst": "30_domains/_index.md"},
+    {"src": "seed/40_sources/_index.md", "dst": "40_sources/_index.md"},
+    {"src": "seed/50_questions/_index.md", "dst": "50_questions/_index.md"},
+    {"src": "seed/60_dashboards/_index.md", "dst": "60_dashboards/_index.md"},
+    {"src": "seed/70_fleeting/_index.md", "dst": "70_fleeting/_index.md"},
+    {"src": "seed/80_archive/_index.md", "dst": "80_archive/_index.md"}
+  ]
+}
