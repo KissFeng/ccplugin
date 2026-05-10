@@ -20,14 +20,19 @@ if [[ -z "$HOOK_INPUT" ]]; then
   exit 0
 fi
 
-TRANSCRIPT_PATH=$(printf '%s' "$HOOK_INPUT" | python3 -c "
+read -r TRANSCRIPT_PATH SESSION_ID < <(printf '%s' "$HOOK_INPUT" | python3 -c "
 import json, sys
 try:
     d = json.load(sys.stdin)
-    print(d.get('transcript_path', '') if isinstance(d, dict) else '')
+    if not isinstance(d, dict):
+        d = {}
 except Exception:
-    print('')
+    d = {}
+print(d.get('transcript_path', '') or '-', d.get('session_id', '') or '-')
 " 2>>"$LOG_FILE") || { log "post_compact: parse failed"; exit 0; }
+
+[[ "$TRANSCRIPT_PATH" == "-" ]] && TRANSCRIPT_PATH=""
+[[ "$SESSION_ID" == "-" ]] && SESSION_ID=""
 
 # shellcheck source=./_lib/resolve_vault.sh
 source "$PLUGIN_ROOT/hooks/_lib/resolve_vault.sh"
@@ -46,6 +51,8 @@ SAVE_OUT=$(python3 "$PLUGIN_ROOT/hooks/_lib/save_session.py" \
   --vault "$VAULT" \
   --transcript "$TRANSCRIPT_PATH" \
   --reason compact \
+  --cli claude-code \
+  --cli-session "$SESSION_ID" \
   --force \
   2>>"$LOG_FILE")
 SAVE_RC=$?

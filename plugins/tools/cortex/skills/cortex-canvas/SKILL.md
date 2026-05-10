@@ -1,6 +1,6 @@
 ---
 name: cortex-canvas
-description: 生成 Obsidian .canvas 文件 (JSON Canvas 1.0), 节点按 Breadcrumbs frontmatter 排布; CLI 不可用时降级写静态 JSON。Triggers on "make canvas", "新建画布", "可视化".
+description: 生成 .canvas (JSON Canvas 1.0), 节点 label 走 vault.lang; CLI 不可用降级。Triggers on "make canvas", "新建画布".
 allowed-tools: Bash Read Write Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_append_content
 ---
 

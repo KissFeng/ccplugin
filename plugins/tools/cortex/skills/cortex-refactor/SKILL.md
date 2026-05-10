@@ -1,7 +1,7 @@
 ---
 name: cortex-refactor
-description: vault 重构 — rename / merge / split / fold, 默认 dry-run, --apply 才落盘并 backup。仅显式触发 (disable-model-invocation: true)。
-argument-hint: "<rename|merge|split|fold> [args...]"
+description: vault 重构 — rename/merge/split/fold/migrate-locale, --apply 才落盘 backup。仅显式触发。
+argument-hint: "<rename|merge|split|fold|migrate-locale> [args...]"
 disable-model-invocation: true
 allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir
 ---

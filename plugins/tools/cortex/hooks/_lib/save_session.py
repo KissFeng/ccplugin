@@ -225,6 +225,50 @@ def read_preset(vault: Path) -> str:
     return "blank"
 
 
+def read_vault_meta(vault: Path) -> dict[str, Any]:
+    """Read full _meta/version.json. Returns {} on failure."""
+    vfile = vault / "_meta" / "version.json"
+    if vfile.is_file():
+        try:
+            data = json.loads(vfile.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+    return {}
+
+
+def read_vault_lang(vault: Path) -> str:
+    return str(read_vault_meta(vault).get("lang") or "zh-CN")
+
+
+def backup_transcript(vault: Path, transcript: Path, when: dt.datetime, slug: str, cli: str) -> Path | None:
+    """Copy raw transcript to <vault>/sessions/<cli>/<YYYY-MM>/<DD-HHMM>-<slug>.jsonl.
+
+    Only when _meta/version.json:.preserve_transcript == true. Returns dest path or None.
+    """
+    meta = read_vault_meta(vault)
+    if not bool(meta.get("preserve_transcript")):
+        return None
+    if not transcript.is_file():
+        return None
+    folder = vault / "sessions" / cli / when.strftime("%Y-%m")
+    folder.mkdir(parents=True, exist_ok=True)
+    name = f"{when.strftime('%d-%H%M')}-{slug}.jsonl"
+    dest = folder / name
+    counter = 2
+    while dest.exists():
+        dest = folder / f"{when.strftime('%d-%H%M')}-{slug}-{counter}.jsonl"
+        counter += 1
+        if counter > 50:
+            break
+    try:
+        dest.write_bytes(transcript.read_bytes())
+        return dest
+    except Exception:
+        return None
+
+
 # ---------- block-id 注入 ----------
 
 H2_H3_RE = re.compile(r"^(#{2,3} .+?)$", re.MULTILINE)
@@ -283,6 +327,9 @@ def build_body(
     assistant_text: str,
     files: list[str],
     score: dict[str, int],
+    lang: str = "zh-CN",
+    cli: str = "claude-code",
+    cli_session: str = "",
 ) -> str:
     label = REASON_LABEL.get(reason, reason)
     today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
@@ -295,6 +342,9 @@ def build_body(
         f"created: {today}",
         f"updated: {today}",
         "preset: {{PRESET}}",
+        f"lang: {lang}",
+        f"cli: {cli}",
+        f"cli_session: {cli_session}",
         f"reason: {reason}",
         "---",
         "",
@@ -478,6 +528,12 @@ def main() -> int:
     ap.add_argument("--body", default="")
     ap.add_argument("--force", action="store_true",
                     help="跳过启发式判定 (manual 模式默认 force)")
+    ap.add_argument("--cli", default="claude-code",
+                    choices=["claude-code", "codex", "copilot", "gemini",
+                             "qoder", "kiro", "manual"],
+                    help="来源 CLI (写入 frontmatter cli 字段)")
+    ap.add_argument("--cli-session", default="",
+                    help="来源会话 id (写入 frontmatter cli_session 字段)")
     args = ap.parse_args()
 
     vault = Path(os.path.expanduser(args.vault)).resolve()
@@ -525,6 +581,9 @@ def main() -> int:
     slug = slugify(args.title or user_p or asst_t.split("\n", 1)[0] or args.reason)
     abs_path, rel_path = determine_target(vault, when=when, slug=slug, reason=args.reason)
 
+    # ----- locale + cli metadata -----
+    lang = read_vault_lang(vault)
+
     # ----- body -----
     if body_override:
         body = body_override
@@ -536,6 +595,9 @@ def main() -> int:
             assistant_text=asst_t,
             files=files,
             score=score,
+            lang=lang,
+            cli=args.cli,
+            cli_session=args.cli_session,
         )
 
     preset = read_preset(vault)
@@ -565,6 +627,15 @@ def main() -> int:
     # ----- 同步 index / hot -----
     update_log_index(vault, rel_path, title_seed)
     update_hot(vault, rel_path, title_seed)
+
+    # ----- 原始 transcript 备份 (仅 _meta.preserve_transcript=true 时) -----
+    if args.transcript:
+        try:
+            tp = Path(os.path.expanduser(args.transcript))
+            if tp.is_file():
+                backup_transcript(vault, tp, when, slug, args.cli)
+        except Exception:
+            pass
 
     # ----- 反向 wikilink 回填 (失败仅日志, 不阻断) -----
     try:

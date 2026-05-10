@@ -7,6 +7,7 @@ tags: [meta]
 created: {{CREATED}}
 updated: {{UPDATED}}
 preset: {{PRESET}}
+lang: {{LANG}}
 ---
 
 # 模板索引

@@ -25,7 +25,7 @@ if [[ -z "$HOOK_INPUT" ]]; then
 fi
 
 # 解析 JSON 关键字段
-read -r TRANSCRIPT_PATH STOP_ACTIVE HOOK_EVENT < <(printf '%s' "$HOOK_INPUT" | python3 -c "
+read -r TRANSCRIPT_PATH STOP_ACTIVE HOOK_EVENT SESSION_ID < <(printf '%s' "$HOOK_INPUT" | python3 -c "
 import json, sys
 try:
     d = json.load(sys.stdin)
@@ -37,10 +37,12 @@ print(
     d.get('transcript_path', '') or '-',
     'true' if d.get('stop_hook_active') else 'false',
     d.get('hook_event_name', '') or 'Stop',
+    d.get('session_id', '') or '-',
 )
 " 2>>"$LOG_FILE") || { log "stop: parse failed"; exit 0; }
 
 [[ "$TRANSCRIPT_PATH" == "-" ]] && TRANSCRIPT_PATH=""
+[[ "$SESSION_ID" == "-" ]] && SESSION_ID=""
 
 # 防循环
 if [[ "$STOP_ACTIVE" == "true" ]]; then
@@ -75,6 +77,8 @@ SAVE_OUT=$(python3 "$PLUGIN_ROOT/hooks/_lib/save_session.py" \
   --vault "$VAULT" \
   --transcript "$TRANSCRIPT_PATH" \
   --reason "$REASON" \
+  --cli claude-code \
+  --cli-session "$SESSION_ID" \
   2>>"$LOG_FILE")
 SAVE_RC=$?
 

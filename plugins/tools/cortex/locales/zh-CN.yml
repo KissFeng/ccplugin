@@ -1,0 +1,46 @@
+meta:
+  lang: zh-CN
+  fallback: en
+  display: 简体中文
+
+dirs:
+  moc: MOC
+  concepts: 概念
+  entities: 实体
+  domains: 领域
+  sources: 来源
+  questions: 问题
+  dashboards: 仪表盘
+  fleeting: 临时
+  archive: 归档
+  projects: 项目
+  areas: 领域职责
+  resources: 资源
+  zettels: zettels
+  structure-notes: structure-notes
+  inbox: inbox
+  references: references
+
+files:
+  home: home
+  domain_index: _domain
+  subdir_index: _index
+
+agent_titles:
+  curator: cortex 维护员
+  researcher: cortex 研究员
+  translator: cortex 译者
+  historian: cortex 史官
+  cartographer: cortex 制图员
+  archivist: cortex 档案员
+  linker: cortex 连接员
+  summarizer: cortex 总结员
+
+prompts:
+  search_first: 非通用问题先调 cortex-search 搜库, 确认无既有经验再开工。
+  archive_pending: 📝 cortex 已落档 {path}
+  session_header: "## Cortex 已连接 (lang={lang}, vault={vault}, preset={preset})"
+  collab_save: 非平凡发现完成后用 cortex-save 落档; 项目特定写 domains/, 通用概念写 concepts/。
+  collab_no_direct: 不直接文件操作, 经 mcp__obsidian__* 或 cortex skill, 避免破坏 vault 索引。
+  collab_block_id: 落档时段落末尾自动加 ^cortex-<sha8>, 后续可精准引用 ![[note#^cortex-xxx]]。
+  collab_stop_hook: Stop hook 自动归档非平凡技术发现到 log/YYYY-MM/。

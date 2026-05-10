@@ -1,7 +1,7 @@
 ---
 name: cortex-new
-description: 按模板新建 cortex 笔记 (concept/entity/domain/dashboard/question/source), 自动填 frontmatter, 重名不覆盖。仅显式触发 (disable-model-invocation: true)。
-argument-hint: "<type> <title>"
+description: 按模板新建笔记 (concept/entity/domain/dashboard/question/source), 路径按 vault.lang, 填 lang/cli frontmatter。仅显式触发。
+argument-hint: "<type> <title> [--lang zh-CN|en|ja]"
 disable-model-invocation: true
 allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content mcp__obsidian__obsidian_list_files_in_dir
 ---

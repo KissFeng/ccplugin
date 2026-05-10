@@ -1,6 +1,6 @@
 ---
 name: cortex-ingest
-description: 把外部源 (文件/URL/目录) 摄取进 Obsidian vault — 抽实体概念、套模板、重名检测、反向 wikilink 回填、同步索引, 不改源。Triggers on "ingest", "ingest this url", "摄取", "导入到知识库".
+description: 外部源 (文件/URL/目录) 摄取进 vault — 抽实体, 套模板 (cli=manual), wikilink 回填; URL 走 defuddle。Triggers on "ingest", "摄取".
 allowed-tools: Bash Read Write Edit Glob WebFetch mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content mcp__obsidian__obsidian_simple_search
 ---
 

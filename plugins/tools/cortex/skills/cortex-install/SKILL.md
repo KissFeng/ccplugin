@@ -1,6 +1,6 @@
 ---
 name: cortex-install
-description: 初始化 Obsidian vault 至 cortex 布局 — 共享根 + preset (lyt/zettel/para/blank), 不覆盖。Triggers on "init vault", "install cortex", "安装 cortex".
+description: 初始化 vault — 共享根 + preset (lyt/zettel/para/blank) + lang (zh-CN/en/ja); 询问 cron。Triggers on "init vault", "安装 cortex".
 allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content
 ---
 
@@ -13,6 +13,13 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_v
 - 用户初次安装 cortex, 需要把空 vault 起骨架
 - 已有 vault 接入 cortex, 需补 `_meta/` 与 `_templates/`
 - 切换 preset (lyt ↔ para ↔ zettel ↔ blank)
+
+## v2 增项 (M1+M3)
+
+1. **询问 lang** — 默认 `zh-CN`, 可选 `en` / `ja` / 用户自定义。写入 `_meta/version.json:.lang`。
+2. **目录按 lang 渲染** — preset `_structure.json:directories_keys` 经 `locales/<lang>.yml:dirs` 解析为实际目录名。
+3. **询问 cron 注册** — 流程末尾询问是否注册 daily lint / weekly fold / weekly dashboard, 委托 cortex-cron skill。
+4. **写 `_meta/version.json`** — 含 `schema/preset/lang/preserve_transcript/created` 字段。
 
 ## 输入
 

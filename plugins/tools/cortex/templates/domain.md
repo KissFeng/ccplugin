@@ -7,6 +7,9 @@ tags: [domain]
 created: {{CREATED}}
 updated: {{UPDATED}}
 preset: {{PRESET}}
+lang: {{LANG}}
+cli: {{CLI}}
+cli_session: {{CLI_SESSION}}
 git_remote: ""    # 如 github.com/org/repo
 status: active    # active | dormant | archived
 related: []

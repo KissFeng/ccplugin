@@ -1,6 +1,6 @@
 ---
 name: cortex-save
-description: 把会话/主题的非平凡技术发现落档到 Obsidian vault — 选目录、套模板、注入 block-id、同步 index/hot.md、反向 wikilink 回填, 重名不覆盖。Triggers on "save this", "save to wiki", "归档", "落档".
+description: 落档非平凡发现到 vault — 路径按 vault.lang, 塞 cli/lang frontmatter, 注入 block-id, 同步 index/hot。Triggers on "save this", "归档", "落档".
 allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content mcp__obsidian__obsidian_patch_content mcp__obsidian__obsidian_simple_search
 ---
 

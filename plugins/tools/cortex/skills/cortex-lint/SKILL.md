@@ -1,6 +1,6 @@
 ---
 name: cortex-lint
-description: 跑 13 条 vault lint 规则 (frontmatter/wikilink/orphan/命名/block-id), 默认 dry-run, --fix 才改盘并 backup。Triggers on "wiki audit", "lint", "vault 体检", "找 orphan", "dead link".
+description: 跑 15 条 vault lint (frontmatter/wikilink/orphan/命名/i18n) + autofix; --fix 才落盘。Triggers on "wiki audit", "lint", "vault 体检".
 allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_patch_content
 ---
 

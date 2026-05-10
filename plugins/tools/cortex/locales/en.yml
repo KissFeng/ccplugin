@@ -1,0 +1,46 @@
+meta:
+  lang: en
+  fallback: en
+  display: English
+
+dirs:
+  moc: MOC
+  concepts: concepts
+  entities: entities
+  domains: domains
+  sources: sources
+  questions: questions
+  dashboards: dashboards
+  fleeting: fleeting
+  archive: archive
+  projects: projects
+  areas: areas
+  resources: resources
+  zettels: zettels
+  structure-notes: structure-notes
+  inbox: inbox
+  references: references
+
+files:
+  home: home
+  domain_index: _domain
+  subdir_index: _index
+
+agent_titles:
+  curator: cortex curator
+  researcher: cortex researcher
+  translator: cortex translator
+  historian: cortex historian
+  cartographer: cortex cartographer
+  archivist: cortex archivist
+  linker: cortex linker
+  summarizer: cortex summarizer
+
+prompts:
+  search_first: For non-trivial questions, search the vault via cortex-search before starting fresh work.
+  archive_pending: 📝 cortex archived {path}
+  session_header: "## Cortex connected (lang={lang}, vault={vault}, preset={preset})"
+  collab_save: After non-trivial findings, use cortex-save to archive; project-specific → domains/, general concepts → concepts/.
+  collab_no_direct: Do not write vault files directly; go through mcp__obsidian__* or cortex skills to keep indexes consistent.
+  collab_block_id: Each H2/H3 section gets a trailing ^cortex-<sha8> block-id for precise ![[note#^cortex-xxx]] references.
+  collab_stop_hook: Stop hook auto-archives non-trivial technical findings to log/YYYY-MM/.

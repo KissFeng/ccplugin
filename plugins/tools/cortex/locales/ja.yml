@@ -1,0 +1,46 @@
+meta:
+  lang: ja
+  fallback: en
+  display: 日本語
+
+dirs:
+  moc: MOC
+  concepts: 概念
+  entities: エンティティ
+  domains: 領域
+  sources: ソース
+  questions: 質問
+  dashboards: ダッシュボード
+  fleeting: 走り書き
+  archive: アーカイブ
+  projects: プロジェクト
+  areas: エリア
+  resources: 資料
+  zettels: zettels
+  structure-notes: structure-notes
+  inbox: inbox
+  references: references
+
+files:
+  home: home
+  domain_index: _domain
+  subdir_index: _index
+
+agent_titles:
+  curator: cortex キュレーター
+  researcher: cortex リサーチャー
+  translator: cortex 翻訳者
+  historian: cortex 史官
+  cartographer: cortex 地図製作者
+  archivist: cortex アーキビスト
+  linker: cortex リンカー
+  summarizer: cortex 要約者
+
+prompts:
+  search_first: 一般的でない問題は先に cortex-search で vault を検索し, 既存知識の有無を確認してから着手する。
+  archive_pending: 📝 cortex がアーカイブしました {path}
+  session_header: "## Cortex 接続済み (lang={lang}, vault={vault}, preset={preset})"
+  collab_save: 非自明な発見は cortex-save でアーカイブ; プロジェクト固有 → domains/, 一般概念 → concepts/。
+  collab_no_direct: vault ファイルを直接操作せず, mcp__obsidian__* や cortex skill を経由して索引整合を保つ。
+  collab_block_id: 各 H2/H3 末尾に ^cortex-<sha8> block-id が付与され, ![[note#^cortex-xxx]] で精密参照可能。
+  collab_stop_hook: Stop hook が非自明な技術発見を log/YYYY-MM/ に自動アーカイブする。

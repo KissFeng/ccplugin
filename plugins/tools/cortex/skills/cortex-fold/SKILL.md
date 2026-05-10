@@ -1,6 +1,6 @@
 ---
 name: cortex-fold
-description: 把 log/ 旧条目按月滚动归档至 folds/YYYY-MM-fold-NNN.md, 默认保留近 7 天, --apply 才落盘并 backup。Triggers on "fold logs", "归档日志", "整理日志".
+description: log/ 按月归档到 folds/YYYY-MM-fold-NNN.md (ASCII), 内容按 vault.lang; --apply 落盘。Triggers on "fold logs", "归档日志".
 allowed-tools: Bash Read Write Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir
 ---
 

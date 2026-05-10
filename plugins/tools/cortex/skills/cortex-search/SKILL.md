@@ -1,6 +1,6 @@
 ---
 name: cortex-search
-description: 在 Obsidian vault 中搜索并综合答复 — 五级回退 (hot/index/SC/MCP/rg), 附引用, 仅查不写。Triggers on "search the wiki", "查知识库", "搜知识库".
+description: 在 vault 搜索并综合答复 — 五级回退 (hot/index/SC/MCP/rg), 附引用; 支持 --lang。Triggers on "查知识库", "搜知识库".
 allowed-tools: Bash Read Glob mcp__obsidian__obsidian_simple_search mcp__obsidian__obsidian_complex_search mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_batch_get_file_contents mcp__obsidian__obsidian_list_files_in_dir
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # session_start.sh
-# CC SessionStart hook — 注入 cortex 协作约定 (v2 wrapped JSON)。
+# CC SessionStart hook — 注入 cortex 协作约定 (v2 wrapped JSON), locale-aware。
 # vault 不存在时沉默退出 (退出码 0, stdout 空), 不阻断会话。
 
 set -u
@@ -26,23 +26,36 @@ fi
 
 log "vault=$VAULT"
 
-# Delegate context build + JSON emit to python (avoids bash quoting hell)
+# Delegate context build + JSON emit to python (locale-aware)
 PLUGIN_ROOT="$PLUGIN_ROOT" VAULT="$VAULT" python3 - <<'PYEOF' 2>>"$LOG_FILE" || exit 0
 import json
 import os
 import sys
 from pathlib import Path
 
-MAX_BYTES = 5000  # per prd §10.1 — additionalContext soft cap ~10KB total
+MAX_BYTES = 5000  # additionalContext soft cap ~10KB total
 
 plugin_root = Path(os.environ["PLUGIN_ROOT"])
 vault = Path(os.environ["VAULT"])
 
-agent_md = plugin_root / "AGENT.md"
-if not agent_md.is_file():
+# Load locale
+sys.path.insert(0, str(plugin_root / "hooks" / "_lib"))
+try:
+    from cortex_locale import load_locale, detect_vault_lang
+except Exception:
     sys.exit(0)
 
-template = agent_md.read_text(encoding="utf-8")
+lang = detect_vault_lang(vault)
+loc = load_locale(plugin_root, vault, lang)
+
+# Read preset from _meta/version.json
+preset = "blank"
+vfile = vault / "_meta" / "version.json"
+if vfile.is_file():
+    try:
+        preset = json.loads(vfile.read_text(encoding="utf-8")).get("preset", "blank")
+    except Exception:
+        pass
 
 
 def truncated(p: Path) -> str:
@@ -68,11 +81,25 @@ if index_file.is_file():
     except Exception:
         pass
 
-context = (
-    template.replace("{{VAULT_PATH}}", str(vault))
-    .replace("{{INDEX_ENTRY_COUNT}}", str(index_entries))
-    .replace("{{HOT_CACHE_PREVIEW}}", "(已加载, 见下文)" if hot else "(空)")
-)
+# Build header (locale-aware, single line per prd §4.4)
+header = loc.get_prompt("session_header", lang=lang, vault=str(vault), preset=preset)
+if not header:
+    header = f"## Cortex connected (lang={lang}, vault={vault}, preset={preset})"
+
+lines = [
+    header,
+    "",
+    f"index: {index_entries} entries · hot: {'loaded' if hot else 'empty'}",
+    "",
+    "### " + ("协作约定" if lang.startswith("zh") else ("協力規約" if lang == "ja" else "Collaboration")),
+    "",
+    "1. " + loc.get_prompt("search_first"),
+    "2. " + loc.get_prompt("collab_save"),
+    "3. " + loc.get_prompt("collab_no_direct"),
+    "4. " + loc.get_prompt("collab_block_id"),
+    "5. " + loc.get_prompt("collab_stop_hook"),
+]
+context = "\n".join(lines)
 
 if hot:
     context += f"\n\n### hot.md (前 {MAX_BYTES} bytes)\n\n{hot}\n"

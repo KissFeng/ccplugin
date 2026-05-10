@@ -7,6 +7,9 @@ tags: [source]
 created: {{CREATED}}
 updated: {{UPDATED}}
 preset: {{PRESET}}
+lang: {{LANG}}
+cli: {{CLI}}
+cli_session: {{CLI_SESSION}}
 source_kind: ""   # article | book | video | paper | talk | docs | repo
 url: ""
 author: ""

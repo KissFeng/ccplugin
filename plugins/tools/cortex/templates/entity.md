@@ -7,6 +7,9 @@ tags: [entity]
 created: {{CREATED}}
 updated: {{UPDATED}}
 preset: {{PRESET}}
+lang: {{LANG}}
+cli: {{CLI}}
+cli_session: {{CLI_SESSION}}
 entity_kind: ""   # person | tool | project | org | service
 url: ""
 related: []
