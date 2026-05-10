@@ -39,6 +39,38 @@ CALLOUT_WHITELIST = {
 
 EXCLUDE_DIRS = {"_meta", ".obsidian", ".trash", ".git"}
 
+# Shared root dirs (i18n whitelist; never reported by i18n-* rules)
+SHARED_ROOT_DIRS = {
+    "_meta", "_templates", "locales", "sessions",
+    "log", "folds", "MOC", ".obsidian", ".trash", ".git",
+}
+SHARED_ROOT_FILES = {"index.md", "hot.md"}
+TIME_DIR_RE = re.compile(r"^\d{4}-\d{2}$")
+
+
+def _load_vault_lang(vault: Path) -> str:
+    p = vault / "_meta" / "version.json"
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        v = data.get("lang") if isinstance(data, dict) else None
+        if isinstance(v, str) and v:
+            return v
+    except Exception:
+        pass
+    return "zh-CN"
+
+
+def _load_locale_dirs(plugin_root: Path, vault: Path, lang: str) -> set[str]:
+    """Load `dirs` mapping for given lang; return set of localized dir names."""
+    sys.path.insert(0, str(plugin_root / "hooks" / "_lib"))
+    try:
+        from cortex_locale import load_locale  # type: ignore
+        loc = load_locale(plugin_root, vault, lang)
+        dirs_map = loc.get_dirs()
+        return {v for v in dirs_map.values() if isinstance(v, str) and v}
+    except Exception:
+        return set()
+
 
 def parse_frontmatter(text: str) -> tuple[dict[str, Any], int]:
     """Return (frontmatter dict, body_start_line). Lightweight YAML."""
@@ -137,6 +169,7 @@ def check_file(
     by_name: dict[str, Path],
     by_alias: dict[str, list[Path]],
     referrers: dict[str, set[str]],
+    vault_lang: str | None = None,
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     fm, body_line = parse_frontmatter(text)
@@ -147,6 +180,22 @@ def check_file(
     # rule 2: fm-missing-created
     if not fm.get("created"):
         findings.append(_f("fm-missing-created", "warn", rel, 1, "frontmatter 缺 created 字段", True))
+
+    # rule 14: i18n-frontmatter-lang-mismatch
+    if vault_lang:
+        page_lang = fm.get("lang")
+        # skip log/folds/sessions auto-generated where lang may legitimately mix
+        skip_prefixes = ("log/", "folds/", "sessions/", "_templates/")
+        if (
+            isinstance(page_lang, str)
+            and page_lang
+            and page_lang != vault_lang
+            and not any(rel.startswith(p) for p in skip_prefixes)
+        ):
+            findings.append(_f(
+                "i18n-frontmatter-lang-mismatch", "warn", rel, 1,
+                f"page lang='{page_lang}' != vault.lang='{vault_lang}'", False,
+            ))
 
     # rule 9: title-h1-mismatch
     title = fm.get("title")
@@ -205,6 +254,7 @@ def check_global(
     vault: Path,
     files: list[Path],
     by_alias: dict[str, list[Path]],
+    locale_dirs: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
 
@@ -251,18 +301,45 @@ def check_global(
                 findings.append(_f("block-id-duplicate", "error", rel, line,
                                    f"^{bid} duplicated ({len(occ)}x)", True))
 
-    # rule 13: path-naming-violation (per prd §3.2.7)
+    # rule 13: path-naming-violation (per prd §9; only for time-pattern paths)
     for p in files:
         rel = str(p.relative_to(vault))
         violation = _check_naming(rel)
         if violation:
             findings.append(_f("path-naming-violation", "warn", rel, 1, violation, False))
 
+    # rule 15: i18n-path-not-in-locale (top-level business dirs not in vault.lang dirs map)
+    if locale_dirs is not None:
+        seen: set[str] = set()
+        for p in files:
+            rel = str(p.relative_to(vault))
+            top = rel.split("/", 1)[0]
+            if top in seen:
+                continue
+            seen.add(top)
+            if top in SHARED_ROOT_DIRS or top in SHARED_ROOT_FILES:
+                continue
+            if TIME_DIR_RE.match(top):
+                continue
+            if "." in top and "/" not in rel:
+                # top-level file (non-md handled elsewhere; md shared files already gated)
+                continue
+            if top not in locale_dirs:
+                findings.append(_f(
+                    "i18n-path-not-in-locale", "warn", top + "/", 1,
+                    f"top-level dir '{top}' not in vault.lang dirs map; consider migrate-locale",
+                    False,
+                ))
+
     return findings
 
 
 def _check_naming(rel: str) -> str | None:
     parts = rel.split("/")
+    # skip shared roots (per prd §9 adjustment)
+    if parts and parts[0] in SHARED_ROOT_DIRS:
+        # only check time-formatted children of log/folds (already covered below)
+        pass
     # log/YYYY-MM/DD-HHMM-<slug>.md
     if parts[0] == "log" and len(parts) == 3:
         if not re.match(r"^\d{4}-\d{2}$", parts[1]):
@@ -416,6 +493,7 @@ def main() -> int:
     ap.add_argument("--fix", action="store_true", help="apply autofix (writes to disk + backup)")
     ap.add_argument("--scope", default=None, help="glob filter, e.g. '10_concepts/*'")
     ap.add_argument("--json", action="store_true", help="JSON output (default)")
+    ap.add_argument("--lang", default=None, help="override vault.lang for i18n checks")
     args = ap.parse_args()
 
     vault = Path(args.vault).expanduser().resolve()
@@ -426,6 +504,10 @@ def main() -> int:
     files = list(iter_md_files(vault, args.scope))
     by_name, by_alias, referrers = index_wikilinks(vault)
 
+    vault_lang = args.lang or _load_vault_lang(vault)
+    plugin_root = Path(__file__).resolve().parent.parent
+    locale_dirs = _load_locale_dirs(plugin_root, vault, vault_lang)
+
     findings: list[dict[str, Any]] = []
     for p in files:
         try:
@@ -433,9 +515,9 @@ def main() -> int:
         except Exception:
             continue
         rel = str(p.relative_to(vault))
-        findings.extend(check_file(p, rel, text, by_name, by_alias, referrers))
+        findings.extend(check_file(p, rel, text, by_name, by_alias, referrers, vault_lang))
 
-    findings.extend(check_global(vault, files, by_alias))
+    findings.extend(check_global(vault, files, by_alias, locale_dirs if locale_dirs else None))
 
     fixed = 0
     if args.fix:

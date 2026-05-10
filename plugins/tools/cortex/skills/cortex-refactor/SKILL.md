@@ -57,6 +57,19 @@ python3 ${CLAUDE_PLUGIN_ROOT}/refactor/fold.py \
 - 早于 cutoff 的 log 按月聚合到 `folds/YYYY-MM-fold-NNN.md` (NNN 三位序号, 续号)
 - 折叠完成后删除原 log 文件 (backup 已存)
 
+### migrate-locale — 切 vault.lang 时一次性 rename 业务目录
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/refactor/migrate_locale.py \
+  --vault <path> --from <lang> --to <lang> [--apply]
+```
+
+- 比对两个 lang 的 `dirs` map, 对每对差异计划 rename
+- git repo 走 `git mv` (保留历史), 否则 `os.rename`
+- 全 vault wikilink 替换 (path-prefixed)
+- 写 `_meta/version.json:.lang = <to>` + `_meta/migrations/<ts>-migrate-locale.json`
+- 默认 dry-run, `--apply` 才落盘
+
 ## 触发场景
 
 - 用户明确说"重命名 X 到 Y / 合并 A B / 把这页拆开 / 整理日志"

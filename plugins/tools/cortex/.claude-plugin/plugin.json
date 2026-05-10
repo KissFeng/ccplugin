@@ -23,7 +23,7 @@
     "session-recap"
   ],
   "skills": "./skills/",
-  "agents": [],
+  "agents": "./agents/",
   "hooks": {
     "SessionStart": [
       {

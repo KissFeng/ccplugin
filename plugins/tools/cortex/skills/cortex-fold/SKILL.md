@@ -1,6 +1,7 @@
 ---
 name: cortex-fold
-description: log/ 按月归档到 folds/YYYY-MM-fold-NNN.md (ASCII), 内容按 vault.lang; --apply 落盘。Triggers on "fold logs", "归档日志".
+description: log/ 按月归档到 folds/YYYY-MM-fold-NNN.md (ASCII), 内容按 vault.lang; --apply 落盘。仅显式触发 ("fold logs" / "归档日志")。
+disable-model-invocation: true
 allowed-tools: Bash Read Write Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir
 ---
 

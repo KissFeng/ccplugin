@@ -25,14 +25,16 @@ print_cron() {
 # ===== cortex cron snippet (Linux/macOS cron) =====
 # 复制以下行到 'crontab -e':
 
-# daily lint with autofix at 01:00
-0 1 * * * /usr/bin/env python3 "${PLUGIN_ROOT}/lint/run.py" --vault "${VAULT}" --fix > "\$HOME/.cache/cortex/lint-\$(date +\%Y\%m\%d).json" 2>&1
+# 新版走 scripts/cron/<job>.sh wrapper (claude --bare, lock + timeout + log rotation)
+
+# daily lint at 01:00
+0 1 * * * CORTEX_VAULT="${VAULT}" bash "${PLUGIN_ROOT}/scripts/cron/lint.sh"
 
 # weekly log fold at Sunday 02:00
-0 2 * * 0 /usr/bin/env python3 "${PLUGIN_ROOT}/refactor/fold.py" --vault "${VAULT}" --days 7 --apply >> "\$HOME/.cache/cortex/fold.log" 2>&1
+0 2 * * 0 CORTEX_VAULT="${VAULT}" bash "${PLUGIN_ROOT}/scripts/cron/fold.sh"
 
-# weekly dashboard refresh at Sunday 02:30 (claude CLI required)
-30 2 * * 0 claude -p "/cortex-dashboard refresh all" >> "\$HOME/.cache/cortex/dashboard.log" 2>&1
+# weekly dashboard refresh at Sunday 02:30
+30 2 * * 0 CORTEX_VAULT="${VAULT}" bash "${PLUGIN_ROOT}/scripts/cron/dashboard.sh"
 EOF
 }
 

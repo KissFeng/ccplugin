@@ -7,13 +7,13 @@
 | 形态 | 内容 |
 |------|------|
 | Hooks | `SessionStart` 注入"先搜库"协作约定 + hot 摘要; `Stop` / `SubagentStop` 自动归档非平凡技术发现; `PostCompact` 落档 compact 摘要 |
-| Skills | 全部能力以 11 个 skill 暴露 (无独立 commands): 核心 6 — `cortex-install` · `cortex-search` · `cortex-save` · `cortex-ingest` · `cortex-doctor` · `cortex-new`; 维护 5 — `cortex-lint` · `cortex-refactor` · `cortex-canvas` · `cortex-dashboard` · `cortex-fold` (research/05 §6.3) |
+| Skills | 全部能力以 14 个 skill 暴露 (无独立 commands): 自动 5 — `cortex-search` · `cortex-save` · `cortex-ingest` · `cortex-lint` · `cortex-session`; 显式 9 — `cortex-install` · `cortex-locale` · `cortex-fold` · `cortex-canvas` · `cortex-dashboard` · `cortex-doctor` · `cortex-new` · `cortex-refactor` · `cortex-cron` (research/05 §6.3) |
 | Presets | LYT (默认) / Zettelkasten / PARA / blank |
 | 模板 | concept · entity · domain · dashboard · question · source — 用 Obsidian callout + properties + Bases |
 
 **触发方式**:
-- 自动 (8 个 skill): 自然语言命中 description 中的 Triggers — 例如 "搜知识库" 触发 `cortex-search`, "归档" 触发 `cortex-save`, "wiki audit" 触发 `cortex-lint`, "fold logs" 触发 `cortex-fold`。
-- 显式 (3 个 skill, `disable-model-invocation: true`): `cortex-doctor` / `cortex-new` / `cortex-refactor` 必须用户明确请求才会运行, 防止误触发副作用。
+- 自动 (5 个 skill): 自然语言命中 description 中的 Triggers — "搜知识库" 触发 `cortex-search`, "归档" 触发 `cortex-save`, "ingest"/"摄取" 触发 `cortex-ingest`, "wiki audit"/"lint" 触发 `cortex-lint`, "list sessions" 触发 `cortex-session`。
+- 显式 (9 个 skill, `disable-model-invocation: true`): `cortex-install` / `cortex-locale` / `cortex-fold` / `cortex-canvas` / `cortex-dashboard` / `cortex-doctor` / `cortex-new` / `cortex-refactor` / `cortex-cron` 必须用户明确请求才会运行, 防止误触发副作用 (写 vault 骨架 / 改语言配置 / 大批量改盘 / 写系统 cron 等)。
 
 ## 安装
 
@@ -110,6 +110,10 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/install_cron.sh gha       # GitHub Actions
 - [架构设计](docs/架构设计.md) — 数据流、模块依赖、hook 时序、MCP 三级回退
 - [设计决策](docs/设计决策.md) — ADR D1-D7 + research-driven §10 修订
 - [贡献指南](docs/贡献指南.md) — 加新 skill / lint / preset 步骤 + 测试约定 + GLM 自检
+- [i18n](docs/i18n.md) — vault 多语言 / locale 文件 / fallback / 切语言 (v2)
+- [多 CLI](<docs/多 CLI.md>) — frontmatter cli/cli_session / sessions/<cli>/ / 跨 CLI 查询 (v2)
+- [Agents](docs/Agents.md) — 8 个专用多轮调度者 + 调度边界 (v2)
+- [编程式调用](docs/编程式调用.md) — claude --bare flag + cron 注册 / 故障排查 (v2)
 
 ## License
 

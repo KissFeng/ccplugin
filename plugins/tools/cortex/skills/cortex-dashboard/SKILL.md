@@ -1,6 +1,7 @@
 ---
 name: cortex-dashboard
-description: 生成 dashboard — Bases 启用产 .base, 否则 Dataview md; 列名走 vault.lang。Triggers on "build dashboard", "仪表盘".
+description: 生成 dashboard — Bases 启用产 .base, 否则 Dataview md; 列名走 vault.lang。仅显式触发 ("build dashboard" / "仪表盘")。
+disable-model-invocation: true
 allowed-tools: Bash Read Write Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_append_content
 ---
 

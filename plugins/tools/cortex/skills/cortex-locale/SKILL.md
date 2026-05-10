@@ -1,6 +1,7 @@
 ---
 name: cortex-locale
-description: 切换/查看 vault 语言 — 读写 _meta/version.json:.lang, 列 fallback 链, 不动既有目录。Triggers on "切换语言", "vault 语言".
+description: 切换/查看 vault 语言 — 读写 _meta/version.json:.lang, 列 fallback 链, 不动既有目录。仅显式触发 ("切换语言" / "vault 语言")。
+disable-model-invocation: true
 allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents
 ---
 

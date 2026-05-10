@@ -292,29 +292,31 @@ WHERE cli = "claude-code" AND created > date("2026-05-01")
 
 ### 6.1 现有 11 skill 升级
 
-| skill | v2 增项 |
-|-------|---------|
-| cortex-install | 询问 lang (zh-CN/en/ja/...) + 询问 cron 注册 (见 §8); 写 `_meta/version.json:.lang` |
-| cortex-search | 加 `--lang` 参数 (跨语言搜); SC fallback 用 vault.lang model 探测 |
-| cortex-save | frontmatter 自动塞 `cli` / `cli_session` / `lang`; 路径用 locale 渲染 |
-| cortex-ingest | 来源页 frontmatter `cli: manual`; URL 来源用 defuddle skill 协作 |
-| cortex-doctor | 加检查 locales 文件存在 / lang fallback 链 / sessions/ 占用 |
-| cortex-new | 路径模板按 lang 渲染; 询问 `--lang` 覆盖 |
-| cortex-lint | rules 加 i18n-001 (frontmatter `lang` 与 vault.lang 不一致) / i18n-002 (路径不在 lang map 内); rule 13 (path-naming) 调整为"路径不在 dirs map" |
-| cortex-refactor | 加子操作 `migrate-locale` (一次性 rename 既有目录到新 lang) |
-| cortex-canvas | 节点 label 走 lang map |
-| cortex-dashboard | dataview 列名走 lang map |
-| cortex-fold | fold 文件名 ASCII (`YYYY-MM-fold-NNN.md`); 内容头部用 lang map |
+触发模式 (auto = 自动调用; **explicit** = `disable-model-invocation: true`, 仅用户显式触发):
+
+| skill | 触发 | v2 增项 |
+|-------|------|---------|
+| cortex-install | **explicit** | 询问 lang (zh-CN/en/ja/...) + 询问 cron 注册 (见 §8); 写 `_meta/version.json:.lang` |
+| cortex-search | auto | 加 `--lang` 参数 (跨语言搜); SC fallback 用 vault.lang model 探测 |
+| cortex-save | auto | frontmatter 自动塞 `cli` / `cli_session` / `lang`; 路径用 locale 渲染 |
+| cortex-ingest | auto | 来源页 frontmatter `cli: manual`; URL 来源用 defuddle skill 协作 |
+| cortex-doctor | **explicit** | 加检查 locales 文件存在 / lang fallback 链 / sessions/ 占用 |
+| cortex-new | **explicit** | 路径模板按 lang 渲染; 询问 `--lang` 覆盖 |
+| cortex-lint | auto | rules 加 i18n-001 (frontmatter `lang` 与 vault.lang 不一致) / i18n-002 (路径不在 lang map 内); rule 13 (path-naming) 调整为"路径不在 dirs map" |
+| cortex-refactor | **explicit** | 加子操作 `migrate-locale` (一次性 rename 既有目录到新 lang) |
+| cortex-canvas | **explicit** | 节点 label 走 lang map |
+| cortex-dashboard | **explicit** | dataview 列名走 lang map |
+| cortex-fold | **explicit** | fold 文件名 ASCII (`YYYY-MM-fold-NNN.md`); 内容头部用 lang map |
 
 ### 6.2 新增 skill (3 个)
 
 | skill | 触发 | 说明 |
 |-------|------|------|
-| `cortex-locale` | "切换语言", "set vault lang", "/cortex:locale" | 读/写 `_meta/version.json:.lang`, 列已加载 lang fallback |
-| `cortex-session` | "list sessions", "session 备份", "/cortex:session" | 列 sessions/, 解析任意 transcript, 重放摘要 |
-| `cortex-cron` | "register cron", "/cortex:cron", install 问到时调用 | 检测 launchd / cron / GHA 平台, 询问注册项, 写或仅打印 |
+| `cortex-locale` | **explicit** ("切换语言" / "set vault lang") | 读/写 `_meta/version.json:.lang`, 列已加载 lang fallback |
+| `cortex-session` | auto ("list sessions" / "session 备份") | 列 sessions/, 解析任意 transcript, 重放摘要 |
+| `cortex-cron` | **explicit** ("register cron", install 问到时调用) | 检测 launchd / cron / GHA 平台, 询问注册项, 写或仅打印 |
 
-合计 14 skill。
+合计 14 skill: **5 auto** (search/save/ingest/lint/session) + **9 explicit** (install/locale/fold/canvas/dashboard/doctor/new/refactor/cron)。description 池仅 auto skill 进, 现状 722 字符 (软上限 1536, 余裕充足)。
 
 ### 6.3 8 specialized agents
 

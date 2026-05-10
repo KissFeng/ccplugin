@@ -19,23 +19,57 @@ hot cache: {{HOT_CACHE_PREVIEW}}
 
 ## Skills 设计原则
 
-cortex 全部能力以 **11 个 skill** 暴露, **0 个 command** (与本仓库 `plugins/tools/task/` 全 skill 模式对齐, 决策见 `.trellis/tasks/05-10-obsidian-kb-plugin/research/05-skills-vs-commands.md` §6.3 建议 B)。
+cortex v2 全部能力以 **14 个 skill** 暴露, **0 个 command** (与本仓库 `plugins/tools/task/` 全 skill 模式对齐, 决策见 `.trellis/tasks/archive/2026-05/05-10-obsidian-kb-plugin/research/05-skills-vs-commands.md` §6.3 建议 B)。
+
+cortex v2 共 14 个 skill, **5 自动 / 9 显式**。显式 skill frontmatter 标 `disable-model-invocation: true`, 不进 description 池, 主线模型不会自动激活, 必须用户明确请求 (中文短语 / 英文触发词 / 用户直接调用)。
+
+**5 个自动 skill** (description 池总长 722 字符, 远低于 1536 软上限):
 
 | skill | 触发方式 |
 |-------|----------|
-| `cortex-install` | 自动 |
-| `cortex-search` | 自动 |
-| `cortex-save` | 自动 + Stop / SubagentStop hook |
-| `cortex-ingest` | 自动 |
-| `cortex-lint` | 自动 (默认 dry-run, --fix 才改盘) |
-| `cortex-canvas` | 自动 |
-| `cortex-dashboard` | 自动 |
-| `cortex-fold` | 自动 (默认 dry-run, --apply 才改盘) |
-| `cortex-doctor` | **显式** (`disable-model-invocation: true`) — "诊断 cortex" |
-| `cortex-new` | **显式** (`disable-model-invocation: true`) — 创建文件有副作用 |
-| `cortex-refactor` | **显式** (`disable-model-invocation: true`) — rename/merge/split/fold, 大动干戈 |
+| `cortex-save` | 自动 + Stop / SubagentStop hook ("归档" / "save this") |
+| `cortex-search` | 自动 ("查知识库" / "搜知识库") |
+| `cortex-ingest` | 自动 ("ingest" / "摄取") |
+| `cortex-lint` | 自动, 默认 dry-run, --fix 才改盘 ("wiki audit" / "lint") |
+| `cortex-session` | 自动 ("list sessions" / "session 备份") |
+
+**9 个显式 skill** (`disable-model-invocation: true`, 仅用户显式触发):
+
+| skill | 触发短语 | 副作用说明 |
+|-------|---------|-----------|
+| `cortex-install` | "init vault" / "安装 cortex" | 写 vault 全骨架 + 询问 cron 注册 |
+| `cortex-locale` | "切换语言" / "vault 语言" | 改 `_meta/version.json:.lang` |
+| `cortex-fold` | "fold logs" / "归档日志" | 大批量 mv log/ → folds/ |
+| `cortex-canvas` | "make canvas" / "新建画布" | 写 .canvas 文件 |
+| `cortex-dashboard` | "build dashboard" / "仪表盘" | 写 .base / dashboard.md |
+| `cortex-doctor` | "诊断 cortex" | 只读诊断, 但执行成本高 |
+| `cortex-new` | `<type> <title>` | 创建笔记文件 |
+| `cortex-refactor` | "rename / merge / split / fold / migrate-locale" | 批量改名 / 合并 / 拆分 |
+| `cortex-cron` | "register cron" / "/cortex:cron" | 写系统级 launchd / cron / GHA |
 
 约束:
 - 所有 SKILL.md 的 `allowed-tools` 用**空格**分隔 (skill 语法; command 用逗号, 但本插件无 command)
-- skill description 长度 ≤ 1024 字符, 11 个合计 ≤ 1500 字符 (description 池软上限 1536)
+- 自动 skill description 池总长 ≤ 1500 字符 (软上限 1536); 现状 722 字符, 余裕充足
 - 命名: skill 目录名 == frontmatter `name` 字段, 防漂移
+
+## Agents 设计原则
+
+cortex v2 提供 **8 个专用 agent** (sub-agent), 在 14 个 skill 之上提供"接任务后多轮自主推进"能力。agent 与 skill 互补, 不替代。
+
+| agent | 角色 | 主调度 |
+|-------|------|--------|
+| `cortex-curator` | 维护员 (proposal-only) | cortex-lint → 解读 → cortex-refactor 提议 |
+| `cortex-researcher` | 研究员 | cortex-search → defuddle → cortex-ingest × N → cortex-summarizer |
+| `cortex-translator` | 译者 (副本生成) | cortex-search → 翻译 → cortex-save 新 lang 副本 |
+| `cortex-historian` | 史官 | cortex-session → cortex-summarizer → cortex-fold |
+| `cortex-cartographer` | 制图员 | cortex-canvas → cortex-dashboard → MOC patch |
+| `cortex-archivist` | 档案员 (proposal-only) | cortex-search → cortex-refactor (move) |
+| `cortex-linker` | 连接员 | SC API → cortex-search → cortex-save (patch wikilinks) |
+| `cortex-summarizer` | 总结员 | 读页 → 主模型 → patch 页头 callout |
+
+约束:
+- agent frontmatter `tools` 用 **YAML list** (与 skill `allowed-tools` 空格分隔不同)
+- agent description ≤ 200 字符, **不**进 skill description 池 (CC agent 描述池独立)
+- 命名: agent 文件名 (去 .md) == frontmatter `name` 字段
+- 并行 agent ≤ 2 (硬约束); agent 不 spawn agent
+- proposal-only agent (curator/archivist/linker) 不直接落盘; 落盘走 cortex-refactor + 用户确认

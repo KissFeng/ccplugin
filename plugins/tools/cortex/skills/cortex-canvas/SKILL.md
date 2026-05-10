@@ -1,6 +1,7 @@
 ---
 name: cortex-canvas
-description: 生成 .canvas (JSON Canvas 1.0), 节点 label 走 vault.lang; CLI 不可用降级。Triggers on "make canvas", "新建画布".
+description: 生成 .canvas (JSON Canvas 1.0), 节点 label 走 vault.lang; CLI 不可用降级。仅显式触发 ("make canvas" / "新建画布")。
+disable-model-invocation: true
 allowed-tools: Bash Read Write Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_append_content
 ---
 

@@ -76,7 +76,19 @@
     {
       "id": "path-naming-violation",
       "severity": "warn",
-      "description": "文件路径不符合命名规则 (prd §3.2.7)",
+      "description": "业务目录命名应来自 vault.lang 的 dirs map (prd §9; 共享根/时间目录跳过)",
+      "autofix": false
+    },
+    {
+      "id": "i18n-frontmatter-lang-mismatch",
+      "severity": "warn",
+      "description": "页 frontmatter lang 与 vault _meta/version.json:.lang 不一致",
+      "autofix": false
+    },
+    {
+      "id": "i18n-path-not-in-locale",
+      "severity": "warn",
+      "description": "业务目录名不在 vault.lang 的 dirs map (仅给 rename 建议, 不 autofix)",
       "autofix": false
     }
   ]
