@@ -116,3 +116,38 @@ Deep-studied entire ccplugin repo (Trellis system, plugins, lib, scripts, deskto
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Cortex v2: i18n + 多 CLI schema + 8 agents + 测试套件
+
+**Date**: 2026-05-11
+**Task**: Cortex v2: i18n + 多 CLI schema + 8 agents + 测试套件
+**Branch**: `master`
+
+### Summary
+
+cortex v2 单一版本设计与实施 (取代 v1)。M1-M3: vault 去编号 + i18n schema (locales/{zh-CN,en,ja}.yml + cortex_locale.py + fallback 链) + 4 hook locale-aware (session_start 注入语言, save_session 写 sessions/<cli>/<YYYY-MM>/ + frontmatter lang/cli/cli_session) + 14 skills。M4-M8: 8 agents (curator/researcher/translator/historian/cartographer/archivist/linker/summarizer, name: cortex-*) + lint 15 rules (i18n-001/002) + refactor migrate-locale + cron 脚本 4 个 (claude --bare wrapper, flock + 超时 + 日志轮转) + 中文 docs 4 篇 (i18n / 多 CLI / Agents / 编程式调用) + disable-model-invocation 审计 (9 explicit / 5 auto)。测试 142 cases (110 python + 32 bash + 5 文件), coverage 84%, 全过。决策: 永远一个版本无迁移, runtime 仅 Claude Code, vault schema 多 CLI 兼容。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fe7ac0c7` | (see git log) |
+| `cae3577b` | (see git log) |
+| `70c79e23` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
