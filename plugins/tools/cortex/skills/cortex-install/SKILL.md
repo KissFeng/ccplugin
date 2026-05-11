@@ -2,7 +2,7 @@
 name: cortex-install
 description: 初始化 vault — 共享根 + preset (lyt/zettel/para/blank) + lang (zh-CN/en/ja); 询问 cron。仅显式触发 ("init vault" / "安装 cortex")。
 disable-model-invocation: true
-allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content
+allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content
 ---
 
 # cortex-install
@@ -19,7 +19,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_v
 
 1. **询问 lang** — 默认 `zh-CN`, 可选 `en` / `ja` / 用户自定义。写入 `_meta/version.json:.lang`。
 2. **目录按 lang 渲染** — preset `_structure.json:directories_keys` 经 `locales/<lang>.yml:dirs` 解析为实际目录名。
-3. **询问 cron 注册** — 流程末尾询问是否注册 daily lint / weekly fold / weekly dashboard, 委托 cortex-cron skill。
+3. **询问 cron 注册 (P6 内联)** — 流程末尾用 `AskUserQuestion` 询问是否注册 daily lint / weekly fold / weekly dashboard; 选启用则**内联**注册 (原 cortex-cron skill 并入)。
 4. **写 `_meta/version.json`** — 含 `schema/preset/lang/preserve_transcript/created` 字段。
 
 ## 输入
@@ -58,12 +58,43 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_v
    vault 不是 git repo → 跳过此步, 不写两个字段 (后续用户可手动 `git init` + 重跑 install)。
 
 6. **回报** — 列已创建/已存在的文件, 提示运行 `/cortex:doctor` 验证
-7. **周期任务询问** — 调 `AskUserQuestion` 工具询问 (合并 ≤4 questions 单次调用):
-   - Q1 (multiSelect): "勾选要注册的 cron job" — options: `daily 01:00 lint` / `weekly Sun 02:00 fold` / `weekly Sun 02:30 dashboard`
-   - Q2 (single): "注册平台" — options: `launchd` / `cron` / `gha` / `none`
+7. **周期任务询问 (P6 — 装机一次性, 原 cortex-cron skill 并入)** — **必须**调 `AskUserQuestion` 工具 (禁文本式提问) 询问 (合并 ≤4 questions 单次调用):
 
-   - Q2 = `none` → 跳过, 安装完成
-   - Q2 ∈ {launchd, cron, gha} → 把 Q1 勾选项与平台传给 cortex-cron skill, 由后者 dry-run + `AskUserQuestion` 确认 + 写入
+   - Q1 (multiSelect): "勾选要注册的 cron job" — options: `daily 01:00 lint` / `weekly Sun 02:00 fold` / `weekly Sun 02:30 dashboard`
+   - Q2 (single): "注册平台" — options: `不启用` (默认) / `launchd (macOS)` / `cron (Linux/macOS)` / `GitHub Actions (远程仓库)`
+
+   - Q2 = `不启用` → 跳过, 安装完成
+   - Q2 ∈ {launchd, cron, gha} → 走以下**内联**注册流程 (从原 cortex-cron skill 摘要):
+
+   **解析 PLUGIN_ROOT (cron daemon 不继承 shell env, snippet 必须用绝对路径)**:
+   优先级: `$CORTEX_INSTALL_PATH` env > `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex` > `$CLAUDE_PLUGIN_ROOT`。**避免**用本地开发源码路径 (cron 上下文不可达)。
+
+   **每 job 的 wrapper**: `${PLUGIN_ROOT}/scripts/cron/{lint,fold,dashboard}.sh`, 内部走 `claude --bare --no-session-persistence --settings ~/.claude/settings.glm-4.7-flash.json -p "..." --allowed-tools "Bash Read Glob"` (只读权限, `--fix` 类操作不进 cron)。
+
+   **后端 1: launchd (macOS)** — 为每 job 写 plist:
+   - 路径: `~/Library/LaunchAgents/dev.lazygophers.cortex.<job>.plist`
+   - 内容: `<ProgramArguments>` = `["bash", "<PLUGIN_ROOT>/scripts/cron/<job>.sh"]`, `<StartCalendarInterval>` 按 daily 01:00 / weekly Sun 02:00 / weekly Sun 02:30
+   - 落盘前**必须**再调 `AskUserQuestion` 打印完整 plist 内容, 选项 `写入` / `取消` / `改时间`
+   - 用户选 `写入` → `Write` plist + `Bash launchctl load <plist>`
+
+   **后端 2: cron (Linux/macOS)** — append `~/.cortexrc.cron`:
+   - 行格式: `0 1 * * *  bash <PLUGIN_ROOT>/scripts/cron/lint.sh   # cortex.lint`
+   - 落盘前 `AskUserQuestion` 打印待 append 的行, 选项 `写入` / `取消` / `改时间`
+   - 用户选 `写入` → `Bash echo '...' >> ~/.cortexrc.cron && (crontab -l 2>/dev/null; cat ~/.cortexrc.cron) | crontab -`
+
+   **后端 3: GitHub Actions (远程仓库)** — **不自动写**, 仅打印模板:
+   - 提示用户复制到 `<vault repo>/.github/workflows/cortex-cron.yml`
+   - 模板要点: `on.schedule.cron`, `jobs.lint/fold/dashboard.runs-on: ubuntu-latest`, `steps` 安装 cortex 插件 + 跑 `bash scripts/cron/<job>.sh`
+   - 提示 vault 须为 GitHub repo, secrets 配 `OBSIDIAN_API_KEY` (若 lint 走 REST)
+
+   **关键约束** (与原 cortex-cron 一致):
+   - 写 plist / crontab 前**必须** dry-run + `AskUserQuestion` 二次确认
+   - cron job 默认 `--allowed-tools "Bash Read Glob"`, 不让 LLM 误改 vault
+   - wrapper 提供 `flock -n` + `timeout 600` (复用 `scripts/cron/run.sh`)
+   - 不写 `~/.claude/settings.json`, 只写 LaunchAgents / crontab 区域
+   - 检测 `$CI` env → 只打印 GHA yaml, 不真写
+
+   **卸载提示**: 用户手动 `launchctl unload <plist> && rm <plist>` (launchd) / 编辑 `~/.cortexrc.cron` 删行 + `crontab ~/.cortexrc.cron` (cron) / 删 `.github/workflows/cortex-cron.yml` (gha)。重跑 `cortex-install` 可再次配置。
 
 ## 写入策略
 

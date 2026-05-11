@@ -7,13 +7,13 @@
 | 形态 | 内容 |
 |------|------|
 | Hooks | `SessionStart` 注入"先搜库"协作约定 + hot 摘要; `Stop` / `SubagentStop` 自动归档非平凡技术发现; `PostCompact` 落档 compact 摘要 |
-| Skills | 全部能力以 14 个 skill 暴露 (无独立 commands): 自动 5 — `cortex-search` · `cortex-save` · `cortex-ingest` · `cortex-lint` · `cortex-session`; 显式 9 — `cortex-install` · `cortex-locale` · `cortex-fold` · `cortex-canvas` · `cortex-dashboard` · `cortex-doctor` · `cortex-new` · `cortex-refactor` · `cortex-cron` (research/05 §6.3) |
+| Skills | 全部能力以 13 个 skill 暴露 (无独立 commands): 自动 6 — `cortex-search` · `cortex-save` · `cortex-ingest` · `cortex-ingest-bulk` · `cortex-lint` · `cortex-session`; 显式 7 — `cortex-install` · `cortex-locale` · `cortex-canvas` · `cortex-dashboard` · `cortex-doctor` · `cortex-new` · `cortex-refactor` (P6 删 cortex-fold → 并入 cortex-historian agent §Fold 工作流; cortex-cron → 并入 cortex-install §周期任务询问) |
 | Presets | LYT (默认) / Zettelkasten / PARA / blank |
 | 模板 | concept · entity · domain · dashboard · question · source — 用 Obsidian callout + properties + Bases |
 
 **触发方式**:
-- 自动 (5 个 skill): 自然语言命中 description 中的 Triggers — "搜知识库" 触发 `cortex-search`, "归档" 触发 `cortex-save`, "ingest"/"摄取" 触发 `cortex-ingest`, "wiki audit"/"lint" 触发 `cortex-lint`, "list sessions" 触发 `cortex-session`。
-- 显式 (9 个 skill, `disable-model-invocation: true`): `cortex-install` / `cortex-locale` / `cortex-fold` / `cortex-canvas` / `cortex-dashboard` / `cortex-doctor` / `cortex-new` / `cortex-refactor` / `cortex-cron` 必须用户明确请求才会运行, 防止误触发副作用 (写 vault 骨架 / 改语言配置 / 大批量改盘 / 写系统 cron 等)。
+- 自动 (6 个 skill): 自然语言命中 description 中的 Triggers — "搜知识库" 触发 `cortex-search`, "归档" 触发 `cortex-save`, "ingest"/"摄取" 触发 `cortex-ingest`, "批量 ingest" 触发 `cortex-ingest-bulk`, "wiki audit"/"lint" 触发 `cortex-lint`, "list sessions" 触发 `cortex-session`。
+- 显式 (7 个 skill, `disable-model-invocation: true`): `cortex-install` / `cortex-locale` / `cortex-canvas` / `cortex-dashboard` / `cortex-doctor` / `cortex-new` / `cortex-refactor` 必须用户明确请求才会运行, 防止误触发副作用 (写 vault 骨架 / 改语言配置 / 大批量改盘 等)。fold logs 能力由 `cortex-historian` agent 接管 (P6); cron 注册装机一次性, 由 `cortex-install` 内联询问 (P6)。
 
 ## 安装
 
@@ -110,7 +110,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/install_cron.sh gha       # GitHub Actions
 
 推荐任务:
 - daily 01:00 — `cortex-lint --fix` (autofix 6 类问题)
-- weekly Sun 02:00 — `cortex-fold` (log → folds 滚动)
+- weekly Sun 02:00 — `cortex-historian` §Fold 工作流 (log → folds 滚动, P6 起接管)
 - weekly Sun 02:30 — `cortex-dashboard` 刷新 (claude CLI 触发)
 
 ## 故障排查

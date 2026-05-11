@@ -35,7 +35,7 @@ model: sonnet
    - 价值高 + 已被引用 → 提议迁 concepts/<slug>.md
    - 价值高 + URL 来源 → sources/
    - 价值低 → 提议进 archive/ (保留, 不删)
-   - 老 log → 提议 fold (走 cortex-fold)
+   - 老 log → 提议 fold (P6 起委托 cortex-historian agent §Fold 工作流)
 4. 输出迁移提案表; 把提案表回报主线后, 主线 **应调 `AskUserQuestion`** 工具询问: "如何处理迁移提案?" options: `批量授权调度 cortex-refactor` / `逐条审批` / `仅 fold` / `取消`; 据用户选择决定下一步
 
 ## 工具路由
@@ -67,7 +67,7 @@ model: sonnet
 | 2 | fleeting/2026-04-01-trial.md | archive/2026-04-trial.md | 0 引用, body 50 字 | 0.10 |
 
 ### Fold 提案
-- log/2026-02/ (45 文件) → folds/ (调 cortex-fold)
+- log/2026-02/ (45 文件) → folds/ (委托 cortex-historian §Fold 工作流)
 
 ### 推荐执行
 1. 先 fold (减少噪音)

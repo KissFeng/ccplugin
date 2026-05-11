@@ -21,10 +21,8 @@
   ],
   "skills": [
     "./skills/cortex-canvas",
-    "./skills/cortex-cron",
     "./skills/cortex-dashboard",
     "./skills/cortex-doctor",
-    "./skills/cortex-fold",
     "./skills/cortex-ingest",
     "./skills/cortex-ingest-bulk",
     "./skills/cortex-install",

@@ -74,3 +74,57 @@ model: sonnet
 ### 跳过
 - sessions/codex/2026-04/03-*.jsonl: 解析失败 (3 个)
 ```
+
+## Fold 工作流 (P6 并入, 原 cortex-fold skill)
+
+P6 起 cortex-fold skill 删除, 其能力并入 historian agent。本 agent 可主动 fold `log/` 老条目, 控制 log 目录大小。
+
+### 调用场景
+
+- 用户说 "整理一下 log / fold logs / 归档日志"
+- 周期任务自动触发 (weekly Sun 02:00, cortex-install 注册的 cron job)
+- `cortex-lint` 命中 `log-too-long` 规则后建议触发
+
+### 算法 (从 cortex-fold 完整迁入)
+
+1. 扫描 `<vault>/log/YYYY-MM/*.md`, 排除 `<vault>/log/_index.md`
+2. 取 cutoff = 今日 - `--days N` (默认 7); 早于 cutoff 的进 fold 候选
+3. 按月分桶, 每月聚合到 `<vault>/folds/YYYY-MM-fold-NNN.md`:
+   - NNN 三位续号, 从 001 起递增; 同月已存在 fold 文件保留, 新 fold 占 NNN+1
+   - fold frontmatter: `type: fold`, `created: <UTC ISO>`, `updated: <UTC ISO>`, `range_from: <月首>`, `range_to: <cutoff>`, `source_count: <N>`
+   - 内容: 每条原 log 在 fold 内以 `## from [[<stem>]]` 起头, 原正文逐字附后 (wikilink 保持可达)
+   - 内容按 `_meta/version.json:.lang` 渲染 (zh-CN / en / ja 段落标题)
+   - ASCII 排版, 段间空行
+4. 默认 **dry-run**, 输出 JSON plan (每月哪些文件、目标 fold 路径、文件数)
+5. `--apply` 才真写盘:
+   - 写 fold 文件前先 backup 所有源 log 到 `_meta/.cortex-backup/refactor-fold/<UTC-ts>/`
+   - 写 fold 文件
+   - 删除原 log 文件 (用户可从 backup 恢复)
+6. 永不修改 `hot.md` / `index.md` / `folds/_index.md` / 已有 folds/ 内文件
+
+### dry-run JSON 示例
+
+```json
+{
+  "op": "fold",
+  "buckets": [
+    {"month": "2026-04", "files": ["log/2026-04/01-1430-x.md", "log/2026-04/02-0915-y.md"],
+     "fold_target": "folds/2026-04-fold-002.md", "count": 23}
+  ],
+  "applied": false,
+  "cutoff_days": 7
+}
+```
+
+### 命名规则 (与 v2 spec 一致)
+
+- 路径: `folds/YYYY-MM-fold-NNN.md`
+- NNN: 三位数字, 从 001 起递增, 同月可有多个 fold (不同次操作累积)
+- fold 完成后, `cortex-search` 检索时 wikilink `[[<原 stem>]]` 仍可解析到 fold 内段落 (依赖 block-id `## from [[<stem>]]`)
+
+### 边界与安全
+
+- 已经在 folds/ 的文件不再二次折叠
+- 单次 fold body 软上限 8KB, 超出按文件数二分到 fold-NNN+1
+- backup 永不自动清理, 用户可手工 `rm -rf _meta/.cortex-backup/refactor-fold/<ts>`
+- 失败回滚: 写 fold 失败时不删原 log; 删 log 失败时不动 fold (允许 fold 与原 log 并存, 下次 cortex-lint 提示重跑)

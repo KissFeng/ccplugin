@@ -37,7 +37,7 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 | 4 | orphan-page | warn | ✗ (人工补 tag/链接) |
 | 5 | duplicate-alias | error | ✗ (人工合并) |
 | 6 | hot-too-long | warn | ✓ (截断+落 folds/) |
-| 7 | log-too-long | warn | ✗ (调 cortex-fold) |
+| 7 | log-too-long | warn | ✗ (建议触发 cortex-historian agent §Fold 工作流) |
 | 8 | index-missing-section | warn | ✓ (自动补条目) |
 | 9 | title-h1-mismatch | warn | ✓ (以 frontmatter 为准) |
 | 10 | filename-illegal | error | ✗ (cortex-refactor rename) |

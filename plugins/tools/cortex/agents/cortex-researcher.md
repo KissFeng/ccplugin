@@ -50,7 +50,7 @@ model: sonnet
 ## 边界
 
 - 不抓需登录的 source (跳过, 报告给用户)
-- 不主动提议 cortex-fold (老化由 cortex-archivist)
+- 不主动提议 fold (老化由 cortex-archivist 提议, cortex-historian 执行)
 - 单次任务上限 10 source; 超过应分批
 - 报告每个 source 的处理状态 (success / fail / skip)
 
