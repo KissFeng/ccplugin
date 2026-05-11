@@ -65,11 +65,46 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# 探测 marketplace 安装路径
-if [[ -n "${CORTEX_INSTALL_PATH:-}" ]]; then
-  INSTALL_PATH="$CORTEX_INSTALL_PATH"
+# 探测 marketplace 安装路径; 远端 curl|bash 走 git clone 自举
+REPO_URL="${CORTEX_REPO_URL:-https://github.com/lazygophers/ccplugin.git}"
+CLONE_DIR="${CORTEX_CLONE_DIR:-$HOME/.cortex/marketplace}"
+
+resolve_install_path() {
+  if [[ -n "${CORTEX_INSTALL_PATH:-}" ]]; then
+    printf '%s' "$CORTEX_INSTALL_PATH"
+    return 0
+  fi
+  local src="${BASH_SOURCE[0]:-}"
+  if [[ -n "$src" && -f "$src" ]]; then
+    local dir
+    dir="$(cd "$(dirname "$src")" 2>/dev/null && pwd || true)"
+    if [[ -n "$dir" && -f "$dir/scripts/cortex_config.py" ]]; then
+      printf '%s' "$dir"
+      return 0
+    fi
+  fi
+  return 1
+}
+
+bootstrap_clone() {
+  command -v git >/dev/null 2>&1 || { echo "[install.sh] 需要 git" >&2; exit 2; }
+  if [[ -d "$CLONE_DIR/.git" ]]; then
+    echo "[install.sh] 更新 $CLONE_DIR"
+    git -C "$CLONE_DIR" fetch --depth 1 origin HEAD
+    git -C "$CLONE_DIR" reset --hard FETCH_HEAD
+  else
+    echo "[install.sh] 克隆 $REPO_URL → $CLONE_DIR"
+    mkdir -p "$(dirname "$CLONE_DIR")"
+    git clone --depth 1 "$REPO_URL" "$CLONE_DIR"
+  fi
+  INSTALL_PATH="$CLONE_DIR/plugins/tools/cortex"
+}
+
+if INSTALL_PATH="$(resolve_install_path)"; then
+  :
 else
-  INSTALL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  echo "[install.sh] 远端自举模式 (无本地 plugin 树)"
+  bootstrap_clone
 fi
 
 if [[ ! -d "$INSTALL_PATH" ]]; then

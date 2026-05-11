@@ -17,7 +17,37 @@
 
 ## 安装
 
-通过 ccplugin marketplace:
+远端一键安装 (无需先 clone, install.sh 自举 git clone marketplace 到 `~/.cortex/marketplace`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/lazygophers/ccplugin/master/plugins/tools/cortex/install.sh | bash
+```
+
+非交互式 (CI / 脚本):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/lazygophers/ccplugin/master/plugins/tools/cortex/install.sh \
+  | bash -s -- --non-interactive --vault "$HOME/persons/knowledge/obsidian" --lang zh-CN --no-cron
+```
+
+已 clone 仓库本地运行:
+
+```bash
+bash plugins/tools/cortex/install.sh
+```
+
+环境变量覆盖:
+- `CORTEX_REPO_URL` — 默认 `https://github.com/lazygophers/ccplugin.git`
+- `CORTEX_CLONE_DIR` — 默认 `~/.cortex/marketplace`
+- `CORTEX_INSTALL_PATH` — 跳过 clone, 直接指向已有 plugin 路径
+
+更新 (拉最新 marketplace + 重装 cortex):
+
+```bash
+bash ~/.cortex/scripts/update.sh
+```
+
+也可走 ccplugin marketplace (待 `/plugin install cortex` 上线后):
 
 ```bash
 # (待实现) /plugin install cortex
