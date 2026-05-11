@@ -322,3 +322,36 @@ cortex 插件从第三方 notesmd-cli 切到官方 obsidian CLI v1.12.4。L1=官
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: cortex shared config ~/.cortex/
+
+**Date**: 2026-05-11
+**Task**: cortex shared config ~/.cortex/
+**Branch**: `master`
+
+### Summary
+
+PR1-6 shared config landed: Python+Bash loader, CLI, hooks/lint lang fallback, install_cron+wrapper generator, root install.sh + docs. Single commit per user directive.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e034319b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
