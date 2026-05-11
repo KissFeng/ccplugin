@@ -9,6 +9,78 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/cortex",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/cortex",
   "license": "AGPL-3.0-or-later",
+  "agents": [
+    "./agents/cortex-archivist.md",
+    "./agents/cortex-cartographer.md",
+    "./agents/cortex-curator.md",
+    "./agents/cortex-historian.md",
+    "./agents/cortex-linker.md",
+    "./agents/cortex-researcher.md",
+    "./agents/cortex-summarizer.md",
+    "./agents/cortex-translator.md"
+  ],
+  "skills": [
+    "./skills/cortex-canvas",
+    "./skills/cortex-cron",
+    "./skills/cortex-dashboard",
+    "./skills/cortex-doctor",
+    "./skills/cortex-fold",
+    "./skills/cortex-ingest",
+    "./skills/cortex-install",
+    "./skills/cortex-lint",
+    "./skills/cortex-locale",
+    "./skills/cortex-new",
+    "./skills/cortex-refactor",
+    "./skills/cortex-save",
+    "./skills/cortex-search",
+    "./skills/cortex-session"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session_start.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post_compact.sh",
+            "async": true
+          }
+        ]
+      }
+    ]
+  },
   "keywords": [
     "obsidian",
     "knowledge-base",
