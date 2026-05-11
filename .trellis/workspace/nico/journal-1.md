@@ -586,3 +586,36 @@ vault 是 git repo 时 Stop hook 可选 auto-commit/push, 严格 opt-in. git_syn
 ### Next Steps
 
 - None - task complete
+
+
+## Session 18: cortex wrapper timeout 跨平台 + install.sh UX 精简
+
+**Date**: 2026-05-11
+**Task**: cortex wrapper timeout 跨平台 + install.sh UX 精简
+**Branch**: `master`
+
+### Summary
+
+修 cron wrapper timeout 命令在 macOS 默认无导致 cron job 跑不起来: gtimeout/timeout/perl_timeout 三级 fallback, perl 用 fork+alarm+waitpid+SIGKILL 模拟 GNU timeout exit 124. iso_now() 全替换 $(date) 防中文 locale grep 失败. install.sh 删 '安装路径' log, 加 --use-source flag, 默认 resolve_install_path 总跑 bootstrap (marketplace+plugin update). spec 加 §Cross-Platform Shell Utilities (timeout fallback + iso_now).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `78e908ec` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
