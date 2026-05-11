@@ -40,9 +40,9 @@ model: sonnet
 
 ## 工具路由
 
-- **读 src 与 frontmatter**: `notesmd-cli print <src> --vault <name>` + `notesmd-cli frontmatter <src> --print` (回退 MCP `get_file_contents`)
-- **写副本**: `notesmd-cli create --overwrite <target>` (回退 MCP `put_content`)
-- **link_policy=rewrite_to_translated 查目标存在性**: `notesmd-cli list <target_dir>` 或 `notesmd-cli print <target>` 探测
+- **读 src 与 frontmatter**: `obsidian read vault=<name> path=<src>` + `obsidian property:read vault=<name> path=<src>` (回退 MCP `get_file_contents`)
+- **写副本**: `obsidian create overwrite=true vault=<name> path=<target>` (回退 MCP `put_content`)
+- **link_policy=rewrite_to_translated 查目标存在性**: `obsidian files vault=<name> path=<target_dir>` 或 `obsidian read vault=<name> path=<target>` 探测
 - 不涉及 heading/block 锚点 patch, 全程 CLI 优先
 
 ## 边界

@@ -42,10 +42,10 @@ model: sonnet
 
 ## 工具路由
 
-- **查 vault 已有页**: cortex-search skill (内部走 `notesmd-cli search-content --format json` → MCP `simple_search` 回退)
-- **读 vault 已知页**: `notesmd-cli print <path> --vault <name>` (回退 MCP `get_file_contents`)
-- **写新落档 / 综述页**: `notesmd-cli create --overwrite <path>` (回退 MCP `put_content`); cortex-ingest 内部已遵循同样路由
-- **多 vault**: 显式 `--vault <name|path>`
+- **查 vault 已有页**: cortex-search skill (内部走 `obsidian search:context query=<q> vault=<name>` → MCP `simple_search` 回退)
+- **读 vault 已知页**: `obsidian read vault=<name> path=<path>` (回退 MCP `get_file_contents`)
+- **写新落档 / 综述页**: `obsidian create overwrite=true vault=<name> path=<path>` (回退 MCP `put_content`); cortex-ingest 内部已遵循同样路由
+- **多 vault**: 显式 `vault=<name>`
 
 ## 边界
 

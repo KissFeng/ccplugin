@@ -41,9 +41,9 @@ model: sonnet
 
 ## 工具路由
 
-- **搜索近邻**: SC REST → `notesmd-cli search-content "<keywords>" --format json --page 1 --page-size 50` (CLI 不可用回退 `mcp__obsidian__obsidian_simple_search`) → ripgrep
-- **读 target / 候选页**: `notesmd-cli print <path> --vault <name>` (回退 MCP `get_file_contents`)
-- **auto_apply=true 写回 wikilink**: 整段追加 `相关: [[X]]` 用 `notesmd-cli create --append <path>` (回退 MCP `put_content` 或本地 `Edit`); 不涉及 heading 锚点 patch
+- **搜索近邻**: SC REST → `obsidian search:context query=<keywords> vault=<name>` (CLI 不可用回退 `mcp__obsidian__obsidian_simple_search`) → ripgrep
+- **读 target / 候选页**: `obsidian read vault=<name> path=<path>` (回退 MCP `get_file_contents`)
+- **auto_apply=true 写回 wikilink**: 整段追加 `相关: [[X]]` 用 `obsidian create append=true vault=<name> path=<path>` (回退 MCP `put_content` 或本地 `Edit`); 不涉及 heading 锚点 patch
 
 ## 边界
 

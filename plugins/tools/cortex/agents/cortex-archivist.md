@@ -40,10 +40,10 @@ model: sonnet
 
 ## 工具路由
 
-- **列 fleeting / log**: `notesmd-cli list <dir> --vault <name>` (回退 MCP `list_files_in_dir`)
-- **关键字检索 (出入链探测)**: `notesmd-cli search-content "<wikilink target>" --format json --no-interactive` (回退 MCP `simple_search`)
-- **读 frontmatter / body**: `notesmd-cli frontmatter <path> --print` + `notesmd-cli print <path>` (回退 MCP `get_file_contents`)
-- **迁移落盘**: 本 agent 仅出提案; cortex-refactor 执行时优先 `notesmd-cli move <src> <dst>` (**自动更新 wikilink, 比 MCP/Edit 强**)
+- **列 fleeting / log**: `obsidian files vault=<name> path=<dir>` (回退 MCP `list_files_in_dir`)
+- **关键字检索 (出入链探测)**: `obsidian search:context query=<wikilink target> vault=<name>` (回退 MCP `simple_search`)
+- **读 frontmatter / body**: `obsidian property:read vault=<name> path=<path>` + `obsidian read vault=<name> path=<path>` (回退 MCP `get_file_contents`)
+- **迁移落盘**: 本 agent 仅出提案; cortex-refactor 执行时优先 `obsidian move vault=<name> from=<src> to=<dst>` (**条件性自动更新 wikilink, 需 vault 设置 "Automatically update internal links" 开启, 比 MCP/Edit 强**)
 
 ## 边界
 

@@ -41,14 +41,23 @@ prompts:
   archive_pending: 📝 cortex archived {path}
   session_header: "## Cortex connected (lang={lang}, vault={vault}, preset={preset})"
   collab_save: After non-trivial findings, use cortex-save to archive; project-specific → domains/, general concepts → concepts/.
-  collab_no_direct: Do not write vault files directly; prefer notesmd-cli (print/create/list/search-content/move/frontmatter/daily, multi-vault via --vault). For heading/block-anchor patch, canvas, or other CLI-unsupported cases, fall back to mcp__obsidian__*; only then drop to cortex skills. Keeps vault indexes consistent.
+  collab_no_direct: |
+    Do not write vault files directly. Fallback order:
+    L1 = official obsidian CLI (read/create/files/search/move/property/daily, multi-vault via `vault=<name>`), requires Obsidian app running.
+    L2 = mcp__obsidian__* (heading/block-anchor patch, canvas, full metadata graph, or when app is not running).
+    L3 = direct file write (canvas/excalidraw JSON or other non-markdown, or when L1/L2 are unavailable). **MUST obtain user authorization via AskUserQuestion before writing.**
   collab_block_id: Each H2/H3 section gets a trailing ^cortex-<sha8> block-id for precise ![[note#^cortex-xxx]] references.
   collab_stop_hook: Stop hook auto-archives non-trivial technical findings to log/YYYY-MM/.
   cli_missing_warn: |
-    ⚠️ **notesmd-cli not installed** — cortex primary path unavailable; this session will be forced to degrade to MCP/skill (reduced capability, higher latency).
-    Install (choose one):
-      brew tap yakitrak/yakitrak && brew install yakitrak/yakitrak/notesmd-cli
-      scoop bucket add scoop-yakitrak https://github.com/yakitrak/scoop-yakitrak.git && scoop install notesmd-cli
-      yay -S notesmd-cli-bin
-      git clone https://github.com/Yakitrak/obsidian-cli && cd obsidian-cli && go build -o notesmd-cli .
-    **Assistant MUST proactively ask the user whether to install it now** on the first reply, rather than silently degrading.
+    ⚠️ **Official Obsidian CLI not enabled** — cortex L1 primary path unavailable; this session will degrade to L2 (mcp__obsidian__*) and L3 (direct write, needs authorization).
+    Enable: Obsidian → Settings → General → Command line interface → Enable. Binary name `obsidian` (macOS auto-symlinks to /usr/local/bin/).
+    **Assistant MUST proactively ask the user whether to enable it now** on the first reply, rather than silently degrading.
+  l3_authorize_single: |
+    cortex is about to write directly to disk (L1/L2 unavailable). Target: {path}
+    Action: {action}
+    Authorize?
+  l3_authorize_batch: |
+    cortex is about to batch-write directly to disk (L1/L2 unavailable). {count} files:
+    {paths}
+    Action: {action}
+    Authorize the entire batch?

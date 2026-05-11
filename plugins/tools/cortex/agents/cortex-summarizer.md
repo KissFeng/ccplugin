@@ -45,9 +45,9 @@ model: sonnet
 
 ## 工具路由
 
-- **读源页**: `notesmd-cli print <path> --vault <name>` (CLI 不可用回退 `mcp__obsidian__obsidian_get_file_contents`)
-- **mode=page 注入 callout (顶部锚点 patch)**: 必走 `mcp__obsidian__obsidian_patch_content target_type=heading` —— CLI 无法在指定 heading 位置 patch, 强行用 `create --overwrite` 会覆盖全文
-- **mode=domain 写新综述页**: `notesmd-cli create --overwrite <output_path>` 优先, MCP `obsidian_put_content` 回退
+- **读源页**: `obsidian read vault=<name> path=<path>` (CLI 不可用回退 `mcp__obsidian__obsidian_get_file_contents`)
+- **mode=page 注入 callout (顶部锚点 patch)**: 必走 `mcp__obsidian__obsidian_patch_content target_type=heading` —— CLI 无法在指定 heading 位置 patch, 强行用 `create overwrite=true` 会覆盖全文
+- **mode=domain 写新综述页**: `obsidian create overwrite=true vault=<name> path=<output_path>` 优先, MCP `obsidian_put_content` 回退
 
 ## 边界
 

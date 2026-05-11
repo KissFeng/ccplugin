@@ -252,3 +252,36 @@ cortex 插件 16 文件改三级路由: notesmd-cli (CLI 主) > mcp__obsidian__*
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: cortex plugin.json: 内联 hooks + 显式 agents/skills 数组
+
+**Date**: 2026-05-11
+**Task**: cortex plugin.json: 内联 hooks + 显式 agents/skills 数组
+**Branch**: `master`
+
+### Summary
+
+fix Stop hook ${CLAUDE_PLUGIN_ROOT} 未关联报错: 将 hooks 从外部 hooks.json 内联到 plugin.json, 删除冗余 hooks.json. 同时按官方 schema 用 []string 形式显式声明 agents (8 个 .md) 与 skills (14 个目录).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `956cebf1` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -31,6 +31,7 @@ PLUGIN_ROOT="$PLUGIN_ROOT" VAULT="$VAULT" python3 - <<'PYEOF' 2>>"$LOG_FILE" || 
 import json
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -101,12 +102,35 @@ lines = [
     "5. " + loc.get_prompt("collab_stop_hook"),
 ]
 
-# CLI presence check — surface install prompt if missing, so assistant asks user
-if shutil.which("notesmd-cli") is None:
+# Official Obsidian CLI presence + app-running check — surface prompt if either missing,
+# so assistant asks user (degrade to L2 mcp__obsidian__* / L3 direct write).
+def _obsidian_app_running() -> bool:
+    try:
+        if sys.platform == "darwin":
+            r = subprocess.run(["pgrep", "-x", "Obsidian"], capture_output=True, timeout=2)
+            return r.returncode == 0
+        if sys.platform.startswith("linux"):
+            r = subprocess.run(["pgrep", "obsidian"], capture_output=True, timeout=2)
+            return r.returncode == 0
+        if sys.platform.startswith("win"):
+            r = subprocess.run(
+                ["tasklist", "/FI", "IMAGENAME eq Obsidian.exe"],
+                capture_output=True, timeout=3, text=True,
+            )
+            return "Obsidian.exe" in (r.stdout or "")
+    except Exception:
+        return False
+    return False
+
+
+cli_ok = shutil.which("obsidian") is not None
+app_ok = _obsidian_app_running()
+if not (cli_ok and app_ok):
     warn = loc.get_prompt("cli_missing_warn")
     if warn:
         lines.append("")
         lines.append(warn)
+        lines.append(f"_state: cli={'ok' if cli_ok else 'missing'} · app={'running' if app_ok else 'stopped'}_")
 
 context = "\n".join(lines)
 

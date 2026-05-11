@@ -41,14 +41,23 @@ prompts:
   archive_pending: 📝 cortex がアーカイブしました {path}
   session_header: "## Cortex 接続済み (lang={lang}, vault={vault}, preset={preset})"
   collab_save: 非自明な発見は cortex-save でアーカイブ; プロジェクト固有 → domains/, 一般概念 → concepts/。
-  collab_no_direct: vault ファイルを直接操作しない; まず notesmd-cli (print/create/list/search-content/move/frontmatter/daily, 複数 vault は --vault) を優先。heading/block アンカー patch や canvas など CLI 非対応は mcp__obsidian__* にフォールバック, 最後に cortex skill。索引整合を保つ。
+  collab_no_direct: |
+    vault ファイルを直接操作しない。フォールバック順:
+    L1 = 公式 obsidian CLI (read/create/files/search/move/property/daily, マルチ vault は `vault=<name>`), Obsidian app 起動必須。
+    L2 = mcp__obsidian__* (heading/block アンカー patch, canvas, 完全 metadata, または app 停止時)。
+    L3 = 直接ファイル書込 (canvas/excalidraw JSON 等の非 markdown, または L1/L2 不可時)。**AskUserQuestion でユーザー承認を取得してから書き込むこと**。
   collab_block_id: 各 H2/H3 末尾に ^cortex-<sha8> block-id が付与され, ![[note#^cortex-xxx]] で精密参照可能。
   collab_stop_hook: Stop hook が非自明な技術発見を log/YYYY-MM/ に自動アーカイブする。
   cli_missing_warn: |
-    ⚠️ **notesmd-cli 未インストール** — cortex 主経路が使えず, 今セッションは MCP/skill にフォールバック (機能制限, 遅延増)。
-    インストール手順 (いずれか):
-      brew tap yakitrak/yakitrak && brew install yakitrak/yakitrak/notesmd-cli
-      scoop bucket add scoop-yakitrak https://github.com/yakitrak/scoop-yakitrak.git && scoop install notesmd-cli
-      yay -S notesmd-cli-bin
-      git clone https://github.com/Yakitrak/obsidian-cli && cd obsidian-cli && go build -o notesmd-cli .
-    **アシスタントは最初の返答で必ずユーザーにインストールするか確認すること**。黙ってフォールバックしない。
+    ⚠️ **公式 Obsidian CLI 未有効化** — cortex L1 主経路が使えず, 今セッションは L2 (mcp__obsidian__*) と L3 (直書き, 承認必要) にフォールバック。
+    有効化: Obsidian → Settings → General → Command line interface → Enable。バイナリ名 `obsidian` (macOS は /usr/local/bin/ に自動 symlink)。
+    **アシスタントは最初の返答で必ずユーザーに有効化するか確認すること**。黙ってフォールバックしない。
+  l3_authorize_single: |
+    cortex が直接ファイル書込を行います (L1/L2 不可)。対象: {path}
+    操作: {action}
+    承認しますか?
+  l3_authorize_batch: |
+    cortex が一括直書きを行います (L1/L2 不可)。{count} ファイル:
+    {paths}
+    操作: {action}
+    一括承認しますか?

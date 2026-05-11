@@ -41,14 +41,23 @@ prompts:
   archive_pending: 📝 cortex 已落档 {path}
   session_header: "## Cortex 已连接 (lang={lang}, vault={vault}, preset={preset})"
   collab_save: 非平凡发现完成后用 cortex-save 落档; 项目特定写 domains/, 通用概念写 concepts/。
-  collab_no_direct: 不直接文件操作; 优先用 notesmd-cli (print/create/list/search-content/move/frontmatter/daily, 多 vault 用 --vault), heading/block 锚点 patch 或 canvas 等 CLI 不支持的场景回退 mcp__obsidian__*, 最后才走 cortex skill, 避免破坏 vault 索引。
+  collab_no_direct: |
+    不直接文件操作。回退顺序:
+    L1 = 官方 obsidian CLI (read/create/files/search/move/property/daily, 多 vault 用 `vault=<name>`), 需 Obsidian app 在跑。
+    L2 = mcp__obsidian__* (heading/block 锚点 patch、canvas、完整 metadata 场景, 或 app 未跑)。
+    L3 = 直接写文件 (canvas/excalidraw json 等非 markdown, 或 L1/L2 均不可用), **必须通过 AskUserQuestion 取得用户授权后方可落盘**。
   collab_block_id: 落档时段落末尾自动加 ^cortex-<sha8>, 后续可精准引用 ![[note#^cortex-xxx]]。
   collab_stop_hook: Stop hook 自动归档非平凡技术发现到 log/YYYY-MM/。
   cli_missing_warn: |
-    ⚠️ **notesmd-cli 未安装** — cortex 主路径不可用, 当前会话将被迫降级到 MCP/skill (功能受限, 延迟更高)。
-    安装方式 (任选其一):
-      brew tap yakitrak/yakitrak && brew install yakitrak/yakitrak/notesmd-cli
-      scoop bucket add scoop-yakitrak https://github.com/yakitrak/scoop-yakitrak.git && scoop install notesmd-cli
-      yay -S notesmd-cli-bin
-      git clone https://github.com/Yakitrak/obsidian-cli && cd obsidian-cli && go build -o notesmd-cli .
-    **助手须在首次回复时主动询问用户是否要立即安装**, 而不是默默走降级路径。
+    ⚠️ **官方 Obsidian CLI 未启用** — cortex L1 主路径不可用, 当前会话将降级到 L2 (mcp__obsidian__*) 与 L3 (直接写盘, 需授权)。
+    启用方式: 打开 Obsidian → Settings → General → Command line interface → Enable, 安装后二进制名为 `obsidian` (macOS 自动 symlink 到 /usr/local/bin/)。
+    **助手须在首次回复时主动询问用户是否要立即启用**, 而不是默默降级。
+  l3_authorize_single: |
+    cortex 准备直接写盘 (L1/L2 均不可用)。目标文件: {path}
+    操作: {action}
+    确认授权吗?
+  l3_authorize_batch: |
+    cortex 准备批量直接写盘 (L1/L2 均不可用)。共 {count} 个文件:
+    {paths}
+    操作: {action}
+    确认整批授权吗?

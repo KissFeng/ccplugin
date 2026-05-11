@@ -41,9 +41,9 @@ model: sonnet
 
 ## 工具路由
 
-- **列 sessions / log 范围**: cortex-session skill + `notesmd-cli list <sessions/log dir> --vault <name>` (回退 MCP `list_files_in_dir`)
-- **读 transcript / log 笔记**: `notesmd-cli print <path> --vault <name>` 批量循环 (回退 MCP `get_file_contents`); jsonl 非 md 走本地 `Read`
-- **写 fold**: `notesmd-cli create --overwrite <folds/...>` (回退 MCP `put_content`); 不涉及锚点 patch
+- **列 sessions / log 范围**: cortex-session skill + `obsidian files vault=<name> path=<sessions/log dir>` (回退 MCP `list_files_in_dir`)
+- **读 transcript / log 笔记**: `obsidian read vault=<name> path=<path>` 批量循环 (回退 MCP `get_file_contents`); jsonl 非 md 走本地 `Read`
+- **写 fold**: `obsidian create overwrite=true vault=<name> path=<folds/...>` (回退 MCP `put_content`); 不涉及锚点 patch
 
 ## 边界
 
