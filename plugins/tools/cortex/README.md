@@ -17,7 +17,7 @@
 
 ## 安装
 
-install.sh 负责完整生命周期: 自动 clone marketplace → 写 `~/.cortex/config.json` → 生成 wrapper → 可选 cron。
+install.sh 负责完整生命周期: 通过 claude CLI 装/升 marketplace + plugin → 写 `~/.cortex/config.json` → 生成 wrapper → 可选 cron。
 
 通过 claude code marketplace (推荐):
 
@@ -28,7 +28,7 @@ install.sh 负责完整生命周期: 自动 clone marketplace → 写 `~/.cortex
 bash ${CLAUDE_PLUGIN_ROOT}/install.sh
 ```
 
-curl | bash 一键安装 (无 marketplace 时自动 clone 到 `~/.cortex/marketplace/`):
+curl | bash 一键安装 (本地无 plugin 树时调 `claude plugins marketplace add` + `claude plugins install`, 已装则 update):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lazygophers/ccplugin/master/plugins/tools/cortex/install.sh | bash
@@ -48,9 +48,10 @@ bash plugins/tools/cortex/install.sh
 ```
 
 环境变量覆盖:
-- `CORTEX_INSTALL_PATH` — 直接指向已有 plugin 路径 (跳过探测 + clone)
-- `CORTEX_REPO_URL` — bootstrap 时 clone 的仓库 (默认 `https://github.com/lazygophers/ccplugin`)
-- `CORTEX_CLONE_DIR` — bootstrap clone 目标目录 (默认 `~/.cortex/marketplace`)
+- `CORTEX_INSTALL_PATH` — 直接指向已有 plugin 路径 (跳过探测 + bootstrap)
+- `CORTEX_MARKETPLACE_NAME` — bootstrap 检查的 marketplace 名 (默认 `ccplugin-market`)
+- `CORTEX_MARKETPLACE_SOURCE` — `claude plugins marketplace add` 的源 (默认 `lazygophers/ccplugin`)
+- `CORTEX_PLUGIN_NAME` — bootstrap 安装的 plugin 名 (默认 `cortex`)
 
 更新 (拉最新 marketplace + 重装 cortex):
 
