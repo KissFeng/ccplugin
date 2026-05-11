@@ -454,3 +454,36 @@ cortex MCP python server 骨架: stdio transport, pipx 分发, mcpServers.cortex
 ### Next Steps
 
 - None - task complete
+
+
+## Session 14: cortex P4 ingest pipeline (PDF/EPUB/DOCX + URL + bulk)
+
+**Date**: 2026-05-11
+**Task**: cortex P4 ingest pipeline (PDF/EPUB/DOCX + URL + bulk)
+**Branch**: `master`
+
+### Summary
+
+cortex MCP server 扩 2 个 ingest tool + 4 个 extractor + bulk skill. ingest_url: url_security→urlopen(10MiB cap)→CT 路由→html_sanitize→save. ingest_file: 5 种扩展名路由→extractor→save. extractors 纯函数 extract()→{title,body,meta,warnings}, html 纯 stdlib readability, encrypted/corrupt raise RuntimeError. save 抽 _save_internal 给 ingest 复用, handle_save 行为不变. fixture_gen.py 一次性生成 PDF/EPUB/DOCX 含 AKIA... 验证 P0 masking 端到端. 53 MCP pytest + 186 既有不回归. spec 加 §Ingest Pipeline Pattern.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7b089f45` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
