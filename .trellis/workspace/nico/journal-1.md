@@ -487,3 +487,36 @@ cortex MCP server 扩 2 个 ingest tool + 4 个 extractor + bulk skill. ingest_u
 ### Next Steps
 
 - None - task complete
+
+
+## Session 15: cortex P5 vault git auto-sync (opt-in)
+
+**Date**: 2026-05-11
+**Task**: cortex P5 vault git auto-sync (opt-in)
+**Branch**: `master`
+
+### Summary
+
+vault 是 git repo 时 Stop hook 可选 auto-commit/push, 严格 opt-in. git_sync.py 纯 stdlib subprocess (timeout 10/30s, fail-soft). 6 pytest 全绿. stop.sh 末尾 ( python3 ... ) & + disown 双层异步隔离. cortex-install 用 AskUserQuestion 询问启用 (用户硬规则). docs/sync-git.md 跨机指南. spec §Opt-In Vault Side Effects.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `93d1dc96` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

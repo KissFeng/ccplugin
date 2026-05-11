@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 14
+- **Total Sessions**: 15
 - **Last Active**: 2026-05-11
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~489 | Active |
+| `journal-1.md` | ~522 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 15 | 2026-05-11 | cortex P5 vault git auto-sync (opt-in) | `93d1dc96` | `master` |
 | 14 | 2026-05-11 | cortex P4 ingest pipeline (PDF/EPUB/DOCX + URL + bulk) | `7b089f45` | `master` |
 | 13 | 2026-05-11 | cortex P1 MCP python server (search + save) | `c221bd59` | `master` |
 | 12 | 2026-05-11 | cortex P0 安全硬化 (masking + url_security + html_sanitize) | `89ce0b43` | `master` |
