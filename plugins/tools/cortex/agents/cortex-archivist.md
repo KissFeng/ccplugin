@@ -36,7 +36,7 @@ model: sonnet
    - 价值高 + URL 来源 → sources/
    - 价值低 → 提议进 archive/ (保留, 不删)
    - 老 log → 提议 fold (走 cortex-fold)
-4. 输出迁移提案表
+4. 输出迁移提案表; 把提案表回报主线后, 主线 **应调 `AskUserQuestion`** 工具询问: "如何处理迁移提案?" options: `批量授权调度 cortex-refactor` / `逐条审批` / `仅 fold` / `取消`; 据用户选择决定下一步
 
 ## 工具路由
 

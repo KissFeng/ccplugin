@@ -68,6 +68,6 @@ model: sonnet
 | 3 | [[domains/.../auth.md]] | 0.78 | simple_search | "实现" 段 |
 
 ### 操作
-- auto_apply=false: 用户挑选 → 主线再调本 agent + auto_apply=true
+- auto_apply=false: 把提案表回报主线后, 主线 **应调 `AskUserQuestion`** 工具询问: "如何处理增链提案?" options: `批量授权全部应用` / `逐条审批` / `取消`; 据用户选择决定是否再调本 agent + auto_apply=true
 - auto_apply=true: 已 patch 3 处, backup 在 _meta/.cortex-backup/linker/<ts>/
 ```
