@@ -219,3 +219,36 @@ cortex v2 单一版本设计与实施 (取代 v1)。M1-M3: vault 去编号 + i18
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: cortex notesmd-cli 优先路由迁移
+
+**Date**: 2026-05-11
+**Task**: cortex notesmd-cli 优先路由迁移
+**Branch**: `master`
+
+### Summary
+
+cortex 插件 16 文件改三级路由: notesmd-cli (CLI 主) > mcp__obsidian__* (heading/block 锚点+canvas fallback) > cortex skill 兜底。cortex-doctor 双环境检测; frontmatter 工具白名单补 obsidian_patch_content; archivist 用 notesmd-cli move 自动更新 wikilink。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8c8071fc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
