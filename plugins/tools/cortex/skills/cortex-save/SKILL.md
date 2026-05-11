@@ -112,7 +112,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 | vault 未解析 | 立即退出, 给配置示例 |
 | 模板缺失 (插件文件丢) | 退出, 提示重装 cortex |
 | MCP 不可用 | 回退 `Write` |
-| save_session.py 退出码 1 | 输出 stderr 内容, 让用户决定是否手补 |
+| save_session.py 退出码 1 | 输出 stderr 内容, 调 `AskUserQuestion` 询问: "save 失败, 如何处理?" options: `手补内容` / `跳过` / `重试` |
 | 反向 wikilink 失败 | 仅警告, 主文件保留 |
 
 ## 输出范例

@@ -41,7 +41,7 @@ cortex-new source "Building a Second Brain"
    - `question` → `50_questions/<kebab>.md`
    - `source` → `40_sources/<kebab>.md`
    - blank preset 一律落到 vault 根 + `<type>/`
-6. 路径冲突检测: 用 `Glob` 或 `mcp__obsidian__obsidian_list_files_in_dir` 检查目标是否存在; 存在则报错并显示已存在的路径, **不覆盖**
+6. 路径冲突检测: 用 `Glob` 或 `mcp__obsidian__obsidian_list_files_in_dir` 检查目标是否存在; 存在时 **必须调 `AskUserQuestion`** 工具询问: "目标路径已存在: `<path>`, 如何处理?" options: `换 slug` / `覆盖` / `取消`; 默认行为 = `取消` (不覆盖)
 7. 写入: 优先 `mcp__obsidian__obsidian_append_content` (新文件视作追加创建), 失败回退 `Write`
 8. 报告写入路径与 `obsidian://open?vault=<name>&file=<path>` 链接
 

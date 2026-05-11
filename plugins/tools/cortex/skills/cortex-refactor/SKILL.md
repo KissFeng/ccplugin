@@ -99,4 +99,6 @@ python3 ${CLAUDE_PLUGIN_ROOT}/refactor/migrate_locale.py \
 }
 ```
 
-用户确认后再加 `--apply` 重跑。
+dry-run 结束后, **必须调 `AskUserQuestion`** 工具询问: "已扫描 N 个文件 M 处替换, 是否应用?" options: `应用 (--apply 重跑)` / `取消` / `仅看 diff`; 用户选 `应用` 才加 `--apply` 重跑。
+
+L3 写盘授权门: 涉及 ≥3 文件批量改写时, `AskUserQuestion` 问题文案需列出受影响文件路径 (per-batch 单次授权); <3 文件 per-file 逐个授权。

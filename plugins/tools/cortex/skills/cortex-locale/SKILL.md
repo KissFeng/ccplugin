@@ -47,5 +47,5 @@ overrides: none
 ## 实现要点
 
 - 调 `hooks/_lib/cortex_locale.py:load_locale()` 加载 + `detect_vault_lang()` 读取
-- `set` 操作前先 dry-run 打印 diff, 再确认写盘
+- `set` 操作前先 dry-run 打印 diff, 然后调 `AskUserQuestion` 工具询问: "写入新 locale 到 `_meta/version.json`?" options: `写入` / `取消`; 用户选 `写入` 才落盘
 - 写 `_meta/version.json` 时保留其他字段 (preset/created/preserve_transcript)

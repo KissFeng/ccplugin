@@ -69,7 +69,8 @@ allowed-tools: Bash Read Write Edit Glob WebFetch mcp__obsidian__obsidian_get_fi
    - source 类型加 `url:` `ingested_at:` 字段
 
 6. **写入**
-   - `mcp__obsidian__obsidian_put_content` 优先, fallback `Write`
+   - 优先 L1 (官方 obsidian CLI) → L2 (`mcp__obsidian__obsidian_put_content`) → L3 (`Write` 直接写盘)
+   - **L3 写盘授权门**: 走到 L3 直接写盘前 **必须调 `AskUserQuestion`** 工具授权; per-file 默认 (单文件 1 次), 批量 ≥3 文件升级 per-batch (单次列出所有目标路径); 用户拒绝则不写盘
    - 检测 `<vault>/.obsidian/plugins/obsidian-git/data.json` 存在 → 文件末尾加 `<!-- cortex-pending-commit -->` (不自动 git commit, prd §10.8)
 
 7. **反向 wikilink 回填**

@@ -51,14 +51,14 @@ cron daemon 不继承 shell 环境, 故 snippet 中 `PLUGIN_ROOT` 必须是**绝
 
 | 子命令 | 行为 |
 |--------|------|
-| `cortex-cron install [job]` | dry-run 显示要写入的 plist/crontab, 用户确认后落盘 |
+| `cortex-cron install [job]` | dry-run 显示要写入的 plist/crontab, 调 `AskUserQuestion` 确认后落盘 |
 | `cortex-cron status` | 列已注册任务 (launchctl list / systemctl --user list-timers / crontab -l 过滤) |
 | `cortex-cron uninstall [job]` | 卸载指定 job 或全部 |
 | `cortex-cron run <job>` | 立即手跑一次 (调试用) |
 
 ## 关键约束
 
-1. **强制 dry-run + 确认** — 写 launchd / crontab 前必须打印 snippet, 用户确认才落盘。
+1. **强制 dry-run + 确认** — 写 launchd / crontab 前必须打印 snippet, 然后调 `AskUserQuestion` 工具询问: "确认写入此 snippet?" options: `写入` / `取消` / `改时间`; 用户选 `写入` 才落盘。
 2. **只读权限** — cron 任务默认 `--allowed-tools "Bash Read Glob"`, 不让 LLM 误改 vault。`--fix` 类操作不进 cron。
 3. **超时 + 锁** — wrapper `scripts/cron/run.sh` 提供 `flock -n` + `timeout 600`。
 4. **不写 user settings** — 仅写 LaunchAgents / systemd user / crontab 区域; 永不动 `~/.claude/settings.json`。
@@ -80,6 +80,7 @@ $ cortex-cron install lint
   schedule: 01:00 daily
   command: bash ${PLUGIN_ROOT}/scripts/cron/lint.sh --vault /Users/foo/obsidian
 
-确认写入? [Y/n] y
+[调 AskUserQuestion: "确认写入此 plist 到 launchd?" → 写入 / 取消 / 改时间]
+用户选 "写入":
 ✓ written. 加载: launchctl load ~/Library/LaunchAgents/dev.lazygophers.cortex.lint.plist
 ```
