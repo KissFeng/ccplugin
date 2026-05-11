@@ -1,6 +1,5 @@
 {
   "name": "cortex",
-  "version": "0.0.195",
   "description": "Cortex — Obsidian 知识库协作插件: hooks 注入、CLI/MCP 操作、模板/lint/refactor、SessionStart 协作约定 + Stop 自动落档",
   "author": {
     "name": "lazygophers",
