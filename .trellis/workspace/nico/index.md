@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 18
-- **Last Active**: 2026-05-11
+- **Total Sessions**: 19
+- **Last Active**: 2026-05-12
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~621 | Active |
+| `journal-1.md` | ~654 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 19 | 2026-05-12 | cortex wrapper 三层实时进度 (L1 step + L2 stream + L3 心跳) | `0e7f9944` | `master` |
 | 18 | 2026-05-11 | cortex wrapper timeout 跨平台 + install.sh UX 精简 | `78e908ec` | `master` |
 | 17 | 2026-05-11 | install.sh 幂等性 (config 复用 + cron 去重/prune) | `d73750d1` | `master` |
 | 16 | 2026-05-11 | cortex P6 skill slim (-fold -cron, 15→13) | `18d7f963` | `master` |

@@ -619,3 +619,36 @@ vault 是 git repo 时 Stop hook 可选 auto-commit/push, 严格 opt-in. git_syn
 ### Next Steps
 
 - None - task complete
+
+
+## Session 19: cortex wrapper 三层实时进度 (L1 step + L2 stream + L3 心跳)
+
+**Date**: 2026-05-12
+**Task**: cortex wrapper 三层实时进度 (L1 step + L2 stream + L3 心跳)
+**Branch**: `master`
+
+### Summary
+
+解决 claude --bare -p 长任务静默用户卡死感. scripts/lib/stream_progress.sh 加 cortex_stream_runner: --output-format stream-json + jq filter (assistant.text/tool_use/result) 实时打 stderr + _cortex_heartbeat 后台 10s 心跳, 子 shell trap EXIT/INT/TERM 杀. doctor.sh emit + run.sh 包装. TEE 模式既实时显示又保 NDJSON. jq 缺 fail-soft. bash 3.2 兼容, 192+8 全绿不回归.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0e7f9944` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
