@@ -65,10 +65,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# 探测 marketplace 安装路径; 远端 curl|bash 走 git clone 自举
-REPO_URL="${CORTEX_REPO_URL:-https://github.com/lazygophers/ccplugin.git}"
-CLONE_DIR="${CORTEX_CLONE_DIR:-$HOME/.cortex/marketplace}"
-
+# 探测 marketplace 安装路径; install.sh 不自举 clone — marketplace 由 claude code `/plugin install cortex` 负责
 resolve_install_path() {
   if [[ -n "${CORTEX_INSTALL_PATH:-}" ]]; then
     printf '%s' "$CORTEX_INSTALL_PATH"
@@ -86,25 +83,12 @@ resolve_install_path() {
   return 1
 }
 
-bootstrap_clone() {
-  command -v git >/dev/null 2>&1 || { echo "[install.sh] 需要 git" >&2; exit 2; }
-  if [[ -d "$CLONE_DIR/.git" ]]; then
-    echo "[install.sh] 更新 $CLONE_DIR"
-    git -C "$CLONE_DIR" fetch --depth 1 origin HEAD
-    git -C "$CLONE_DIR" reset --hard FETCH_HEAD
-  else
-    echo "[install.sh] 克隆 $REPO_URL → $CLONE_DIR"
-    mkdir -p "$(dirname "$CLONE_DIR")"
-    git clone --depth 1 "$REPO_URL" "$CLONE_DIR"
-  fi
-  INSTALL_PATH="$CLONE_DIR/plugins/tools/cortex"
-}
-
-if INSTALL_PATH="$(resolve_install_path)"; then
-  :
-else
-  echo "[install.sh] 远端自举模式 (无本地 plugin 树)"
-  bootstrap_clone
+if ! INSTALL_PATH="$(resolve_install_path)"; then
+  echo "[install.sh] 未找到 plugin 树。先通过 claude code 安装 marketplace:" >&2
+  echo "  /plugin install cortex" >&2
+  echo "  bash \${CLAUDE_PLUGIN_ROOT}/install.sh" >&2
+  echo "或设置 CORTEX_INSTALL_PATH 指向已有 plugin 路径" >&2
+  exit 2
 fi
 
 if [[ ! -d "$INSTALL_PATH" ]]; then
@@ -118,12 +102,23 @@ fi
 
 echo "[install.sh] cortex 安装路径: $INSTALL_PATH"
 
+# 探测 tty: curl|bash 时 stdin 是脚本管道, prompt 必须从 /dev/tty 读
+TTY_FD=""
+if [[ "$NON_INTERACTIVE" != "1" ]]; then
+  if exec 3</dev/tty 2>/dev/null; then
+    TTY_FD=3
+  else
+    echo "[install.sh] 无 /dev/tty, 自动切换 --non-interactive" >&2
+    NON_INTERACTIVE=1
+  fi
+fi
+
 prompt_value() {
   local label="$1" default="$2"
   local suffix=""
   [[ -n "$default" ]] && suffix=" [$default]"
   local raw
-  read -r -p "${label}${suffix}: " raw || raw=""
+  read -r -u "$TTY_FD" -p "${label}${suffix}: " raw || raw=""
   raw="${raw## }"
   raw="${raw%% }"
   if [[ -z "$raw" && -n "$default" ]]; then
@@ -138,7 +133,7 @@ prompt_yes_no() {
   local suffix
   if [[ "$default" == "Y" ]]; then suffix=" [Y/n]"; else suffix=" [y/N]"; fi
   local raw
-  read -r -p "${label}${suffix}: " raw || raw=""
+  read -r -u "$TTY_FD" -p "${label}${suffix}: " raw || raw=""
   raw="${raw,,}"
   if [[ -z "$raw" ]]; then
     [[ "$default" == "Y" ]] && return 0 || return 1
@@ -150,6 +145,7 @@ prompt_yes_no() {
 if [[ "$NON_INTERACTIVE" == "1" ]]; then
   if [[ -z "$VAULT" ]]; then
     echo "[install.sh] 非交互模式缺 --vault" >&2
+    echo "  curl|bash 用例: curl ... | bash -s -- --non-interactive --vault \$HOME/path/to/vault" >&2
     exit 2
   fi
 else
