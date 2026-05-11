@@ -81,6 +81,16 @@
       }
     ]
   },
+  "mcpServers": {
+    "cortex": {
+      "command": "cortex-mcp",
+      "args": [],
+      "env": {
+        "CORTEX_VAULT_PATH": "${CORTEX_VAULT_PATH:-}",
+        "CORTEX_PLUGIN_ROOT": "${CLAUDE_PLUGIN_ROOT}"
+      }
+    }
+  },
   "keywords": [
     "obsidian",
     "knowledge-base",

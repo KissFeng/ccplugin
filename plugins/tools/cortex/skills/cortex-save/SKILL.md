@@ -8,6 +8,11 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 
 把"值得留下的东西"写进 Obsidian vault, 让未来会话能搜到。
 
+## 调用优先级 (P1)
+
+1. **优先**: `mcp__cortex__cortex_save` (MCP server 已装) — 自动跑 masking + frontmatter + block-id + flock + hot/index patch, 结构化返 `{path, block_ids, hits}`
+2. **回退**: 下述 L1-L3 (obsidian CLI / mcp__obsidian / 直接写盘) — MCP 不可达时
+
 ## 触发场景
 
 - 用户显式说 "save this" / "落档" / "归档" / `/cortex:save`

@@ -45,6 +45,7 @@ Before writing any backend code, confirm you have read the relevant guides:
 | [Marketplace](./marketplace.md)                 | `marketplace.json` registration rules and invariants | Filled |
 | [Tauri Patterns](./tauri-patterns.md)           | `#[tauri::command]` + event-driven architecture      | Filled |
 | [Hooks Contract](./hooks-contract.md)           | Claude Code hook events, I/O JSON schema, exit codes | Filled |
+| [MCP Server Contract](./mcp-server-contract.md) | Python MCP server: tool registration, path containment, lock, reuse | Filled |
 | [Database Guidelines](./database-guidelines.md) | `lib.db` ORM (Model / Field / async adapters)        | Filled |
 | [Error Handling](./error-handling.md)           | Python exceptions + Rust `Result` + Tauri envelopes  | Filled |
 | [Quality Guidelines](./quality-guidelines.md)   | ruff, pytest, forbidden patterns, review checklist   | Filled |

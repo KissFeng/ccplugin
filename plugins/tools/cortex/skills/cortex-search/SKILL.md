@@ -8,6 +8,11 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_simple_search mcp__obsidia
 
 向 Obsidian vault 提问, 综合答复并附引用 (file:line + `obsidian://` URI)。
 
+## 调用优先级 (P1)
+
+1. **优先**: `mcp__cortex__cortex_search` (MCP server 已装) — 结构化 JSON 输出, schema 稳定, 自动跑 hot → index → SC → rg 回退
+2. **回退**: 下述 L1-L5 (CLI / Smart Connections / mcp__obsidian / rg) — MCP 不可达时
+
 ## 触发场景
 
 - 用户显式问 "what do you know about X" / "查一下知识库" / `/cortex:search <q>`

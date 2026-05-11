@@ -343,6 +343,44 @@ else
   log_info "skip wrappers (~/.cortex/scripts/*.sh 已存在, 保留; --reinstall 强制重生)"
 fi
 
+# MCP server 安装 (P1)
+step_mcp_install() {
+  local mcp_path="$INSTALL_PATH/mcp"
+  if [[ ! -d "$mcp_path" ]]; then
+    log_warn "mcp/ 目录缺失 ($mcp_path), 跳过 MCP 安装"
+    return 0
+  fi
+  if ! command -v pipx >/dev/null 2>&1; then
+    log_warn "pipx 未安装, MCP server 不可用. 装法: brew install pipx"
+    log_warn "跳过 MCP 安装, cortex skill 将退回 CLI/MCP-obsidian 路径"
+    return 0
+  fi
+  local installed=0
+  if pipx list --short 2>/dev/null | grep -q '^cortex-mcp '; then
+    installed=1
+  fi
+  if [[ "$installed" == "1" && "$REINSTALL" != "1" ]]; then
+    log_info "cortex-mcp 已装 (pipx); 跳过 (--reinstall 强制重装)"
+    return 0
+  fi
+  if [[ "$installed" == "1" ]]; then
+    log_step "强制重装 ${C_BOLD}cortex-mcp${C_RESET} via pipx"
+    pipx install --force "$mcp_path" >&2 || {
+      log_warn "pipx 强制重装失败, MCP 不可用"
+      return 0
+    }
+  else
+    log_step "安装 ${C_BOLD}cortex-mcp${C_RESET} via pipx"
+    pipx install "$mcp_path" >&2 || {
+      log_warn "pipx 装失败, MCP 不可用"
+      return 0
+    }
+  fi
+  log_ok "cortex-mcp 已就绪 (which cortex-mcp 应返路径)"
+}
+
+step_mcp_install
+
 # 可选 cron 安装
 do_cron=0
 if [[ "$NO_CRON" == "1" ]]; then

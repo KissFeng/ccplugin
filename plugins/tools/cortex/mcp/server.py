@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Cortex MCP server — stdio transport.
+
+Registers `cortex_search` and `cortex_save` so cortex skills can drive vault
+operations through a typed API instead of orchestrating bash/CLI fallbacks.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import sys
+from pathlib import Path
+
+# Allow `python3 server.py` without `pipx install`.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from mcp.server import Server  # noqa: E402
+from mcp.server.stdio import stdio_server  # noqa: E402
+from mcp.types import TextContent, Tool  # noqa: E402
+
+from tools.save import SAVE_TOOL, handle_save  # noqa: E402
+from tools.search import SEARCH_TOOL, handle_search  # noqa: E402
+
+app: Server = Server("cortex")
+
+
+@app.list_tools()
+async def list_tools() -> list[Tool]:
+    return [SEARCH_TOOL, SAVE_TOOL]
+
+
+@app.call_tool()
+async def call_tool(name: str, arguments: dict) -> list[TextContent]:
+    if name == SEARCH_TOOL.name:
+        return await handle_search(arguments)
+    if name == SAVE_TOOL.name:
+        return await handle_save(arguments)
+    raise ValueError(f"cortex-mcp: unknown tool {name!r}")
+
+
+def main() -> None:
+    async def _run() -> None:
+        async with stdio_server() as (reader, writer):
+            await app.run(reader, writer, app.create_initialization_options())
+
+    asyncio.run(_run())
+
+
+if __name__ == "__main__":
+    main()
