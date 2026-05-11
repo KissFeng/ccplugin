@@ -388,3 +388,36 @@ install.sh 新增已安装检测 + --reinstall 强制升级 + doctor wrapper 真
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: cortex P0 安全硬化 (masking + url_security + html_sanitize)
+
+**Date**: 2026-05-11
+**Task**: cortex P0 安全硬化 (masking + url_security + html_sanitize)
+**Branch**: `master`
+
+### Summary
+
+cortex 插件 P0 安全硬化交付: 3 个 stdlib python 过滤器 module (secret masking 7 类规则 + SSRF guard 含 DNS fail-closed + HTML sanitize 跳过 fenced code), 集成入 cortex-ingest/cortex-save/save_session.py, 顺序 url_security→fetch→html_sanitize→masking. 35 新 pytest 全绿 + 151 既有不回归. spec 落档 hooks-contract.md §Security Filter Pipeline + cross-layer guide checklist. DNS rebinding 风险记 P1 backlog.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `89ce0b43` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
