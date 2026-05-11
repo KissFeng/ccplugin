@@ -44,3 +44,11 @@ prompts:
   collab_no_direct: Do not write vault files directly; prefer notesmd-cli (print/create/list/search-content/move/frontmatter/daily, multi-vault via --vault). For heading/block-anchor patch, canvas, or other CLI-unsupported cases, fall back to mcp__obsidian__*; only then drop to cortex skills. Keeps vault indexes consistent.
   collab_block_id: Each H2/H3 section gets a trailing ^cortex-<sha8> block-id for precise ![[note#^cortex-xxx]] references.
   collab_stop_hook: Stop hook auto-archives non-trivial technical findings to log/YYYY-MM/.
+  cli_missing_warn: |
+    ⚠️ **notesmd-cli not installed** — cortex primary path unavailable; this session will be forced to degrade to MCP/skill (reduced capability, higher latency).
+    Install (choose one):
+      brew tap yakitrak/yakitrak && brew install yakitrak/yakitrak/notesmd-cli
+      scoop bucket add scoop-yakitrak https://github.com/yakitrak/scoop-yakitrak.git && scoop install notesmd-cli
+      yay -S notesmd-cli-bin
+      git clone https://github.com/Yakitrak/obsidian-cli && cd obsidian-cli && go build -o notesmd-cli .
+    **Assistant MUST proactively ask the user whether to install it now** on the first reply, rather than silently degrading.

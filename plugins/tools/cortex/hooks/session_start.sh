@@ -30,6 +30,7 @@ log "vault=$VAULT"
 PLUGIN_ROOT="$PLUGIN_ROOT" VAULT="$VAULT" python3 - <<'PYEOF' 2>>"$LOG_FILE" || exit 0
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -99,6 +100,14 @@ lines = [
     "4. " + loc.get_prompt("collab_block_id"),
     "5. " + loc.get_prompt("collab_stop_hook"),
 ]
+
+# CLI presence check — surface install prompt if missing, so assistant asks user
+if shutil.which("notesmd-cli") is None:
+    warn = loc.get_prompt("cli_missing_warn")
+    if warn:
+        lines.append("")
+        lines.append(warn)
+
 context = "\n".join(lines)
 
 if hot:

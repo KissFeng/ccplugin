@@ -44,3 +44,11 @@ prompts:
   collab_no_direct: 不直接文件操作; 优先用 notesmd-cli (print/create/list/search-content/move/frontmatter/daily, 多 vault 用 --vault), heading/block 锚点 patch 或 canvas 等 CLI 不支持的场景回退 mcp__obsidian__*, 最后才走 cortex skill, 避免破坏 vault 索引。
   collab_block_id: 落档时段落末尾自动加 ^cortex-<sha8>, 后续可精准引用 ![[note#^cortex-xxx]]。
   collab_stop_hook: Stop hook 自动归档非平凡技术发现到 log/YYYY-MM/。
+  cli_missing_warn: |
+    ⚠️ **notesmd-cli 未安装** — cortex 主路径不可用, 当前会话将被迫降级到 MCP/skill (功能受限, 延迟更高)。
+    安装方式 (任选其一):
+      brew tap yakitrak/yakitrak && brew install yakitrak/yakitrak/notesmd-cli
+      scoop bucket add scoop-yakitrak https://github.com/yakitrak/scoop-yakitrak.git && scoop install notesmd-cli
+      yay -S notesmd-cli-bin
+      git clone https://github.com/Yakitrak/obsidian-cli && cd obsidian-cli && go build -o notesmd-cli .
+    **助手须在首次回复时主动询问用户是否要立即安装**, 而不是默默走降级路径。

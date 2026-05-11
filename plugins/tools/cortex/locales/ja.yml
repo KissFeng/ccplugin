@@ -44,3 +44,11 @@ prompts:
   collab_no_direct: vault ファイルを直接操作しない; まず notesmd-cli (print/create/list/search-content/move/frontmatter/daily, 複数 vault は --vault) を優先。heading/block アンカー patch や canvas など CLI 非対応は mcp__obsidian__* にフォールバック, 最後に cortex skill。索引整合を保つ。
   collab_block_id: 各 H2/H3 末尾に ^cortex-<sha8> block-id が付与され, ![[note#^cortex-xxx]] で精密参照可能。
   collab_stop_hook: Stop hook が非自明な技術発見を log/YYYY-MM/ に自動アーカイブする。
+  cli_missing_warn: |
+    ⚠️ **notesmd-cli 未インストール** — cortex 主経路が使えず, 今セッションは MCP/skill にフォールバック (機能制限, 遅延増)。
+    インストール手順 (いずれか):
+      brew tap yakitrak/yakitrak && brew install yakitrak/yakitrak/notesmd-cli
+      scoop bucket add scoop-yakitrak https://github.com/yakitrak/scoop-yakitrak.git && scoop install notesmd-cli
+      yay -S notesmd-cli-bin
+      git clone https://github.com/Yakitrak/obsidian-cli && cd obsidian-cli && go build -o notesmd-cli .
+    **アシスタントは最初の返答で必ずユーザーにインストールするか確認すること**。黙ってフォールバックしない。
