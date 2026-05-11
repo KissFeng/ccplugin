@@ -40,3 +40,8 @@ exclude = ["plugins*", "lib*"]
 
 [tool.uv.sources.lib]
 path = "./lib"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.12",
+]
