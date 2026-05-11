@@ -20,6 +20,30 @@
 
 set -euo pipefail
 
+# ── 色彩输出 ────────────────────────────────────────────────────────
+# 仅当 stderr 是 tty 且未设 NO_COLOR 时启用 ANSI
+if [[ -t 2 && -z "${NO_COLOR:-}" ]]; then
+  C_RESET=$'\033[0m'
+  C_BOLD=$'\033[1m'
+  C_DIM=$'\033[2m'
+  C_RED=$'\033[31m'
+  C_GREEN=$'\033[32m'
+  C_YELLOW=$'\033[33m'
+  C_BLUE=$'\033[34m'
+  C_MAGENTA=$'\033[35m'
+  C_CYAN=$'\033[36m'
+else
+  C_RESET=""; C_BOLD=""; C_DIM=""; C_RED=""; C_GREEN=""; C_YELLOW=""; C_BLUE=""; C_MAGENTA=""; C_CYAN=""
+fi
+
+_tag() { printf '%s[cortex]%s' "$C_CYAN" "$C_RESET"; }
+log_info()  { printf '%s %s\n'           "$(_tag)" "$*" >&2; }
+log_step()  { printf '%s %s▸%s %s\n'     "$(_tag)" "$C_BLUE"    "$C_RESET" "$*" >&2; }
+log_ok()    { printf '%s %s✓%s %s\n'     "$(_tag)" "$C_GREEN"   "$C_RESET" "$*" >&2; }
+log_warn()  { printf '%s %s⚠%s  %s\n'    "$(_tag)" "$C_YELLOW"  "$C_RESET" "$*" >&2; }
+log_error() { printf '%s %s✗%s %s\n'     "$(_tag)" "$C_RED"     "$C_RESET" "$*" >&2; }
+log_hint()  { printf '%s   %s%s%s\n'     "$(_tag)" "$C_DIM"     "$*" "$C_RESET" >&2; }
+
 print_help() {
   cat <<'EOF'
 cortex install.sh — 一键安装 cortex 共享配置 + wrapper
@@ -61,7 +85,7 @@ while [[ $# -gt 0 ]]; do
     --no-cron) NO_CRON=1; shift ;;
     --non-interactive) NON_INTERACTIVE=1; shift ;;
     -h|--help) print_help; exit 0 ;;
-    *) echo "[install.sh] unknown arg: $1" >&2; exit 2 ;;
+    *) log_error "unknown arg: $1"; exit 2 ;;
   esac
 done
 
@@ -109,23 +133,23 @@ sys.exit(1)
 
 bootstrap_via_claude() {
   command -v claude >/dev/null 2>&1 || {
-    echo "[install.sh] 需要 claude CLI 来 bootstrap, 未找到 claude 命令" >&2
-    echo "  装 Claude Code: https://github.com/anthropics/claude-code" >&2
+    log_error "需要 claude CLI 来 bootstrap, 未找到 claude 命令"
+    log_hint "装 Claude Code: https://github.com/anthropics/claude-code"
     return 1
   }
 
   # 1. marketplace: 已存在 → update, 否则 add
   local mkt_loc
   if mkt_loc="$(claude_marketplace_install_location "$CORTEX_MARKETPLACE_NAME")"; then
-    echo "[install.sh] marketplace 已存在 ($CORTEX_MARKETPLACE_NAME), 更新中" >&2
+    log_step "marketplace 已存在 (${C_BOLD}${CORTEX_MARKETPLACE_NAME}${C_RESET}), 更新中"
     claude plugins marketplace update "$CORTEX_MARKETPLACE_NAME" >&2 || {
-      echo "[install.sh] marketplace update 非零, 继续用本地副本" >&2
+      log_warn "marketplace update 非零, 继续用本地副本"
     }
   else
-    echo "[install.sh] 添加 marketplace: $CORTEX_MARKETPLACE_SOURCE" >&2
+    log_step "添加 marketplace: ${C_BOLD}${CORTEX_MARKETPLACE_SOURCE}${C_RESET}"
     claude plugins marketplace add "$CORTEX_MARKETPLACE_SOURCE" >&2 || return 1
     mkt_loc="$(claude_marketplace_install_location "$CORTEX_MARKETPLACE_NAME")" || {
-      echo "[install.sh] marketplace add 后仍找不到 $CORTEX_MARKETPLACE_NAME" >&2
+      log_error "marketplace add 后仍找不到 $CORTEX_MARKETPLACE_NAME"
       return 1
     }
   fi
@@ -133,12 +157,12 @@ bootstrap_via_claude() {
   # 2. plugin: 已装 → update, 否则 install
   local pid="${CORTEX_PLUGIN_NAME}@${CORTEX_MARKETPLACE_NAME}"
   if claude_plugin_installed "$pid"; then
-    echo "[install.sh] plugin 已装 ($pid), 更新中" >&2
+    log_step "plugin 已装 (${C_BOLD}${pid}${C_RESET}), 更新中"
     claude plugins update "$pid" >&2 || {
-      echo "[install.sh] plugin update 非零, 继续用本地副本" >&2
+      log_warn "plugin update 非零, 继续用本地副本"
     }
   else
-    echo "[install.sh] 安装 plugin: $pid" >&2
+    log_step "安装 plugin: ${C_BOLD}${pid}${C_RESET}"
     claude plugins install "$pid" >&2 || return 1
   fi
 
@@ -148,7 +172,7 @@ bootstrap_via_claude() {
     printf '%s' "$candidate"
     return 0
   fi
-  echo "[install.sh] 在 $candidate 找不到 scripts/cortex_config.py" >&2
+  log_error "在 $candidate 找不到 scripts/cortex_config.py"
   return 1
 }
 
@@ -170,30 +194,32 @@ resolve_install_path() {
 }
 
 if ! INSTALL_PATH="$(resolve_install_path)"; then
-  echo "[install.sh] 未找到 plugin 树且 claude CLI bootstrap 失败" >&2
-  echo "  手动装: claude plugins marketplace add $CORTEX_MARKETPLACE_SOURCE && claude plugins install ${CORTEX_PLUGIN_NAME}@${CORTEX_MARKETPLACE_NAME}" >&2
-  echo "  或设置 CORTEX_INSTALL_PATH 指向已有 plugin 路径" >&2
+  log_error "未找到 plugin 树且 claude CLI bootstrap 失败"
+  log_hint "手动装: claude plugins marketplace add $CORTEX_MARKETPLACE_SOURCE && claude plugins install ${CORTEX_PLUGIN_NAME}@${CORTEX_MARKETPLACE_NAME}"
+  log_hint "或设置 CORTEX_INSTALL_PATH 指向已有 plugin 路径"
   exit 2
 fi
 
 if [[ ! -d "$INSTALL_PATH" ]]; then
-  echo "[install.sh] install-path 不是目录: $INSTALL_PATH" >&2
+  log_error "install-path 不是目录: $INSTALL_PATH"
   exit 2
 fi
 if [[ ! -f "$INSTALL_PATH/scripts/cortex_config.py" ]]; then
-  echo "[install.sh] 在 $INSTALL_PATH 未找到 scripts/cortex_config.py" >&2
+  log_error "在 $INSTALL_PATH 未找到 scripts/cortex_config.py"
   exit 2
 fi
 
-echo "[install.sh] cortex 安装路径: $INSTALL_PATH"
+log_ok "cortex 安装路径: ${C_BOLD}${INSTALL_PATH}${C_RESET}"
 
 # 探测 tty: curl|bash 时 stdin 是脚本管道, prompt 必须从 /dev/tty 读
+# 注意: `exec 3</dev/tty 2>/dev/null` 会把当前 shell stderr 永久重定向到 /dev/null,
+# 必须用 group `{ ...; } 2>/dev/null` 把 stderr 重定向限制在 group 内。
 TTY_FD=""
 if [[ "$NON_INTERACTIVE" != "1" ]]; then
-  if exec 3</dev/tty 2>/dev/null; then
+  if { exec 3</dev/tty; } 2>/dev/null; then
     TTY_FD=3
   else
-    echo "[install.sh] 无 /dev/tty, 自动切换 --non-interactive" >&2
+    log_warn "无 /dev/tty, 自动切换 --non-interactive"
     NON_INTERACTIVE=1
   fi
 fi
@@ -238,13 +264,13 @@ else
   while :; do
     VAULT="$(prompt_value "vault 路径" "$default_vault")"
     if [[ -z "$VAULT" ]]; then
-      echo "  vault 不能为空, 请重试" >&2
+      log_warn "vault 不能为空, 请重试"
       continue
     fi
     # 展开 ~
     VAULT="${VAULT/#\~/$HOME}"
     if [[ ! -d "$VAULT" ]]; then
-      echo "  路径不存在或非目录: $VAULT, 请重试" >&2
+      log_warn "路径不存在或非目录: ${C_BOLD}${VAULT}${C_RESET}, 请重试"
       continue
     fi
     break
@@ -267,11 +293,11 @@ init_args=(--non-interactive --install-path "$INSTALL_PATH" --vault "$VAULT")
 [[ -n "$LANG_CODE" ]] && init_args+=(--lang "$LANG_CODE")
 [[ -n "$SETTINGS" ]] && init_args+=(--settings "$SETTINGS")
 
-echo "[install.sh] 写入 ~/.cortex/config.json"
+log_step "写入 ${C_BOLD}~/.cortex/config.json${C_RESET}"
 python3 "$INSTALL_PATH/scripts/cortex_config.py" init "${init_args[@]}"
 
 # 生成 wrapper
-echo "[install.sh] 生成 ~/.cortex/scripts/*.sh wrapper"
+log_step "生成 ${C_BOLD}~/.cortex/scripts/*.sh${C_RESET} wrapper"
 bash "$INSTALL_PATH/scripts/install_wrappers.sh" --install-path "$INSTALL_PATH"
 
 # 可选 cron 安装
@@ -287,20 +313,18 @@ else
 fi
 
 if [[ "$do_cron" == "1" ]]; then
-  echo "[install.sh] 调用 ~/.cortex/scripts/install_cron.sh"
+  log_step "调用 ${C_BOLD}~/.cortex/scripts/install_cron.sh${C_RESET}"
   bash "$HOME/.cortex/scripts/install_cron.sh" || {
-    echo "[install.sh] install_cron.sh 退出非零, 跳过 (cron 仍可手动跑)" >&2
+    log_warn "install_cron.sh 退出非零, 跳过 (cron 仍可手动跑)"
   }
 fi
 
-cat <<EOF
-
-✓ cortex 安装完成
-- config: ~/.cortex/config.json
-- wrappers: ~/.cortex/scripts/
-
-Next:
-  ~/.cortex/scripts/doctor.sh         # 健康检查
-  ~/.cortex/scripts/update.sh         # 更新插件
-  ~/.cortex/scripts/install_cron.sh   # 安装周期任务
-EOF
+printf '\n'
+printf '%s %s✓ cortex 安装完成%s\n'           "$(_tag)" "$C_GREEN$C_BOLD" "$C_RESET" >&2
+printf '%s   %sconfig%s:   %s~/.cortex/config.json%s\n'  "$(_tag)" "$C_DIM" "$C_RESET" "$C_BOLD" "$C_RESET" >&2
+printf '%s   %swrappers%s: %s~/.cortex/scripts/%s\n'     "$(_tag)" "$C_DIM" "$C_RESET" "$C_BOLD" "$C_RESET" >&2
+printf '\n'
+printf '%s %sNext:%s\n'                                   "$(_tag)" "$C_CYAN$C_BOLD" "$C_RESET" >&2
+printf '%s   %s~/.cortex/scripts/doctor.sh%s         %s# 健康检查%s\n'      "$(_tag)" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET" >&2
+printf '%s   %s~/.cortex/scripts/update.sh%s         %s# 更新插件%s\n'      "$(_tag)" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET" >&2
+printf '%s   %s~/.cortex/scripts/install_cron.sh%s   %s# 安装周期任务%s\n'  "$(_tag)" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET" >&2
