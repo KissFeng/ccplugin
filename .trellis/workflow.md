@@ -9,6 +9,7 @@
 3. **Persist everything** — research, decisions, and lessons all go to files; conversations get compacted, files don't
 4. **Incremental development** — one task at a time
 5. **Capture learnings** — after each task, review and write new knowledge back to spec
+6. **No rollback without approval** — 已验收的代码决策（任务 A 完成）禁止被后续任务（任务 B）覆盖。如需改动必须先确认用户。不确定时默认"保留现状，新增兼容"。
 
 ---
 
