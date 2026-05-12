@@ -86,12 +86,49 @@ cortex_stream_runner() {
   local label="${CORTEX_JOB_LABEL:-cortex}"
   local tee_file="${CORTEX_STREAM_TEE_FILE:-}"
 
+  # Infer plugin_root from this file's location (<root>/scripts/lib/stream_progress.sh).
+  # Env override takes priority: CORTEX_PLUGIN_ROOT > CLAUDE_PLUGIN_ROOT > self-derive.
+  local _sp_dir
+  _sp_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _sp_dir=""
+  local plugin_root="${CORTEX_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}"
+  if [[ -z "$plugin_root" && -n "$_sp_dir" ]]; then
+    plugin_root="$(cd "$_sp_dir/../.." 2>/dev/null && pwd)"
+  fi
+  local stream_script="$plugin_root/mcp/cortex_stream.py"
+
+  # Path 1: cortex-stream console-script on PATH (new installs).
   if command -v cortex-stream >/dev/null 2>&1; then
     cortex-stream --label "$label" -- "$@"
     return $?
   fi
 
-  echo "${_C_YELLOW}${_C_BOLD}[${label}]${_C_RESET} cortex-stream not in PATH (pipx install cortex-mcp), no progress UI" >&2
+  # Path 2: pipx venv python directly runs the absolute script path.
+  # Covers users who installed pre-Phase-A cortex-mcp (no console-script entry yet).
+  local pipx_home="${PIPX_HOME:-$HOME/.local/pipx}"
+  local venv_pys=(
+    "$pipx_home/venvs/cortex-mcp/bin/python"
+    "$pipx_home/venvs/cortex-mcp/bin/python3"
+  )
+  if [[ -f "$stream_script" ]]; then
+    local py
+    for py in "${venv_pys[@]}"; do
+      if [[ -x "$py" ]]; then
+        "$py" "$stream_script" --label "$label" -- "$@"
+        return $?
+      fi
+    done
+  fi
+
+  # Path 3: system python3 with rich available (non-pipx fallback).
+  if [[ -f "$stream_script" ]] && command -v python3 >/dev/null 2>&1; then
+    if python3 -c "import rich" 2>/dev/null; then
+      python3 "$stream_script" --label "$label" -- "$@"
+      return $?
+    fi
+  fi
+
+  # Path 4: raw fallback — warn, preserve stream-json + verbose so run.sh tee still works.
+  echo "${_C_YELLOW}${_C_BOLD}[${label}]${_C_RESET} no rich-capable python found (try: pipx install --force <plugin>/mcp/), no progress UI" >&2
   if [[ -n "$tee_file" ]]; then
     "$@" --output-format stream-json --verbose | tee "$tee_file" >/dev/null
     return ${PIPESTATUS[0]}
