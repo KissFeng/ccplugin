@@ -106,28 +106,35 @@ cx_git_commit_vault() {
     fi
   ) || true
 }
-# cx_filter_stream: 读 NDJSON, 仅吐 result.text 到 stdout (其余 stream-json 事件丢弃).
-# claude --output-format stream-json 输出多种 type (system/init/assistant/tool_use/result);
-# wrapper 只想让用户终端最终见到 final result.text, 其它实时进度由 stderr (rich UI) 承载.
+# cx_filter_stream: defense-in-depth filter.
+# cortex_stream.py now emits ONLY final result.text (plain) to stdout — raw
+# NDJSON never hits stdout. This filter passes plain text through, but also
+# extracts result.text from any leaked stream-json line, so legacy callers
+# or fallback paths still produce clean output.
 cx_filter_stream() {
   python3 -c '
 import json, sys
 for line in sys.stdin:
-    line = line.strip()
-    if not line:
+    s = line.rstrip("\n")
+    if not s.strip():
         continue
+    # Try parse as stream-json event.
     try:
-        evt = json.loads(line)
+        evt = json.loads(s)
+        if isinstance(evt, dict) and "type" in evt:
+            if evt.get("type") == "result":
+                if evt.get("is_error"):
+                    sys.stderr.write((evt.get("result") or "unknown error") + "\n")
+                else:
+                    txt = (evt.get("result") or "").rstrip()
+                    if txt:
+                        sys.stdout.write(txt + "\n")
+            # other stream-json events: drop silently
+            continue
     except Exception:
-        continue
-    if evt.get("type") == "result":
-        if evt.get("is_error"):
-            txt = evt.get("result") or "unknown error"
-            sys.stderr.write(txt + "\n")
-        else:
-            txt = (evt.get("result") or "").rstrip()
-            if txt:
-                sys.stdout.write(txt + "\n")
+        pass
+    # Plain text → passthrough (cortex_stream.py final result line lands here)
+    sys.stdout.write(s + "\n")
 '
 }
 trap 'cx_git_commit_vault "${CORTEX_JOB_LABEL:-cortex}"' EXIT

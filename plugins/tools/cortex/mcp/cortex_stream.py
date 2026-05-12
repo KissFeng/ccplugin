@@ -433,18 +433,24 @@ def run(cmd: list[str], label: str, tee_path: str | None,
                 if not line:
                     continue
 
-                # Tee raw NDJSON to file (if requested) + stdout passthrough so
-                # downstream (run.sh) can still parse the trailing result line.
+                # Tee raw NDJSON to file (if requested) — raw NEVER hits stdout
+                # to prevent terminal leakage. Stdout receives only final result.text.
                 if tee_fp:
                     tee_fp.write(line + "\n")
                     tee_fp.flush()
-                sys.stdout.write(line + "\n")
-                sys.stdout.flush()
 
                 try:
                     evt = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+
+                # Final result.text → stdout (single line, no NDJSON wrapper).
+                # Caller (run.sh / lint.sh / etc.) consumes plain text directly.
+                if evt.get("type") == "result" and not evt.get("is_error"):
+                    txt = (evt.get("result") or "").rstrip()
+                    if txt:
+                        sys.stdout.write(txt + "\n")
+                        sys.stdout.flush()
 
                 rendered = _render_event(evt)
                 if rendered is not None:
