@@ -912,6 +912,7 @@ RULE_PRIORITY = {
     "structure-missing": 1,
     "meta-missing": 2,
     "seed-missing": 3,
+    "vault-misaligned": 4,
 }
 
 
@@ -1016,6 +1017,182 @@ def _fix_seed_outdated(
         dst_tail = ""  # legacy file w/o marker → full replace
     try:
         dst.write_text(src_head + dst_tail, encoding="utf-8")
+        return True
+    except Exception:
+        return False
+
+
+# ---- vault-misaligned (强制对齐) ----
+
+def _sha256_normalized_part(p: Path, part: str = "head") -> str:
+    """sha256 of TEMPLATE_END head ('<...>MARKER') or tail (after MARKER).
+
+    若文件无 marker, head=全文 sha, tail=空串 sha。CRLF→LF 归一化。
+    """
+    try:
+        txt = p.read_bytes().replace(b"\r\n", b"\n")
+    except Exception:
+        return ""
+    MARKER = TEMPLATE_END_MARKER.encode("utf-8")
+    if MARKER not in txt:
+        if part == "head":
+            return hashlib.sha256(txt).hexdigest()
+        return hashlib.sha256(b"").hexdigest()
+    head, _, tail = txt.partition(MARKER)
+    if part == "head":
+        return hashlib.sha256(head + MARKER).hexdigest()
+    return hashlib.sha256(tail).hexdigest()
+
+
+def _resolve_plugin_source(rel: str, plugin_root: Path) -> Path | None:
+    """vault relpath → plugin 源路径反查。"""
+    if rel.startswith("_meta/"):
+        name = rel[len("_meta/"):]
+        for cand in (
+            plugin_root / "presets" / "seed" / "_meta" / name,
+            plugin_root / "templates" / name,
+        ):
+            if cand.exists():
+                return cand
+        # 特例: template-manifest.json ← templates/_manifest.json
+        if name == "template-manifest.json":
+            cand = plugin_root / "templates" / "_manifest.json"
+            if cand.exists():
+                return cand
+        return None
+    if rel.startswith("_templates/"):
+        cand = plugin_root / "templates" / rel[len("_templates/"):]
+        return cand if cand.exists() else None
+    # seed_files 反查
+    sf = plugin_root / "presets" / "_structure.json"
+    if sf.exists():
+        try:
+            d = json.loads(sf.read_text(encoding="utf-8"))
+        except Exception:
+            d = {}
+        for s in d.get("seed_files", []):
+            if not isinstance(s, dict):
+                continue
+            dst_key = s.get("dst_key", ".")
+            name = s.get("name")
+            if not name:
+                continue
+            cand_rel = name if dst_key == "." else f"{dst_key}/{name}"
+            if cand_rel == rel:
+                cand = plugin_root / "presets" / s["src"]
+                return cand if cand.exists() else None
+    return None
+
+
+def _check_vault_misaligned(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
+    """检测 vault 内 plugin-managed 文件与 plugin 源 sha 不一致 (任意偏差强制对齐)。"""
+    findings: list[dict[str, Any]] = []
+
+    # 1) seed 文件 — 对比 TEMPLATE_END 前 head 部分 (保留用户尾段语义)
+    sf = plugin_root / "presets" / "_structure.json"
+    if sf.exists():
+        try:
+            d = json.loads(sf.read_text(encoding="utf-8"))
+        except Exception:
+            d = {}
+        for s in d.get("seed_files", []):
+            if not isinstance(s, dict):
+                continue
+            dst_key = s.get("dst_key", ".")
+            name = s.get("name")
+            src_rel = s.get("src")
+            if not name or not src_rel:
+                continue
+            rel = name if dst_key == "." else f"{dst_key}/{name}"
+            src = plugin_root / "presets" / src_rel
+            dst = vault / rel
+            if not (src.is_file() and dst.is_file()):
+                continue
+            if _sha256_normalized_part(src, "head") != _sha256_normalized_part(dst, "head"):
+                findings.append(_f(
+                    "vault-misaligned", "warn", rel, 1,
+                    f"vault 文件 {rel} 头部 (TEMPLATE_END 之前) 与 plugin 源不一致",
+                    True,
+                ))
+
+    # 2) _meta 固定文件 — 整体 sha 比对
+    meta_pairs = [
+        ("_meta/memory-policy.yaml",
+         plugin_root / "presets" / "seed" / "_meta" / "memory-policy.yaml"),
+        ("_meta/triggers.yaml",
+         plugin_root / "templates" / "triggers.yaml"),
+        ("_meta/frontmatter-schema.yaml",
+         plugin_root / "templates" / "frontmatter-schema.yaml"),
+    ]
+    for rel, src in meta_pairs:
+        dst = vault / rel
+        if not (src.is_file() and dst.is_file()):
+            continue
+        if _sha256_normalized(src) != _sha256_normalized(dst):
+            findings.append(_f(
+                "vault-misaligned", "warn", rel, 1,
+                f"vault _meta 文件 {rel} 与 plugin 源不一致 (强制对齐)",
+                True,
+            ))
+
+    # 3) _templates/* — 整体 sha 比对 (补 template-outdated 漏掉的: 同版本号但内容被改)
+    tpl_dir = plugin_root / "templates"
+    if tpl_dir.is_dir():
+        for src in tpl_dir.rglob("*"):
+            if not src.is_file():
+                continue
+            if src.name == "_manifest.json":
+                continue
+            rel_tpl = src.relative_to(tpl_dir).as_posix()
+            dst = vault / "_templates" / rel_tpl
+            if not dst.is_file():
+                continue
+            if _sha256_normalized(src) != _sha256_normalized(dst):
+                vault_rel = f"_templates/{rel_tpl}"
+                findings.append(_f(
+                    "vault-misaligned", "warn", vault_rel, 1,
+                    f"vault {vault_rel} 与 plugin 源不一致",
+                    True,
+                ))
+
+    return findings
+
+
+def _fix_vault_misaligned(
+    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+) -> bool:
+    """强制对齐: TEMPLATE_END 拼接 (有 marker 时保留用户尾段); backup 原始。"""
+    rel = finding["file"]
+    dst = vault / rel
+    if not dst.is_file():
+        return False
+    src = _resolve_plugin_source(rel, plugin_root)
+    if src is None or not src.exists():
+        return False
+    # backup
+    bak = backup_dir / rel
+    bak.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.copy2(dst, bak)
+    except Exception:
+        pass
+    try:
+        src_text = src.read_text(encoding="utf-8")
+        dst_text = dst.read_text(encoding="utf-8")
+    except Exception:
+        return False
+    if TEMPLATE_END_MARKER in src_text:
+        src_head = src_text.split(TEMPLATE_END_MARKER, 1)[0] + TEMPLATE_END_MARKER
+        if TEMPLATE_END_MARKER in dst_text:
+            dst_tail = dst_text.split(TEMPLATE_END_MARKER, 1)[1]
+        else:
+            dst_tail = ""
+        new_text = src_head + dst_tail
+    else:
+        # plugin 源无 marker → 整体覆盖 (backup 已存)
+        new_text = src_text
+    try:
+        dst.write_text(new_text, encoding="utf-8")
         return True
     except Exception:
         return False
@@ -1276,12 +1453,14 @@ def apply_fixes(
         if fn(f, vault, plugin_root, backup_dir):
             fixed += 1
 
-    # 1) template-outdated / template-missing / seed-outdated — whole-file replacement
+    # 1) template-outdated / template-missing / seed-outdated / vault-misaligned
+    #    — whole-file or TEMPLATE_END-head replacement
     for f in findings:
         if not f.get("fixable"):
             continue
         rule = f["rule"]
-        if rule not in {"template-outdated", "template-missing", "seed-outdated"}:
+        if rule not in {"template-outdated", "template-missing", "seed-outdated",
+                        "vault-misaligned"}:
             continue
         if rules_filter is not None and rule not in rules_filter:
             continue
@@ -1292,6 +1471,8 @@ def apply_fixes(
             ok = _fix_template_outdated(f, vault, plugin_root, backup_dir)
         elif rule == "seed-outdated":
             ok = _fix_seed_outdated(f, vault, plugin_root, backup_dir)
+        elif rule == "vault-misaligned":
+            ok = _fix_vault_misaligned(f, vault, plugin_root, backup_dir)
         if ok:
             fixed += 1
 
@@ -1518,6 +1699,9 @@ def main() -> int:
     findings.extend(_check_structure_missing(vault, plugin_root))
     findings.extend(_check_meta_missing(vault, plugin_root))
     findings.extend(_check_seed_missing(vault, plugin_root))
+
+    # rule #23: vault-misaligned — 强制对齐 (sha 任意偏差即覆盖)
+    findings.extend(_check_vault_misaligned(vault, plugin_root))
 
     # vault-structure-violation: attach backup_target + emit structure_purge
     # mv plan (executed by cortex-lint skill, never by this python process).
