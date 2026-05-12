@@ -121,7 +121,7 @@ export CORTEX_JOB_LABEL="cortex-doctor"
 # trap Ctrl-C: stream_progress handles heartbeat cleanup internally.
 cortex_stream_runner claude --bare -p \\
   --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
-  "运行 cortex 健康检查 (cortex-doctor skill), 报告 vault/config/links/dead-links 等问题, 输出可读结果" "\$@"
+  "[AUTO_MODE: non-interactive shell wrapper.] 运行 cortex 健康检查 (cortex-doctor skill), 报告 vault/config/links/dead-links 等问题, 输出可读结果" "\$@"
 EOB
 )"
 
@@ -146,7 +146,7 @@ if [[ "\${1:-}" == "--fix" ]]; then
   export CORTEX_JOB_LABEL="cortex-lint-fix"
   cortex_stream_runner claude --bare -p \\
     --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
-    "对 cortex vault 跑 lint 并 --fix 交互修复. 按 cortex-lint skill 工作流: 跑 run.py 获 JSON 报告 → 解析 errors[] → vault-structure-violation 各项用 AskUserQuestion 工具询问 (move/delete/whitelist/skip), 其它 autofix 项直接落. \$*" "\$@"
+    "[AUTO_MODE: non-interactive shell wrapper. 不要用 AskUserQuestion, 直接执行默认动作.] 对 cortex vault 跑 lint --fix. 自动执行: structure_purge → BATCH_MV (mv 到 backup_root); autofix=true 项 → 直接落; 其它非 autofix 项 → 列入报告输出. \$*" "\$@"
 else
   exec bash "$INSTALL_PATH/scripts/cron/lint.sh" "\$@"
 fi
@@ -170,7 +170,7 @@ source "\$LIB_PATH"
 export CORTEX_JOB_LABEL="cortex-ingest"
 cortex_stream_runner claude --bare -p \\
   --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
-  "摄取以下源到 cortex vault. 源: \$* (自动判断 url/file/git/dir). 按 cortex-ingest skill 流程: url_security → fetch/read → html_sanitize → masking → save." "\$@"
+  "[AUTO_MODE: non-interactive shell wrapper. 不要用 AskUserQuestion, 直接执行默认动作.] 摄取以下源到 cortex vault. 源: \$* (自动判断 url/file/git/dir, 直接 ingest 不询问). 按 cortex-ingest skill 流程: url_security → fetch/read → html_sanitize → masking → save (kind=log)." "\$@"
 EOB
 )"
 
@@ -191,7 +191,7 @@ source "\$LIB_PATH"
 export CORTEX_JOB_LABEL="cortex-search"
 cortex_stream_runner claude --bare -p \\
   --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
-  "在 cortex vault 搜索: \$*. 按 cortex-search skill 多级回退 (hot → index → SC → rg → MCP). 引用页路径 + 片段." "\$@"
+  "[AUTO_MODE: non-interactive shell wrapper.] 在 cortex vault 搜索: \$*. 按 cortex-search skill 多级回退 (hot → index → SC → rg → MCP). 引用页路径 + 片段." "\$@"
 EOB
 )"
 
@@ -215,8 +215,9 @@ TITLE="\${2:-quick save}"
 BODY="\$(cat)"
 cortex_stream_runner claude --bare -p \\
   --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
-  "落档到 cortex vault: kind=\$KIND, title=\$TITLE. body 如下 (经 masking 后写盘):
+  "[AUTO_MODE: non-interactive shell wrapper. 不要用 AskUserQuestion, 直接执行默认动作.] 落档到 cortex vault: kind=\$KIND, title=\$TITLE. body 经 masking 后直接写盘, 不询问.
 
+body:
 \$BODY"
 EOB
 )"
@@ -238,7 +239,7 @@ source "\$LIB_PATH"
 export CORTEX_JOB_LABEL="cortex-refactor"
 cortex_stream_runner claude --bare -p \\
   --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
-  "执行 cortex-refactor 子命令: \$*. dry-run 默认; --apply 才落. 子命令: rename / merge / split / fold / migrate-locale / restructure / dedupe / extract / inline / graph-rebalance." "\$@"
+  "[AUTO_MODE: non-interactive shell wrapper. 不要用 AskUserQuestion, 直接执行默认动作.] 执行 cortex-refactor 子命令: \$*. 默认 dry-run; 仅当 args 含 --apply 才落盘. dry-run 输出 plan JSON. 子命令: rename / merge / split / fold / migrate-locale / restructure / dedupe / extract / inline / graph-rebalance." "\$@"
 EOB
 )"
 

@@ -76,6 +76,16 @@ python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/refa
 - `/cortex:lint` 命中 `path-naming-violation` / `filename-illegal` 后用户授权修复
 - cron weekly 任务调 `fold --days 7 --apply`
 
+## AUTO_MODE 探测 (shell wrapper)
+
+若 user prompt 含 `[AUTO_MODE:` 或 `non-interactive` 字样 (来自 `~/.cortex/scripts/refactor.sh`), **跳所有 `AskUserQuestion`, 直执行默认动作**:
+
+- 默认 dry-run, 输出 JSON plan, **不询问**是否应用
+- 仅当 args **显式含 `--apply`** 才落盘 (落盘前仍走 backup)
+- ≥3 文件批量改写: 不调 `AskUserQuestion` 列文件路径授权; backup + apply 直接落 (因 args 已显式 `--apply`)
+
+**Interactive 模式** (claude session 内直调 skill): 原有 `AskUserQuestion` 流程不变。
+
 ## 安全约束
 
 1. 默认 dry-run, 输出 JSON plan

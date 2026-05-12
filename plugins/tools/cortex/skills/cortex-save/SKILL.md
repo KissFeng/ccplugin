@@ -27,6 +27,14 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 
 ## 流程
 
+**AUTO_MODE 探测**: 若 user prompt 含 `[AUTO_MODE:` 或 `non-interactive` 字样 (来自 shell wrapper, 如 `~/.cortex/scripts/save.sh`), **跳所有 `AskUserQuestion`, 直执行默认动作**:
+
+- body 经 masking 后直接写盘, 不询问
+- save 失败 → 输出 stderr 后退出非 0, 不调 `AskUserQuestion` (无人答)
+- 默认 `kind=log` (若未提供)
+
+**Interactive 模式** (claude session 内直调 skill): 原有 `AskUserQuestion` 流程不变。
+
 1. **解析 vault**
 
    ```bash

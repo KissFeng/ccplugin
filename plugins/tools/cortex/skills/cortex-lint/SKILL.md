@@ -75,6 +75,14 @@ errors: E   warns: W   fixed: F
 
 ## 交互修复 (--fix 模式 vault-structure-violation 专用)
 
+**AUTO_MODE 探测**: 若 user prompt 含 `[AUTO_MODE:` 或 `non-interactive` 字样 (来自 shell wrapper, 如 `~/.cortex/scripts/lint.sh --fix`), **跳所有 `AskUserQuestion`, 直执行默认动作**:
+
+- `structure_purge` 违规: 走 **BATCH_MV** 分支 (批量 mv 到 `<backup_root>/`, 跳过 per-item 二次确认)
+- `autofix=true` 项: 直接落
+- 其它非 autofix 项: 列入报告输出, 不动
+
+**Interactive 模式** (claude session 内直调 `/cortex:cortex-lint --fix`): 走下述 `AskUserQuestion` 4 选项流程, 行为不变。
+
 run.py 的 python 进程不交互, 只输出 JSON 违规列表 + `structure_purge.mv_plan`; **交互全在本 SKILL 流程内**, 实际 mv 操作也在此执行。
 
 cortex-lint --fix 输出 JSON 含 `structure_purge` 字段且 `violation_count > 0` 时:

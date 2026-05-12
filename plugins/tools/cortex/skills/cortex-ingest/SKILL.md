@@ -41,6 +41,15 @@ allowed-tools: Bash Read Write Edit Glob WebFetch mcp__cortex__cortex_ingest_url
 
 ## 流程
 
+**AUTO_MODE 探测**: 若 user prompt 含 `[AUTO_MODE:` 或 `non-interactive` 字样 (来自 shell wrapper, 如 `~/.cortex/scripts/ingest.sh`), **跳所有 `AskUserQuestion`, 直执行默认动作**:
+
+- 自动判源类型 (url/file/git/dir), 不询问
+- 三过滤器 (url_security/html_sanitize/masking) 任一拒绝即终止, 不询问
+- L3 直接写盘授权门: 默认通过 (单文件 / per-batch 均自动), 不调 `AskUserQuestion`
+- 默认 `kind=log` 落档
+
+**Interactive 模式** (claude session 内直调 skill): 原有 `AskUserQuestion` 流程不变。
+
 1. **解析 vault**
 
    ```bash

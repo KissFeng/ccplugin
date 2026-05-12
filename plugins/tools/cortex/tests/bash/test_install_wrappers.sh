@@ -151,6 +151,20 @@ test_no_overwrite_preserves_existing() {
   fi
 }
 
+test_auto_mode_markers_in_claude_wrappers() {
+  # All 6 claude-driven wrappers (doctor/lint/ingest/search/save/refactor) must
+  # carry an AUTO_MODE marker in their prompt so SKILLs skip AskUserQuestion
+  # (claude --bare -p has no stdin feedback channel).
+  local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
+  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  local w
+  for w in doctor.sh lint.sh ingest.sh search.sh save.sh refactor.sh; do
+    out=$(cat "$tgt/$w")
+    assert_contains "AUTO_MODE" "$out"
+    assert_contains "non-interactive" "$out"
+  done
+}
+
 test_shellcheck_clean() {
   if ! command -v shellcheck >/dev/null 2>&1; then
     _TESTS_RUN=$((_TESTS_RUN + 1))
@@ -179,6 +193,7 @@ run_test test_lint_wrapper_has_fix_branch           test_lint_wrapper_has_fix_br
 run_test test_all_generated_wrappers_pass_bash_n    test_all_generated_wrappers_pass_bash_n
 run_test test_overwrite_default_warns_on_stderr     test_overwrite_default_warns_on_stderr
 run_test test_no_overwrite_preserves_existing       test_no_overwrite_preserves_existing
+run_test test_auto_mode_markers_in_claude_wrappers  test_auto_mode_markers_in_claude_wrappers
 run_test test_shellcheck_clean                      test_shellcheck_clean
 
 print_summary
