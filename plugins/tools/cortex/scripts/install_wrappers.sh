@@ -180,38 +180,57 @@ exit \${PIPESTATUS[0]}
 EOB
 )"
 
-# lint.sh: dual-mode wrapper.
-#   - no flag (or --fix): interactive autofix via cortex-lint skill (default).
-#   - --check: cron mode, exec cron/lint.sh (JSON output, read-only).
-#   - --sync-templates: passes through to cron/lint.sh (CORTEX_SYNC_TEMPLATES=1).
+# lint.sh: multi-mode wrapper.
+#   - (default)        python -m lint.run --fix (强制对齐, 全 autofix; 不绕 LLM)
+#   - --fix            alias for default (backward compat)
+#   - --skill          LLM-driven advanced lint via cortex-lint SKILL
+#   - --check          cron read-only JSON report
+#   - --sync-templates cron template/seed sync
 emit lint.sh "$(cat <<EOB
 # Modes:
-#   (default)         interactive autofix via cortex-lint skill (all fixable rules)
+#   (default)         python -m lint.run --fix (强制对齐, 全 autofix 规则; 不调 claude)
 #   --fix             alias for default (backward compat)
+#   --skill           LLM-driven advanced lint via cortex-lint SKILL
 #   --check           read-only lint report (cron mode, JSON output)
 #   --sync-templates  cron-friendly auto-sync of template/seed drift only
-#                     (passes through to cron/lint.sh which sets CORTEX_SYNC_TEMPLATES=1)
-if [[ "\${1:-}" == "--check" ]]; then
+
+CONFIG="\$HOME/.cortex/config.json"
+[[ -f "\$CONFIG" ]] || err "config 不存在: \$CONFIG, 跑 install.sh 先安装" 4
+command -v jq >/dev/null 2>&1 || err "缺 jq, 请先装: brew install jq / apt install jq" 4
+VAULT="\$(jq -r '.vault // empty' "\$CONFIG" 2>/dev/null)"
+[[ -n "\$VAULT" ]] || err "vault 路径未配置 (\$CONFIG:.vault)" 4
+
+if [[ "\${1:-}" == "--check" ]] || [[ "\${1:-}" == "--sync-templates" ]]; then
+  exec bash "$INSTALL_PATH/scripts/cron/lint.sh" "\$@"
+fi
+
+if [[ "\${1:-}" == "--skill" ]]; then
   shift
-  exec bash "$INSTALL_PATH/scripts/cron/lint.sh" "\$@"
+  SKILL_PATH="$INSTALL_PATH/skills/cortex-lint/SKILL.md"
+  [[ -f "\$SKILL_PATH" ]] || err "cortex-lint SKILL.md missing: \$SKILL_PATH" 1
+  LIB_PATH="$INSTALL_PATH/scripts/lib/stream_progress.sh"
+  [[ -f "\$LIB_PATH" ]] || err "stream_progress.sh missing: \$LIB_PATH" 1
+  # shellcheck source=../../plugins/tools/cortex/scripts/lib/stream_progress.sh
+  source "\$LIB_PATH"
+  export CORTEX_JOB_LABEL="cortex-lint-skill"
+  cortex_stream_runner claude --bare -p \\
+    --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
+    "[AUTO_MODE strict, no AskUserQuestion ever, fail-fast not hang.] cortex-lint advanced: \$*" "\$@" \\
+    | cx_filter_stream
+  exit \${PIPESTATUS[0]}
 fi
-if [[ "\${1:-}" == "--sync-templates" ]]; then
-  exec bash "$INSTALL_PATH/scripts/cron/lint.sh" "\$@"
-fi
-# default + --fix both go to autofix
+
+# Default: 直跑 python 强制对齐 (不绕 LLM)
 [[ "\${1:-}" == "--fix" ]] && shift
-SKILL_PATH="$INSTALL_PATH/skills/cortex-lint/SKILL.md"
-[[ -f "\$SKILL_PATH" ]] || err "cortex-lint SKILL.md missing: \$SKILL_PATH" 1
-LIB_PATH="$INSTALL_PATH/scripts/lib/stream_progress.sh"
-[[ -f "\$LIB_PATH" ]] || err "stream_progress.sh missing: \$LIB_PATH" 1
-# shellcheck source=../../plugins/tools/cortex/scripts/lib/stream_progress.sh
-source "\$LIB_PATH"
-export CORTEX_JOB_LABEL="cortex-lint-fix"
-cortex_stream_runner claude --bare -p \\
-  --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
-  "[AUTO_MODE: non-interactive shell wrapper. 不要用 AskUserQuestion, 直接执行默认动作.] 对 cortex vault 跑 lint --fix. 自动执行: structure_purge → BATCH_MV (mv 到 backup_root); autofix=true 项 → 直接落; 其它非 autofix 项 → 列入报告输出. \$*" "\$@" \\
-  | cx_filter_stream
-exit \${PIPESTATUS[0]}
+banner "lint --fix (直调 python, vault=\$VAULT)"
+cd "$INSTALL_PATH" || err "cd $INSTALL_PATH failed" 1
+PYTHONPATH=. python3 -m lint.run --vault "\$VAULT" --fix "\$@"
+rc=\$?
+if [ \$rc -eq 0 ]; then
+  ok "lint --fix 完成"
+else
+  err "lint --fix 失败 code=\$rc" \$rc
+fi
 EOB
 )"
 
