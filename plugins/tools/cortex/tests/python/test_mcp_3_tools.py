@@ -15,13 +15,13 @@ def _vault(tmp_path: Path) -> Path:
     for d in [
         "_meta",
         ".obsidian",
-        "记忆体系/L0-核心",
-        "记忆体系/L1-长期/procedural",
-        "记忆体系/L2-中期/semantic",
-        "记忆体系/L3-短期/episodic",
-        "记忆体系/L4-流水账/ledger",
-        "记忆体系/L4-流水账/sessions",
-        "记忆体系/views",
+        "记忆/L0-核心",
+        "记忆/L1-长期/procedural",
+        "记忆/L2-中期/semantic",
+        "记忆/L3-短期/episodic",
+        "记忆/L4-流水账/ledger",
+        "记忆/L4-流水账/sessions",
+        "记忆/views",
         "知识库/反思/连接",
     ]:
         (v / d).mkdir(parents=True, exist_ok=True)
@@ -67,7 +67,7 @@ def test_consolidate_with_events(tmp_path, monkeypatch):
     today = dt.datetime.now(tz=dt.timezone.utc).date()
     end = today + dt.timedelta(days=-1)
     start = end - dt.timedelta(days=6)
-    ledger_dir = v / "记忆体系/L4-流水账/ledger"
+    ledger_dir = v / "记忆/L4-流水账/ledger"
     f = ledger_dir / f"{start.isoformat()}.jsonl"
     lines = []
     for _ in range(4):
@@ -85,7 +85,7 @@ def test_consolidate_with_events(tmp_path, monkeypatch):
     assert d["data"]["consolidated_file"]
     assert (v / d["data"]["consolidated_file"]).is_file()
     # candidates.md exists
-    assert (v / "记忆体系/views/candidates.md").is_file()
+    assert (v / "记忆/views/candidates.md").is_file()
 
 
 def test_promote_l3_to_l2_auto(tmp_path, monkeypatch):
@@ -95,7 +95,7 @@ def test_promote_l3_to_l2_auto(tmp_path, monkeypatch):
     monkeypatch.setenv("CORTEX_VAULT_PATH", str(v))
     monkeypatch.delenv("OBSIDIAN_VAULT", raising=False)
     # URI scheme: L3://<rest> → L3-短期/episodic/<rest>.md (path doubles 'episodic')
-    src = v / "记忆体系/L3-短期/episodic/2026-05-12/T0900-test.md"
+    src = v / "记忆/L3-短期/episodic/2026-05-12/T0900-test.md"
     src.parent.mkdir(parents=True, exist_ok=True)
     src.write_text(
         "---\nuri: L3://2026-05-12/T0900-test\nlevel: L3\nweight: 0.5\n"
@@ -107,7 +107,7 @@ def test_promote_l3_to_l2_auto(tmp_path, monkeypatch):
     idx.write_text(
         json.dumps({"version": 1, "entries": [
             {"uri": "L3://2026-05-12/T0900-test", "level": "L3",
-             "path": "记忆体系/L3-短期/episodic/2026-05-12/T0900-test.md"}
+             "path": "记忆/L3-短期/episodic/2026-05-12/T0900-test.md"}
         ]}, ensure_ascii=False),
         encoding="utf-8",
     )
@@ -139,7 +139,7 @@ def test_promote_l2_to_l1_needs_user(tmp_path, monkeypatch):
     v = _vault(tmp_path)
     monkeypatch.setenv("CORTEX_VAULT_PATH", str(v))
     monkeypatch.delenv("OBSIDIAN_VAULT", raising=False)
-    f = v / "记忆体系/L2-中期/semantic/test.md"
+    f = v / "记忆/L2-中期/semantic/test.md"
     f.write_text(
         "---\nuri: L2://semantic/test\nlevel: L2\nweight: 0.6\n---\n",
         encoding="utf-8",
@@ -188,11 +188,11 @@ def test_session_import_basic(tmp_path, monkeypatch):
     assert d["data"]["turn_count"] == 2
     assert d["data"]["events_appended"] == 2
     # session file created
-    sess = list((v / "记忆体系/L4-流水账/sessions").rglob("*.md"))
+    sess = list((v / "记忆/L4-流水账/sessions").rglob("*.md"))
     assert len(sess) == 1
     assert sess[0].name == "abc123.md"
     # ledger appended
-    ledger_files = list((v / "记忆体系/L4-流水账/ledger").rglob("*.jsonl"))
+    ledger_files = list((v / "记忆/L4-流水账/ledger").rglob("*.jsonl"))
     assert ledger_files
     lines = ledger_files[0].read_text(encoding="utf-8").splitlines()
     assert len(lines) == 2

@@ -76,7 +76,7 @@ namespaces:
         required: [type, title, created]
         defaults: {type: inbox}
         tags_required: ["inbox"]
-  记忆体系:
+  记忆:
     L0-核心:
       "*":
         required: [uri, level, weight, created, immutable]

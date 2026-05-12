@@ -2,7 +2,7 @@
 type: memory-level
 title: L1-长期
 role: 长期记忆 · 已固化技能/稳定语义
-namespace: 记忆体系
+namespace: 记忆
 level: L1
 children: [procedural, semantic-stable]
 last_updated: "{{UPDATED}}"

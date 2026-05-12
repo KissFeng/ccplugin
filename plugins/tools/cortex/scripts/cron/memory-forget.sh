@@ -41,7 +41,7 @@ policy: <vault>/_meta/memory-policy.yaml
    - L2: after_days=365, unless_recalled=5
    - L3: after_days=90, unless_recalled=3
    - L4: 由 memory-compact 处理 → 跳过
-2. 扫描 <vault>/记忆体系/L3-短期/episodic/* 与 <vault>/记忆体系/L2-中期/semantic/* 的 .md 条目。
+2. 扫描 <vault>/记忆/L3-短期/episodic/* 与 <vault>/记忆/L2-中期/semantic/* 的 .md 条目。
 3. 读每个条目 frontmatter:
    - last_recalled (ISO 时间, 缺失则用 created)
    - recall_count (缺失视为 0)
@@ -50,7 +50,7 @@ policy: <vault>/_meta/memory-policy.yaml
    - L3: now - last_recalled > 90 天 且 recall_count < 3
    - L2: now - last_recalled > 365 天 且 recall_count < 5
 5. 仅修改 frontmatter, 追加 archive_pending: true (用 Edit 工具, 保留原 frontmatter 其他字段不变)。不删文件, 不移文件。
-6. 写日志到 <vault>/记忆体系/views/alerts.md (append 一节 ## memory-forget <UTC ISO>), 列出本次标记的 uri 清单。
+6. 写日志到 <vault>/记忆/views/alerts.md (append 一节 ## memory-forget <UTC ISO>), 列出本次标记的 uri 清单。
 
 输出: 一行 JSON 摘要 { L3_marked: N, L2_marked: N, skipped_already: N }。
 vault 不存在 → { skipped: true, reason: 'no vault' }。

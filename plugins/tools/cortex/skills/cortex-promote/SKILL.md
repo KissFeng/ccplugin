@@ -7,7 +7,7 @@ allowed-tools: Read Edit Glob AskUserQuestion
 
 # cortex-promote
 
-读 `记忆体系/views/candidates.md` 中由 cortex-consolidate 写入的候选, 按 `_meta/memory-policy.yaml` 各级 `promote_criteria` 校验, 执行晋级 (改 frontmatter level/uri + 移文件)。L2→L1 与 L1→L0 必须人工审批。
+读 `记忆/views/candidates.md` 中由 cortex-consolidate 写入的候选, 按 `_meta/memory-policy.yaml` 各级 `promote_criteria` 校验, 执行晋级 (改 frontmatter level/uri + 移文件)。L2→L1 与 L1→L0 必须人工审批。
 
 ## 触发场景
 - 用户显式 "promote memory" / "审批候选" / "晋级 X"
@@ -22,7 +22,7 @@ allowed-tools: Read Edit Glob AskUserQuestion
 
 ## 流程
 
-1. **读候选**: `记忆体系/views/candidates.md` 每行格式:
+1. **读候选**: `记忆/views/candidates.md` 每行格式:
    ```
    - [ ] L3://episodic/<date>/<slot> → L2://semantic/<topic>  (recurrence: 5x in 7d, weight 0.6)
    ```

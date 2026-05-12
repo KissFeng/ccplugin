@@ -32,9 +32,9 @@ allowed-tools: Read Write Glob mcp__obsidian__obsidian_simple_search mcp__obsidi
    - 读 callout 区 `<!-- DASH:rendered_at=<ISO> -->` 注释
    - now - rendered_at < view_stale_after → 跳过 (--force 强制重渲)
 4. **执行查询**:
-   - kind=memory: Glob `记忆体系/<level>-*/**/*.md` + 读 frontmatter, 过滤 + 排序 (weight / recall_count)
+   - kind=memory: Glob `记忆/<level>-*/**/*.md` + 读 frontmatter, 过滤 + 排序 (weight / recall_count)
    - kind=knowledge: `mcp__obsidian__obsidian_simple_search` query
-   - kind=ledger: Glob `记忆体系/L4-流水账/ledger/*.jsonl` aggregation (count by day)
+   - kind=ledger: Glob `记忆/L4-流水账/ledger/*.jsonl` aggregation (count by day)
    - kind=cron: 读 `~/.cache/cortex/cron/*.{log,json}` 拼最近状态
 5. **渲染**:
    - 调 cortex-html 转模板 + data → HTML 字符串

@@ -1,13 +1,13 @@
 ---
 name: cortex-session
-description: 导入 claude code / cli transcript → 记忆体系/L4-流水账/sessions/, 同步关键事件 append 到 ledger。触发: "import session" / "导入会话" / Stop hook 自动触发。
+description: 导入 claude code / cli transcript → 记忆/L4-流水账/sessions/, 同步关键事件 append 到 ledger。触发: "import session" / "导入会话" / Stop hook 自动触发。
 disable-model-invocation: true
 allowed-tools: Bash Read Write Glob
 ---
 
 # cortex-session
 
-解析 CLI transcript (claude code jsonl / 其他) → 写入 `记忆体系/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md` 摘要骨架; 同步 append 关键事件到 `ledger/<date>.jsonl`。
+解析 CLI transcript (claude code jsonl / 其他) → 写入 `记忆/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md` 摘要骨架; 同步 append 关键事件到 `ledger/<date>.jsonl`。
 
 ## 触发场景
 - Claude Code Stop hook 自动触发 (SessionEnd 事件)
@@ -33,7 +33,7 @@ allowed-tools: Bash Read Write Glob
    - 工具调用统计: 各 tool_name 次数
    - 文件变更: 抽 Edit/Write tool 的 file_path
    - 关键 timestamps: session_start / session_end / errors
-4. **写 session md**: `记忆体系/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md`
+4. **写 session md**: `记忆/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md`
    - frontmatter:
      ```yaml
      ---
@@ -51,7 +51,7 @@ allowed-tools: Bash Read Write Glob
      ---
      ```
    - body: title + 关键事件时间线 (折叠详情, 不全文)
-5. **append ledger**: 每个关键事件 (tool error / file write / user clarification) → `记忆体系/L4-流水账/ledger/<YYYY-MM-DD>.jsonl` 一行:
+5. **append ledger**: 每个关键事件 (tool error / file write / user clarification) → `记忆/L4-流水账/ledger/<YYYY-MM-DD>.jsonl` 一行:
    ```json
    {"ts":"...","sid":"...","kind":"file_write","path":"...","level":"L4"}
    ```
@@ -65,8 +65,8 @@ allowed-tools: Bash Read Write Glob
   tool calls: Read=22, Edit=8, Bash=15, Glob=18
   files touched: 6
   errors: 1
-  written: 记忆体系/L4-流水账/sessions/claude-code/2026-05/sess-abc123.md
-  ledger appended: 9 events to 记忆体系/L4-流水账/ledger/2026-05-12.jsonl
+  written: 记忆/L4-流水账/sessions/claude-code/2026-05/sess-abc123.md
+  ledger appended: 9 events to 记忆/L4-流水账/ledger/2026-05-12.jsonl
 ```
 
 ## 错误处理

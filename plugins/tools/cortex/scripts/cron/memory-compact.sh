@@ -35,10 +35,10 @@ vault: \$CORTEX_VAULT
 policy: <vault>/_meta/memory-policy.yaml (L4.forget.compress_after_days, 默认 30)
 
 具体行动:
-1. 找 <vault>/记忆体系/L4-流水账/ledger/*.jsonl 且 mtime > 30 天:
+1. 找 <vault>/记忆/L4-流水账/ledger/*.jsonl 且 mtime > 30 天:
    - 若 <file>.gz 不存在 → 跑 \`gzip --keep <file>\` (保留双备份 .jsonl + .jsonl.gz)
    - 若 mtime > 60 天 且 .gz 已存在 → 删原 .jsonl, 仅保留 .gz
-2. 找 <vault>/记忆体系/L4-流水账/sessions/<cli>/YYYY-MM/ 整月目录, mtime > 30 天:
+2. 找 <vault>/记忆/L4-流水账/sessions/<cli>/YYYY-MM/ 整月目录, mtime > 30 天:
    - 若同名 .tar.gz 不存在 → 跑 \`tar -czf <YYYY-MM>.tar.gz <YYYY-MM>/\`
    - mtime > 60 天 且 .tar.gz 已存在 → 删原目录
 3. 不动 ledger 当月文件 (mtime ≤ 30 天) 与 sessions 当月目录。

@@ -154,23 +154,23 @@
       "sha256": "50e941df54c06f5018af086ba9849307334d3bf33437dfbad2e624710a82bd3c",
       "template_version": 1
     },
-    "seed/记忆体系/L0-核心/_index.md": {
+    "seed/记忆/L0-核心/_index.md": {
       "sha256": "458acc3bce4e03b2e77081abfdda93a68f6cc99adefa0f2074ccdaa602819694",
       "template_version": 1
     },
-    "seed/记忆体系/L1-长期/_index.md": {
+    "seed/记忆/L1-长期/_index.md": {
       "sha256": "56620cbb5a648096ce01c1406f42008a777b5b32508f4fb12b1936bc61c4b5f2",
       "template_version": 1
     },
-    "seed/记忆体系/L2-中期/_index.md": {
+    "seed/记忆/L2-中期/_index.md": {
       "sha256": "9a19f2f98208577837388f4bf6a06f07aaecd2a203193703b76ed09a933e2ed7",
       "template_version": 1
     },
-    "seed/记忆体系/L3-短期/_index.md": {
+    "seed/记忆/L3-短期/_index.md": {
       "sha256": "41ee2f5805b8fb292ec25699053502cfca17b0b6a6bca5b1553df606b3169227",
       "template_version": 1
     },
-    "seed/记忆体系/L4-流水账/_index.md": {
+    "seed/记忆/L4-流水账/_index.md": {
       "sha256": "34403d8fe9ae911b284243195726d8429c5fa395712d8bae58d0c83bf34befe8",
       "template_version": 1
     }

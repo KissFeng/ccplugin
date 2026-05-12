@@ -2,7 +2,7 @@
 type: memory-level
 title: L4-流水账
 role: 原始事件流 · append-only · 30 天后压缩
-namespace: 记忆体系
+namespace: 记忆
 level: L4
 children: [ledger, sessions]
 last_updated: "{{UPDATED}}"

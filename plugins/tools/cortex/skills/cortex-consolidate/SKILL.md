@@ -22,9 +22,9 @@ allowed-tools: Bash Read Write Glob
 ## 流程
 
 1. **扫源**:
-   - Glob `记忆体系/L4-流水账/ledger/<since>.jsonl` 全部行
-   - Glob `记忆体系/L4-流水账/sessions/<cli>/<recent-month>/*.md`
-   - Glob `记忆体系/L3-短期/episodic/<since>/` 已有情节
+   - Glob `记忆/L4-流水账/ledger/<since>.jsonl` 全部行
+   - Glob `记忆/L4-流水账/sessions/<cli>/<recent-month>/*.md`
+   - Glob `记忆/L3-短期/episodic/<since>/` 已有情节
 2. **频次分析**:
    - 提取实体 (tags/wikilinks/标题关键词)
    - 计 entity_freq, topic_freq
@@ -33,14 +33,14 @@ allowed-tools: Bash Read Write Glob
    - 引用 cortex-memory write L3://episodic/<date>/<slot>
    - 高频但仍单日 → 写 L3, ref 回 ledger 行号
 4. **L3→L2 候选** (本 skill 主战场):
-   - 跨周重复模式 → 写 `记忆体系/views/candidates.md` 一行:
+   - 跨周重复模式 → 写 `记忆/views/candidates.md` 一行:
      ```
      - [ ] L3://episodic/<date>/<slot> → L2://semantic/<topic>  (recurrence: 5x in 7d, weight 0.6)
      ```
    - 不直接 promote, 交 cortex-promote 处理
 5. **跨域 connections** → 写 `知识库/反思/连接/<YYYY-Wnn>.md`:
    - 不同 domain 实体在同一 episode 共现 → 连接候选
-6. **周报落盘** `记忆体系/views/consolidated/<YYYY-Wnn>.md`:
+6. **周报落盘** `记忆/views/consolidated/<YYYY-Wnn>.md`:
    - frontmatter: window, since, until, generated_at
    - 正文: top entities / top topics / candidates count / connections count
 7. **更新 candidates.md**: append 新候选, 去重 (按目标 URI)
@@ -52,7 +52,7 @@ allowed-tools: Bash Read Write Glob
   top entities: goroutine(8), channel(5), select(4)
   L3→L2 candidates: 3 (written to views/candidates.md)
   cross-domain connections: 2 (written to 知识库/反思/连接/2026-W19.md)
-  weekly report: 记忆体系/views/consolidated/2026-W19.md
+  weekly report: 记忆/views/consolidated/2026-W19.md
 ```
 
 ## 错误处理

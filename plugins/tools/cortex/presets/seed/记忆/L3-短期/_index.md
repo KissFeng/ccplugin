@@ -2,7 +2,7 @@
 type: memory-level
 title: L3-短期
 role: 短期记忆 · 情节记忆 90 天时效
-namespace: 记忆体系
+namespace: 记忆
 level: L3
 children: [episodic]
 last_updated: "{{UPDATED}}"

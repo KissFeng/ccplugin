@@ -2,7 +2,7 @@
 type: memory-level
 title: L2-中期
 role: 中期记忆 · 可演化语义网络
-namespace: 记忆体系
+namespace: 记忆
 level: L2
 children: [semantic]
 last_updated: "{{UPDATED}}"

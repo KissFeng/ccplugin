@@ -1,4 +1,4 @@
-# cortex 记忆体系治理策略
+# cortex 记忆治理策略
 # 由 cortex-install 复制到 <vault>/_meta/memory-policy.yaml
 # 由 cortex-{promote,forget,consolidate,warden,archive} 读取执行
 # 由用户手动编辑覆盖默认值

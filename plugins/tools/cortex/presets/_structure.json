@@ -1,5 +1,5 @@
 {
-  "description": "cortex vault 骨架 — 知识库 + 记忆体系 L0-L4 双 namespace + 仪表盘 + 归档。dst_key='.' 表 vault 根。directories 为分层映射。",
+  "description": "cortex vault 骨架 — 知识库 + 记忆 L0-L4 双 namespace + 仪表盘 + 归档。dst_key='.' 表 vault 根。directories 为分层映射。",
   "directories": {
     "_meta": {},
     "_templates": {},
@@ -126,7 +126,7 @@
       },
       "收件箱": {}
     },
-    "记忆体系": {
+    "记忆": {
       "L0-核心": {},
       "L1-长期": {
         "procedural": {},
@@ -154,7 +154,7 @@
     {"src": "seed/root/主页.md", "dst_key": ".", "name": "主页.md", "desc": "全局入口 — HTML 二维仪表盘骨架, 含 mermaid + Bases 占位。直落 vault 根。"},
     {"src": "seed/root/焦点.md", "dst_key": ".", "name": "焦点.md", "desc": "当前焦点 — 用户手动维护的 working set 入口。直落 vault 根。"},
 
-    {"src": "seed/_meta/memory-policy.yaml", "dst_key": "_meta", "name": "memory-policy.yaml", "desc": "记忆体系治理策略 — L0-L4 写入/遗忘/晋级 + recall + cron 配置。"},
+    {"src": "seed/_meta/memory-policy.yaml", "dst_key": "_meta", "name": "memory-policy.yaml", "desc": "记忆治理策略 — L0-L4 写入/遗忘/晋级 + recall + cron 配置。"},
 
     {"src": "seed/知识库/项目/_index.md", "dst_key": "知识库/项目", "name": "_index.md", "desc": "知识库/项目 — 本地项目笔记入口 (每项目一 <name>/ 子目录)。"},
     {"src": "seed/知识库/来源/_index.md", "dst_key": "知识库/来源", "name": "_index.md", "desc": "知识库/来源 — 外部资料 (代码仓库/网页/论文/书籍) 入口。"},
@@ -185,11 +185,11 @@
     {"src": "seed/知识库/反思/连接/_index.md", "dst_key": "知识库/反思/连接", "name": "_index.md", "desc": "反思/连接 — 旧笔记之间发现的链接。"},
     {"src": "seed/知识库/反思/疑问/_index.md", "dst_key": "知识库/反思/疑问", "name": "_index.md", "desc": "反思/疑问 — 未解决问题 + 后续研究方向。"},
 
-    {"src": "seed/记忆体系/L0-核心/_index.md", "dst_key": "记忆体系/L0-核心", "name": "_index.md", "desc": "记忆体系/L0-核心 — 不可篡改 (identity/user/values/habits/constraints)。写入需 user confirm + git tag。"},
-    {"src": "seed/记忆体系/L1-长期/_index.md", "dst_key": "记忆体系/L1-长期", "name": "_index.md", "desc": "记忆体系/L1-长期 — 已固化高 weight, procedural + semantic-stable 两类。仅用户显式删除。"},
-    {"src": "seed/记忆体系/L2-中期/_index.md", "dst_key": "记忆体系/L2-中期", "name": "_index.md", "desc": "记忆体系/L2-中期 — 语义可演化, 365 天无召回 → archive。"},
-    {"src": "seed/记忆体系/L3-短期/_index.md", "dst_key": "记忆体系/L3-短期", "name": "_index.md", "desc": "记忆体系/L3-短期 — episodic 情节, 90 天无召回 → archive。"},
-    {"src": "seed/记忆体系/L4-流水账/_index.md", "dst_key": "记忆体系/L4-流水账", "name": "_index.md", "desc": "记忆体系/L4-流水账 — append-only raw ledger + claude code sessions, 30 天后 gzip。"},
+    {"src": "seed/记忆/L0-核心/_index.md", "dst_key": "记忆/L0-核心", "name": "_index.md", "desc": "记忆/L0-核心 — 不可篡改 (identity/user/values/habits/constraints)。写入需 user confirm + git tag。"},
+    {"src": "seed/记忆/L1-长期/_index.md", "dst_key": "记忆/L1-长期", "name": "_index.md", "desc": "记忆/L1-长期 — 已固化高 weight, procedural + semantic-stable 两类。仅用户显式删除。"},
+    {"src": "seed/记忆/L2-中期/_index.md", "dst_key": "记忆/L2-中期", "name": "_index.md", "desc": "记忆/L2-中期 — 语义可演化, 365 天无召回 → archive。"},
+    {"src": "seed/记忆/L3-短期/_index.md", "dst_key": "记忆/L3-短期", "name": "_index.md", "desc": "记忆/L3-短期 — episodic 情节, 90 天无召回 → archive。"},
+    {"src": "seed/记忆/L4-流水账/_index.md", "dst_key": "记忆/L4-流水账", "name": "_index.md", "desc": "记忆/L4-流水账 — append-only raw ledger + claude code sessions, 30 天后 gzip。"},
 
     {"src": "seed/仪表盘/总览.md", "dst_key": "仪表盘", "name": "总览.md", "desc": "仪表盘/总览 — 全局 HTML grid 看板。"},
     {"src": "seed/仪表盘/知识库分布.md", "dst_key": "仪表盘", "name": "知识库分布.md", "desc": "仪表盘/知识库分布 — 按领域分布饼图。"},

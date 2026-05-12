@@ -77,8 +77,8 @@ def truncated(p: Path) -> str:
 
 
 def load_l0_core(v: Path) -> str:
-    """读 记忆体系/L0-核心/*.md, 拼接 frontmatter + brief, 受 per-file + total cap 约束."""
-    l0_dir = v / "记忆体系" / "L0-核心"
+    """读 记忆/L0-核心/*.md, 拼接 frontmatter + brief, 受 per-file + total cap 约束."""
+    l0_dir = v / "记忆" / "L0-核心"
     if not l0_dir.is_dir():
         return ""
     out = []
@@ -123,7 +123,7 @@ def stats_snapshot(v: Path) -> dict:
     s["kb_domains"] = _count_md(kb / "领域")
     s["kb_journal"] = _count_md(kb / "日记")
     s["kb_reflect"] = _count_md(kb / "反思")
-    mem = v / "记忆体系"
+    mem = v / "记忆"
     for lvl, key in [("L0-核心", "L0"), ("L1-长期", "L1"), ("L2-中期", "L2"), ("L3-短期", "L3"), ("L4-流水账", "L4")]:
         s[f"mem_{key}"] = _count_md(mem / lvl)
     return s
@@ -134,7 +134,7 @@ def recent_top(v: Path, days: int = 7, top_n: int = 5) -> list:
     cutoff = time.time() - days * 86400
     items = []
     n = 0
-    for root in [v / "知识库", v / "记忆体系"]:
+    for root in [v / "知识库", v / "记忆"]:
         if not root.is_dir():
             continue
         for p in root.rglob("*.md"):
@@ -194,7 +194,7 @@ try:
         f"- 知识库: 项目 {s.get('kb_projects', 0)} / 来源 {s.get('kb_sources', 0)} / 领域 {s.get('kb_domains', 0)} / 日记 {s.get('kb_journal', 0)} / 反思 {s.get('kb_reflect', 0)}"
     )
     lines.append(
-        f"- 记忆体系: L0 {s.get('mem_L0', 0)} · L1 {s.get('mem_L1', 0)} · L2 {s.get('mem_L2', 0)} · L3 {s.get('mem_L3', 0)} · L4 {s.get('mem_L4', 0)}"
+        f"- 记忆: L0 {s.get('mem_L0', 0)} · L1 {s.get('mem_L1', 0)} · L2 {s.get('mem_L2', 0)} · L3 {s.get('mem_L3', 0)} · L4 {s.get('mem_L4', 0)}"
     )
     if recents:
         lines.append(f"- 最近 7 天 top {len(recents)}: " + " · ".join(recents))

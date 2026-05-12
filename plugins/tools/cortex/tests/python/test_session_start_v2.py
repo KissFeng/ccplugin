@@ -43,7 +43,7 @@ def _ctx(r: subprocess.CompletedProcess) -> str:
 def test_l0_core_injected(tmp_path):
     """vault 含 L0 核心 .md → 注入 'L0 核心' header + brief 内容."""
     vault = _make_vault(tmp_path)
-    l0 = vault / "记忆体系" / "L0-核心"
+    l0 = vault / "记忆" / "L0-核心"
     l0.mkdir(parents=True)
     (l0 / "user.md").write_text(
         "---\ntype: memory\n---\n## brief\n\n用户偏好 Go + Python\n\n## full\n\n详细 ...\n",
@@ -58,7 +58,7 @@ def test_l0_core_injected(tmp_path):
 def test_l0_skips_underscore_prefixed(tmp_path):
     """L0-核心/_index.md 不应被注入."""
     vault = _make_vault(tmp_path)
-    l0 = vault / "记忆体系" / "L0-核心"
+    l0 = vault / "记忆" / "L0-核心"
     l0.mkdir(parents=True)
     (l0 / "_index.md").write_text("## brief\nshould-not-appear\n", encoding="utf-8")
     (l0 / "real.md").write_text("## brief\nshould-appear\n", encoding="utf-8")
@@ -121,7 +121,7 @@ def test_hot_md_still_injected(tmp_path):
 def test_context_size_under_cap(tmp_path):
     """L0 巨量内容下总注入 <= 15KB + 容差."""
     vault = _make_vault(tmp_path)
-    l0 = vault / "记忆体系" / "L0-核心"
+    l0 = vault / "记忆" / "L0-核心"
     l0.mkdir(parents=True)
     for i in range(10):
         (l0 / f"big{i}.md").write_text("## brief\n" + ("x" * 10000), encoding="utf-8")

@@ -1,13 +1,13 @@
 ---
 name: cortex-install
-description: 初始化 vault — 双 namespace (知识库 + 记忆体系 L0-L4) + 仪表盘 + 归档; lang (zh-CN/en/ja); 询问 9 cron。仅显式触发 ("init vault" / "安装 cortex")。
+description: 初始化 vault — 双 namespace (知识库 + 记忆 L0-L4) + 仪表盘 + 归档; lang (zh-CN/en/ja); 询问 9 cron。仅显式触发 ("init vault" / "安装 cortex")。
 disable-model-invocation: true
 allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content
 ---
 
 # cortex-install
 
-把一个 (新或既有) Obsidian vault 初始化为 cortex 标准布局 — **双 namespace** (知识库 + 记忆体系 L0-L4) + 仪表盘 + 归档 + HTML 片段库 + 9 cron jobs。
+把一个 (新或既有) Obsidian vault 初始化为 cortex 标准布局 — **双 namespace** (知识库 + 记忆 L0-L4) + 仪表盘 + 归档 + HTML 片段库 + 9 cron jobs。
 
 ## 触发场景
 
@@ -26,7 +26,7 @@ vault/
 ├── 主页.md                      全局入口 (HTML 二维仪表盘)
 ├── 焦点.md                      当前焦点 working set
 ├── 知识库/                      人类组织维度
-├── 记忆体系/                    AI URI 寻址 + L0-L4 分级
+├── 记忆/                    AI URI 寻址 + L0-L4 分级
 ├── 仪表盘/                      格式化看板 (HTML)
 └── 归档/                        冷藏
 ```
@@ -52,10 +52,10 @@ vault/
 
 四级技术专有名词 (Go/MySQL/React/...) 保留英文; 一/二/三级中文。
 
-### 记忆体系 (AI URI 寻址 L0-L4)
+### 记忆 (AI URI 寻址 L0-L4)
 
 ```
-记忆体系/
+记忆/
 ├── L0-核心/                     不可篡改 (identity/values/...) — 写入需 user confirm + git tag
 ├── L1-长期/{procedural,semantic-stable}/   高 weight, 仅用户显式删除
 ├── L2-中期/semantic/            365 天未召回 → archive
@@ -106,7 +106,7 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
 读 `<PLUGIN_ROOT>/presets/_structure.json` (44 seed_files):
 
 **顶层** (mkdir):
-- `知识库/` / `记忆体系/` / `仪表盘/` / `归档/` / `_assets/`
+- `知识库/` / `记忆/` / `仪表盘/` / `归档/` / `_assets/`
 
 **知识库子目录**:
 - `知识库/项目/`
@@ -127,20 +127,20 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
 - `知识库/反思/{洞察,连接,疑问}/`
 - `知识库/收件箱/`
 
-**记忆体系子目录**:
-- `记忆体系/L0-核心/`
-- `记忆体系/L1-长期/{procedural,semantic-stable}/`
-- `记忆体系/L2-中期/semantic/`
-- `记忆体系/L3-短期/episodic/`
-- `记忆体系/L4-流水账/{ledger,sessions}/`
-- `记忆体系/working/`
-- `记忆体系/views/{consolidated}/`
+**记忆子目录**:
+- `记忆/L0-核心/`
+- `记忆/L1-长期/{procedural,semantic-stable}/`
+- `记忆/L2-中期/semantic/`
+- `记忆/L3-短期/episodic/`
+- `记忆/L4-流水账/{ledger,sessions}/`
+- `记忆/working/`
+- `记忆/views/{consolidated}/`
 
 **Seed files** (按 `_structure.json:seed_files[]` 复制 44 文件):
 - 根入口 2: `主页.md` / `焦点.md` (`dst_key="."` → vault 根)
 - `_meta/memory-policy.yaml` 1
 - 知识库 `_index.md` × 24 (项目/来源/领域/日记/反思/收件箱 各层)
-- 记忆体系 `_index.md` × 5 (L0/L1/L2/L3/L4 顶层)
+- 记忆 `_index.md` × 5 (L0/L1/L2/L3/L4 顶层)
 - 仪表盘 stub × 12: `总览.md` / `知识库分布.md` / `记忆-L0-核心.md` / `记忆-L1-长期.md` / `记忆-L2-中期.md` / `记忆-L3-短期.md` / `记忆-L4-流水.md` / `记忆-晋级候选.md` / `记忆-腐化监控.md` / `知识-记忆 桥接.md` / `记忆-cron 状态.md` / `固化流.md`
 
 写入策略见下文 §写入策略。
@@ -279,7 +279,7 @@ lang: zh-CN
 ✅ 创建 日记/{日,周,月,年}/ 反思/{洞察,连接,疑问}/ 收件箱/
 ✅ 复制 24 个 _index.md
 
-[记忆体系 namespace]
+[记忆 namespace]
 ✅ 创建 L0-核心/ L1-长期/{procedural,semantic-stable}/ L2-中期/semantic/
 ✅ 创建 L3-短期/episodic/ L4-流水账/{ledger,sessions}/ working/ views/{consolidated}/
 ✅ 复制 5 个 L<N> _index.md

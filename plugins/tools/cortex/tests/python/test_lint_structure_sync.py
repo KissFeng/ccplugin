@@ -38,7 +38,7 @@ def test_structure_missing_empty_vault(tmp_path):
     files = {f["file"] for f in findings}
     # spot-check key namespaces
     assert "知识库" in files
-    assert "记忆体系/L0-核心" in files
+    assert "记忆/L0-核心" in files
 
 
 def test_seed_missing_empty_vault(tmp_path):
@@ -63,12 +63,12 @@ def test_meta_missing_empty_vault(tmp_path):
 
 def test_structure_present_no_findings_for_existing(tmp_path):
     v = _bootstrap_vault(tmp_path)
-    for d in ["知识库/项目", "知识库/来源", "记忆体系/L0-核心", "仪表盘", "归档"]:
+    for d in ["知识库/项目", "知识库/来源", "记忆/L0-核心", "仪表盘", "归档"]:
         (v / d).mkdir(parents=True, exist_ok=True)
     findings = _check_structure_missing(v, PLUGIN)
     files = {f["file"] for f in findings}
     assert "知识库/项目" not in files
-    assert "记忆体系/L0-核心" not in files
+    assert "记忆/L0-核心" not in files
 
 
 def test_fix_structure_creates_dir(tmp_path):
@@ -122,7 +122,7 @@ def test_apply_fixes_full_sync(tmp_path):
     assert n > 0
     # Key dirs created
     assert (v / "知识库" / "项目").is_dir()
-    assert (v / "记忆体系" / "L0-核心").is_dir()
+    assert (v / "记忆" / "L0-核心").is_dir()
     assert (v / "仪表盘").is_dir()
     # Key seed / meta files written
     assert (v / "主页.md").exists()

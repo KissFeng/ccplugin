@@ -23,9 +23,9 @@ allowed-tools: Bash Read Write Glob
 ## 流程
 
 1. **读源**:
-   - Glob `记忆体系/L2-中期/semantic/**/*.md` (weight ≥ 0.5)
-   - Glob `记忆体系/L3-短期/episodic/<window>/*.md`
-   - Glob `记忆体系/views/consolidated/<latest>.md` (cortex-consolidate 输出)
+   - Glob `记忆/L2-中期/semantic/**/*.md` (weight ≥ 0.5)
+   - Glob `记忆/L3-短期/episodic/<window>/*.md`
+   - Glob `记忆/views/consolidated/<latest>.md` (cortex-consolidate 输出)
 2. **domain 提取**:
    - 从 ref 字段反查 `知识库/领域/<L1>/<L2>/...` 推 domain 标签
    - 无 ref → 从 tags / 标题关键词推断

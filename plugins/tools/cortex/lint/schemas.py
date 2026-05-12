@@ -25,7 +25,7 @@ SCHEMAS: dict[str, VaultSchema] = {
             "_assets",
             # 双 namespace 顶层
             "知识库",
-            "记忆体系",
+            "记忆",
             "仪表盘",
             "归档",
             "folds",

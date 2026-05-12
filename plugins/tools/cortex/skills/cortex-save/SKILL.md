@@ -156,7 +156,7 @@ backlinks 回填: 2 处 ([[obsidian-hooks]] / [[claude-code-plugin]])
 落档前调 cortex-schema `read <target-path>` 取该目录 schema, 按 required + defaults 自动填 frontmatter 和 tags_required (含 placeholder, 由 lint --fix 后续完善)。例:
 
 - 落 知识库/来源/代码仓库/<host>/<org>/<repo>.md → 自动加 type:source / source_kind:repo / host:<host> / tags:[source/repo, host/<host>]
-- 落 记忆体系/L1-长期/procedural/<skill>.md → 自动加 level:L1 / tags:[memory/L1, memory/procedural]
+- 落 记忆/L1-长期/procedural/<skill>.md → 自动加 level:L1 / tags:[memory/L1, memory/procedural]
 
 schema 源: `<vault>/_meta/frontmatter-schema.yaml` (fallback plugin `templates/frontmatter-schema.yaml`)。缺 tags_required prefix 时由 lint rule `frontmatter-schema-violation` 报警 + autofix。
 

@@ -2,7 +2,7 @@
 type: memory-level
 title: L0-核心
 role: 核心记忆 · 不可篡改 · 性格/价值观/硬约束
-namespace: 记忆体系
+namespace: 记忆
 level: L0
 last_updated: "{{UPDATED}}"
 tags: [memory, l0, core]

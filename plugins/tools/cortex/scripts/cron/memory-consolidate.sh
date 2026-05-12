@@ -36,17 +36,17 @@ vault: \$CORTEX_VAULT
 具体行动:
 1. 计算上 7 天窗口 [now-7d, now] 与 ISO 周号 (YYYY-Wnn)。
 2. 读输入:
-   - <vault>/记忆体系/L4-流水账/ledger/*.jsonl 窗口内
-   - <vault>/记忆体系/L4-流水账/sessions/*/YYYY-MM/* 窗口内
+   - <vault>/记忆/L4-流水账/ledger/*.jsonl 窗口内
+   - <vault>/记忆/L4-流水账/sessions/*/YYYY-MM/* 窗口内
 3. 提炼:
    - 高频实体/主题 top 20 (按出现次数排序)
    - 出现 ≥3 次的模式 (候选 L3 episodic→semantic 提议)
    - 跨领域 connections (同一会话/同一日不同领域的实体共现)
 4. 写产物:
-   a. <vault>/记忆体系/views/consolidated/<YYYY-Wnn>.md (整文件覆盖):
+   a. <vault>/记忆/views/consolidated/<YYYY-Wnn>.md (整文件覆盖):
       frontmatter: type: view, week: YYYY-Wnn, generated: <UTC ISO>, generator: memory-consolidate
       分节: ## 高频实体 / ## 高频主题 / ## 重复模式 / ## 跨领域连接
-   b. <vault>/记忆体系/views/candidates.md 追加 ## L4→L3 (consolidate <YYYY-Wnn>) 一节, 列出 ≥3 次模式作为提议 (uri: L3://episodic/<date>/...).
+   b. <vault>/记忆/views/candidates.md 追加 ## L4→L3 (consolidate <YYYY-Wnn>) 一节, 列出 ≥3 次模式作为提议 (uri: L3://episodic/<date>/...).
    c. <vault>/知识库/反思/连接/<YYYY-Wnn>.md (若有 ≥1 跨领域连接, 新建; 否则跳过):
       frontmatter: type: reflection, kind: connection, week: YYYY-Wnn
 5. 不修改 ledger / sessions 原文件 (append-only 不变)。

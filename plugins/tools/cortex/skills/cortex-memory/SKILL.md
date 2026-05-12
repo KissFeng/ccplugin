@@ -1,13 +1,13 @@
 ---
 name: cortex-memory
-description: 记忆体系 CRUD — URI 寻址 (L0-L4) + frontmatter 版本控制。触发: "记忆写入" / "memory write" / "memory read" / "记忆更新" / "记忆删除"。
+description: 记忆 CRUD — URI 寻址 (L0-L4) + frontmatter 版本控制。触发: "记忆写入" / "memory write" / "memory read" / "记忆更新" / "记忆删除"。
 disable-model-invocation: false
 allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_append_content
 ---
 
 # cortex-memory
 
-通过 URI 对 `记忆体系/L0-L4` 下的记忆条目执行 CRUD; 维护 frontmatter (weight/recall_count/last_recalled/parents/children/uri/level)。
+通过 URI 对 `记忆/L0-L4` 下的记忆条目执行 CRUD; 维护 frontmatter (weight/recall_count/last_recalled/parents/children/uri/level)。
 
 ## 触发场景
 - 用户/AI 显式要求写入/读取/更新/删除一条记忆 (含 URI 或描述)
@@ -22,13 +22,13 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 ## URI 解析
 URI scheme: `L<N>://<sub>/<path>` → 文件系统映射:
 ```
-L0://<key>                    → 记忆体系/L0-核心/<key>.md
-L1://procedural/<skill>       → 记忆体系/L1-长期/procedural/<skill>.md
-L1://semantic-stable/<topic>  → 记忆体系/L1-长期/semantic-stable/<topic>.md
-L2://semantic/<topic>         → 记忆体系/L2-中期/semantic/<topic>.md
-L3://episodic/<date>/<slot>   → 记忆体系/L3-短期/episodic/<date>/<slot>.md
-L4://ledger/<date>            → 记忆体系/L4-流水账/ledger/<date>.jsonl
-L4://session/<cli>/<sid>      → 记忆体系/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md
+L0://<key>                    → 记忆/L0-核心/<key>.md
+L1://procedural/<skill>       → 记忆/L1-长期/procedural/<skill>.md
+L1://semantic-stable/<topic>  → 记忆/L1-长期/semantic-stable/<topic>.md
+L2://semantic/<topic>         → 记忆/L2-中期/semantic/<topic>.md
+L3://episodic/<date>/<slot>   → 记忆/L3-短期/episodic/<date>/<slot>.md
+L4://ledger/<date>            → 记忆/L4-流水账/ledger/<date>.jsonl
+L4://session/<cli>/<sid>      → 记忆/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md
 ```
 - 解析失败 (uri 非法 / 路径含 `..` `/` `\` NUL) → 立即拒绝, 输出 `unsafe segment`
 - 最终路径 `resolve().relative_to(vault)` 校验, 防 path escape
@@ -98,12 +98,12 @@ write/update/delete 类似, 单行结果 + 落盘路径。
 
 ## 写入时 Frontmatter 自动填
 
-write level=L<N> 时, 调 cortex-schema `read 记忆体系/L<N>-<name>/` 取 schema, 自动填 uri/level/weight/recall_when/created, tags 含 memory/L<N> + memory/<type>。例:
+write level=L<N> 时, 调 cortex-schema `read 记忆/L<N>-<name>/` 取 schema, 自动填 uri/level/weight/recall_when/created, tags 含 memory/L<N> + memory/<type>。例:
 
 - write `L1://procedural/git-flow` → frontmatter: uri / level:L1 / weight / recall_when / created, tags: [memory/L1, memory/procedural]
 - write `L2://semantic/go/goroutine` → frontmatter: 上述 + expires, tags: [memory/L2, memory/semantic]
 
-schema 源: `<vault>/_meta/frontmatter-schema.yaml` `namespaces.记忆体系.*`。缺字段时 policy validator 拒写, lint 后续报 frontmatter-schema-violation。
+schema 源: `<vault>/_meta/frontmatter-schema.yaml` `namespaces.记忆.*`。缺字段时 policy validator 拒写, lint 后续报 frontmatter-schema-violation。
 
 ## AUTO_MODE 兼容
 若上下文标 `[AUTO_MODE: ...]`, 跳过所有交互, 用 policy 默认值决策。L0 write/delete 与 L1 delete 在 AUTO_MODE 下一律拒绝, 输出候选清单提示用户跑 `~/.cortex/scripts/memory.sh <verb> <uri> --interactive`。

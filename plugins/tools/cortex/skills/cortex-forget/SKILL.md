@@ -32,16 +32,16 @@ L0 不可 forget (除非用户提供 `user_signature` 显式覆盖 forget.never=
    - L3: `after_days=90 unless_recalled>=3`
    - L4: `compress_after_days=30` (这条由 memory-compact 负责 gzip, 本 skill 不动)
 2. **扫 L2**:
-   - Glob `记忆体系/L2-中期/semantic/**/*.md`
+   - Glob `记忆/L2-中期/semantic/**/*.md`
    - 读 frontmatter: created, last_recalled, recall_count
    - 判定: `(now - max(created, last_recalled)).days >= 365 AND recall_count < 5` → 命中
 3. **扫 L3**:
-   - Glob `记忆体系/L3-短期/episodic/**/*.md`
+   - Glob `记忆/L3-短期/episodic/**/*.md`
    - 判定: `(now - max(created, last_recalled)).days >= 90 AND recall_count < 3` → 命中
 4. **标 archive_pending**:
    - Edit frontmatter: 加/改 `archive_pending: true` + `archive_reason: "expired: ..."` + `archive_marked_at: <UTC ISO>`
    - 不动 body
-5. **汇总**: 输出命中条目 + 写一行到 `记忆体系/views/alerts.md` (审计追踪)
+5. **汇总**: 输出命中条目 + 写一行到 `记忆/views/alerts.md` (审计追踪)
 
 ## 输出
 ```
@@ -51,7 +51,7 @@ L0 不可 forget (除非用户提供 `user_signature` 显式覆盖 forget.never=
     - ...
   L3 expired: 12 (90d unused, recall<3)
   marked archive_pending=true on 16 entries
-  alerts appended: 记忆体系/views/alerts.md
+  alerts appended: 记忆/views/alerts.md
   next: monthly memory-archive cron will physically move to 归档/
 ```
 

@@ -13,7 +13,7 @@ Tools:
   cortex_memory_promote      level up; L2→L1 and L1→L0 require user approval
   cortex_ledger_append       append JSONL line to L4-流水账/ledger
   cortex_session_import      import Claude Code transcript (stub)
-  cortex_uri_index_rebuild   scan 记忆体系/**/*.md → _meta/uri-index.json
+  cortex_uri_index_rebuild   scan 记忆/**/*.md → _meta/uri-index.json
   cortex_html_render         render an HTML template fragment with {{VAR}} subs
 
 Return shape (uniform): {"ok": bool, "code": int, "data"?: dict, "error"?: str}
@@ -58,7 +58,7 @@ def resolve_uri(uri: str, vault: Path) -> Path:
     if not m:
         raise ValueError(f"URI invalid: {uri}")
     level, path = m.group(1), m.group(2)
-    base = vault / "记忆体系"
+    base = vault / "记忆"
     if level == "L0":
         return base / "L0-核心" / f"{path}.md"
     if level == "L1":
@@ -282,7 +282,7 @@ async def handle_memory_recall(args: dict[str, Any]) -> list[TextContent]:
     if err:
         return _wrap(err)
     assert vault is not None
-    base = vault / "记忆体系"
+    base = vault / "记忆"
 
     q_lower = query.lower()
     hits: list[dict[str, Any]] = []
@@ -366,7 +366,7 @@ async def handle_memory_forget(args: dict[str, Any]) -> list[TextContent]:
         lvl = criteria.get("level")
         older = int(criteria.get("older_than_days", 0))
         sub = _LEVEL_DIRS.get(str(lvl)) if lvl else None
-        roots = [vault / "记忆体系" / sub] if sub else [vault / "记忆体系"]
+        roots = [vault / "记忆" / sub] if sub else [vault / "记忆"]
         cutoff = (
             _dt.datetime.now(tz=_dt.timezone.utc) - _dt.timedelta(days=older)
             if older
@@ -424,7 +424,7 @@ async def handle_memory_consolidate(args: dict[str, Any]) -> list[TextContent]:
     end = today + _dt.timedelta(days=7 * week_offset + 6)
     start = end - _dt.timedelta(days=6)
 
-    ledger_dir = vault / "记忆体系" / "L4-流水账" / "ledger"
+    ledger_dir = vault / "记忆" / "L4-流水账" / "ledger"
     entity_freq: dict[str, int] = {}
     topic_freq: dict[str, int] = {}
     entity_topics: dict[str, set[str]] = {}
@@ -479,7 +479,7 @@ async def handle_memory_consolidate(args: dict[str, Any]) -> list[TextContent]:
         if v >= 3:
             candidates.append(("topic", k, v))
 
-    views_dir = vault / "记忆体系" / "views"
+    views_dir = vault / "记忆" / "views"
     views_dir.mkdir(parents=True, exist_ok=True)
     cand_path = views_dir / "candidates.md"
     cand_added = 0
@@ -645,7 +645,7 @@ def _do_promote(uri: str, target_level: str, vault: Path) -> dict[str, Any]:
 
 LEDGER_APPEND_TOOL = Tool(
     name="cortex_ledger_append",
-    description="append 一行 JSON 到 记忆体系/L4-流水账/ledger/<date>.jsonl",
+    description="append 一行 JSON 到 记忆/L4-流水账/ledger/<date>.jsonl",
     inputSchema={
         "type": "object",
         "properties": {
@@ -668,7 +668,7 @@ async def handle_ledger_append(args: dict[str, Any]) -> list[TextContent]:
     if err:
         return _wrap(err)
     assert vault is not None
-    path = vault / "记忆体系" / "L4-流水账" / "ledger" / f"{date}.jsonl"
+    path = vault / "记忆" / "L4-流水账" / "ledger" / f"{date}.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     record = {"ts": _iso_now(), **event}
     line = json.dumps(record, ensure_ascii=False)
@@ -762,7 +762,7 @@ async def handle_session_import(args: dict[str, Any]) -> list[TextContent]:
     yyyy_mm = started_dt.strftime("%Y-%m")
     ledger_date = started_dt.strftime("%Y-%m-%d")
 
-    sessions_dir = vault / "记忆体系" / "L4-流水账" / "sessions" / cli / yyyy_mm
+    sessions_dir = vault / "记忆" / "L4-流水账" / "sessions" / cli / yyyy_mm
     sessions_dir.mkdir(parents=True, exist_ok=True)
     sess_path = sessions_dir / f"{sid}.md"
 
@@ -799,7 +799,7 @@ async def handle_session_import(args: dict[str, Any]) -> list[TextContent]:
     sess_path.write_text(fm_dump(fm, "\n".join(body_lines) + "\n"), encoding="utf-8")
 
     # Append per-turn events to ledger
-    ledger_path = vault / "记忆体系" / "L4-流水账" / "ledger" / f"{ledger_date}.jsonl"
+    ledger_path = vault / "记忆" / "L4-流水账" / "ledger" / f"{ledger_date}.jsonl"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     appended = 0
     with file_lock(str(ledger_path)):
@@ -836,7 +836,7 @@ async def handle_session_import(args: dict[str, Any]) -> list[TextContent]:
 
 URI_INDEX_REBUILD_TOOL = Tool(
     name="cortex_uri_index_rebuild",
-    description="扫 记忆体系/**/*.md 提取 frontmatter.uri → 重建 _meta/uri-index.json",
+    description="扫 记忆/**/*.md 提取 frontmatter.uri → 重建 _meta/uri-index.json",
     inputSchema={"type": "object", "properties": {}},
 )
 
@@ -846,7 +846,7 @@ async def handle_uri_index_rebuild(args: dict[str, Any]) -> list[TextContent]:
     if err:
         return _wrap(err)
     assert vault is not None
-    base = vault / "记忆体系"
+    base = vault / "记忆"
     index: dict[str, dict[str, Any]] = {}
     if base.is_dir():
         for path in base.rglob("*.md"):

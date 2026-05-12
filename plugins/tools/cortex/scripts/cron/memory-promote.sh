@@ -29,7 +29,7 @@ export CORTEX_TIMEOUT="${CORTEX_TIMEOUT:-600}"
 
 PROMPT="[AUTO_MODE: non-interactive shell wrapper. 禁用 AskUserQuestion, 自动决策]
 
-任务: 扫描记忆体系晋级候选 (memory-promote)。
+任务: 扫描记忆晋级候选 (memory-promote)。
 
 vault: \$CORTEX_VAULT
 policy: <vault>/_meta/memory-policy.yaml
@@ -52,12 +52,12 @@ policy: <vault>/_meta/memory-policy.yaml
    L0 永不自动 (用户审批必经); L1→L0 仅写候选, needs_user_approval: true。
 
 2. 扫描:
-   - <vault>/记忆体系/L4-流水账/ledger/*.jsonl (近 7 天)
-   - <vault>/记忆体系/L3-短期/episodic/* (近 30 天)
-   - <vault>/记忆体系/L2-中期/semantic/* (近 365 天)
-   - <vault>/记忆体系/L1-长期/{procedural,semantic-stable}/*
+   - <vault>/记忆/L4-流水账/ledger/*.jsonl (近 7 天)
+   - <vault>/记忆/L3-短期/episodic/* (近 30 天)
+   - <vault>/记忆/L2-中期/semantic/* (近 365 天)
+   - <vault>/记忆/L1-长期/{procedural,semantic-stable}/*
 3. 读各条目 frontmatter (uri/level/weight/recall_count/last_recalled/created), 评估晋级条件。
-4. 写候选清单到 <vault>/记忆体系/views/candidates.md (整文件覆盖, 不 append):
+4. 写候选清单到 <vault>/记忆/views/candidates.md (整文件覆盖, 不 append):
    - 顶部 frontmatter: type: view, generated: <UTC ISO>, generator: memory-promote
    - 分节: ## L4→L3 / ## L3→L2 / ## L2→L1 / ## L1→L0 (needs_user_approval)
    - 表格列: | 候选 URI | 源 level | 目标 level | freq | timespan | weight | 建议理由 |
