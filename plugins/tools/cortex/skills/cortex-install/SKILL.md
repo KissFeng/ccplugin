@@ -1,6 +1,6 @@
 ---
 name: cortex-install
-description: 初始化 vault — 共享根 + preset (lyt/zettel/para/blank) + lang (zh-CN/en/ja); 询问 cron。仅显式触发 ("init vault" / "安装 cortex")。
+description: 初始化 vault — 共享根 + 固定 LYT 结构 + lang (zh-CN/en/ja); 询问 cron。仅显式触发 ("init vault" / "安装 cortex")。
 disable-model-invocation: true
 allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content
 ---
@@ -13,7 +13,6 @@ allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian
 
 - 用户初次安装 cortex, 需要把空 vault 起骨架
 - 已有 vault 接入 cortex, 需补 `_meta/` 与 `_templates/`
-- 切换 preset (lyt ↔ para ↔ zettel ↔ blank)
 
 ## v2 增项 (M1+M3)
 
@@ -24,15 +23,16 @@ allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian
 
 ## 输入
 
-- `preset` ∈ `{lyt, zettel, para, blank}`, 默认 `lyt`
 - vault 路径来自 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh`
+- preset 固定 `lyt` (不可选, 用户期望唯一结构)
+- 兼容: 若既有 vault `_meta/version.json:.preset` 已是 `para`/`zettel`/`flat`, **保留原 preset**, 不强改为 lyt (lint 仍按原 schema 跑); 仅当字段缺失或为新 vault 时写 `preset: "lyt"`
 
 ## 流程
 
 1. **解析 vault** — 跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh` 拿绝对路径; 失败则提示用户配置 `OBSIDIAN_VAULT` env 或 `~/.config/cortex/config.json`
-2. **校验 preset** — 不在白名单则报错并退出
-3. **写共享根** (所有 preset 必备):
-   - `_meta/version.json` — `{"schema": "1.0", "preset": "<preset>", "created": "<UTC ISO>"}`
+2. **设 preset=lyt** — 固定结构, 不询问用户。若 `<vault>/_meta/version.json` 已存且 `.preset` 非 lyt (para/zettel/flat), 保留原值, 跳过 preset 字段覆盖
+3. **写共享根** (固定 LYT 必备):
+   - `_meta/version.json` — `{"schema": "1.0", "preset": "lyt", "created": "<UTC ISO>"}` (既有非 lyt vault 保留原 preset)
    - `_meta/lint-baseline.json` — `{"exempt": []}`
    - `_meta/migrations/` — 确保目录存在 (用 `Bash mkdir -p` 或写入一个 `.gitkeep`)
    - `_templates/` — 复制 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/templates/{concept,entity,domain,dashboard,question,source,_index}.md` 到此目录
@@ -40,11 +40,10 @@ allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian
    - `hot.md` — 空骨架 (frontmatter `type: meta, title: hot`)
    - `log/_index.md` — 空骨架
    - `folds/_index.md` — 空骨架
-4. **写 preset 业务目录**:
-   - 读 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/presets/<preset>/_structure.json`
+4. **写 LYT 业务目录**:
+   - 读 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/presets/lyt/_structure.json`
    - 按 `directories[]` 在 vault 内创建空目录
-   - 按 `seed_files[]` 把 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/presets/<preset>/<src>` 复制到 `<vault>/<dst>`
-   - blank preset 的 directories/seed_files 均为空, 跳过即可
+   - 按 `seed_files[]` 把 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/presets/lyt/<src>` 复制到 `<vault>/<dst>`
 5. **询问 git auto-sync (P5)** — 若 `<vault>/.git` 存在 (vault 是 git repo), **必须**用 `AskUserQuestion` 工具(不能用文本式提问) 询问 1 个 single-choice 问题:
    - 问题: "vault 是 git repo, 是否启用 Stop hook 自动 commit?"
    - 选项:
@@ -132,5 +131,4 @@ preset: lyt
 
 - 单文件 IO/权限错: 标 ❌, 继续下一项, 末尾汇总
 - vault 路径解析失败: 立即退出并提示配置方式
-- preset 名错: 立即退出并列出 4 个有效值
 - 模板/preset 源缺失 (插件文件丢): 立即退出, 提示重装 cortex 插件
