@@ -5,9 +5,9 @@
 # Wrappers embed the absolute marketplace path so the user-facing entry points
 # stay stable across plugin upgrades.
 #
-# Wrappers (11 total):
+# Wrappers (12 total):
 #   - cron/proxy: lint.sh (dual-mode), fold.sh, dashboard.sh, install_cron.sh, config.sh, update.sh
-#   - skill entrypoints: doctor.sh, ingest.sh, search.sh, save.sh, refactor.sh
+#   - skill entrypoints: doctor.sh, ingest.sh, search.sh, save.sh, refactor.sh, init.sh
 #
 # Usage:
 #   bash install_wrappers.sh --install-path <abs cortex root> [--target-dir <dir>] [--no-overwrite]
@@ -255,6 +255,73 @@ claude plugins marketplace update ccplugin-market \
 EOB
 )"
 
-printf '%s[install_wrappers.sh]%s %s✓%s wrote %s11 wrappers%s to %s%s%s\n' \
+# init.sh: bootstrap/重建 vault 骨架 via cortex-install SKILL (AUTO_MODE).
+# 用户便捷入口, 不依赖 LLM SKILL 自然语言触发.
+emit init.sh "$(cat <<EOB
+# init.sh — 初始化/重建 cortex vault 骨架 (双 namespace + seed 文件)
+#
+# 调 cortex-install SKILL (AUTO_MODE), 按 ~/.cortex/config.json 解析 vault.
+#
+# Usage: ~/.cortex/scripts/init.sh [--force]
+
+FORCE="\${1:-}"
+
+CONFIG="\$HOME/.cortex/config.json"
+if [[ ! -f "\$CONFIG" ]]; then
+  echo "[cortex] config 不存在 (\$CONFIG), 跑 install.sh 先安装" >&2
+  exit 4
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "[cortex] 缺 jq, 请先装: brew install jq / apt install jq" >&2
+  exit 4
+fi
+
+VAULT="\$(jq -r '.vault // empty' "\$CONFIG" 2>/dev/null)"
+if [[ -z "\$VAULT" ]]; then
+  echo "[cortex] vault 路径未配置 (\$CONFIG:.vault)" >&2
+  exit 4
+fi
+
+# 已初始化判断 (_meta/version.json 存在)
+if [[ -f "\$VAULT/_meta/version.json" && "\$FORCE" != "--force" ]]; then
+  echo "[cortex] vault 已初始化: \$VAULT"
+  echo "  → 重建用: \$0 --force"
+  echo "  → 看结构: ls \$VAULT"
+  exit 0
+fi
+
+PLUGIN_ROOT="\${CORTEX_INSTALL_PATH:-$INSTALL_PATH}"
+SETTINGS="\$(jq -r '.settings // empty' "\$CONFIG" 2>/dev/null)"
+SETTINGS="\${SETTINGS:-\$HOME/.claude/settings.glm-4.7-flash.json}"
+
+PROMPT="[AUTO_MODE: non-interactive shell wrapper. 不用 AskUserQuestion, 自动决策.]
+
+初始化 cortex vault: \$VAULT
+
+跑 cortex-install skill 完整流程:
+1. 不询问 lang, 用 \\\${CORTEX_LANG:-zh-CN}
+2. preset=lyt (固定)
+3. 写共享根 (_meta/version.json, memory-policy.yaml, template-manifest.json, _templates/, index.md, hot.md, 主页.md, 焦点.md)
+4. 按 plugin presets/_structure.json 创建知识库 + 记忆体系 + 仪表盘 + 归档目录树
+5. 复制 seed_files (含占位符渲染: {{TITLE}} {{CURRENT_PATH}} {{LAST_UPDATED}})
+6. **跳过** git auto-sync 询问 (默认 off, AUTO_MODE)
+7. **跳过** cron 注册询问 (默认 off, 用户单独跑 install_cron.sh)
+8. 回报创建/跳过文件总数
+
+PLUGIN_ROOT: \$PLUGIN_ROOT
+强制模式: \$FORCE
+不动用户已写入的笔记 (frontmatter 检测 last_modified > created 则跳过)"
+
+exec claude --bare \\
+  --no-session-persistence \\
+  --settings "\$SETTINGS" \\
+  --max-budget-usd 0.30 \\
+  -p "\$PROMPT" \\
+  --allowed-tools "Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content"
+EOB
+)"
+
+printf '%s[install_wrappers.sh]%s %s✓%s wrote %s12 wrappers%s to %s%s%s\n' \
   "$_C_CYAN" "$_C_RESET" "$_C_GREEN" "$_C_RESET" \
   "$_C_BOLD" "$_C_RESET" "$_C_BOLD" "$TARGET_DIR" "$_C_RESET" >&2
