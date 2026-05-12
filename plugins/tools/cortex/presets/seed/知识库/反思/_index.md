@@ -8,6 +8,8 @@ children: [洞察, 连接, 疑问]
 last_updated: "{{UPDATED}}"
 tags: [meta, index, 反思]
 icon: "💭"
+template_version: 1
+
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
@@ -94,3 +96,5 @@ views:
   <a href="{{NEW_LINK}}">➕ 新建</a>
   <a href="{{REFRESH_LINK}}">🔄 刷新</a>
 </section>
+
+<!-- TEMPLATE_END -->

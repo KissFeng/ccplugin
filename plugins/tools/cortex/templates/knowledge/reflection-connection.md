@@ -27,3 +27,5 @@ updated: {{UPDATED}}
 ## 可迁移的方法
 
 {{TRANSFER}}
+
+<!-- TEMPLATE_END -->

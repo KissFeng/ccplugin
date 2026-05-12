@@ -7,6 +7,8 @@ level: L4
 children: [ledger, sessions]
 last_updated: "{{UPDATED}}"
 tags: [memory, l4, ledger]
+template_version: 1
+
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
@@ -75,3 +77,5 @@ views:
   <a href="../../仪表盘/固化流.md">🔄 固化流</a>
   <a href="../../主页.md">⬅ 主页</a>
 </section>
+
+<!-- TEMPLATE_END -->

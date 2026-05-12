@@ -26,3 +26,5 @@ updated: {{UPDATED}}
 ## 相关
 
 {{RELATED}}
+
+<!-- TEMPLATE_END -->

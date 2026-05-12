@@ -23,3 +23,5 @@ updated: {{UPDATED}}
 ## 反驳条件
 
 {{COUNTER}}
+
+<!-- TEMPLATE_END -->

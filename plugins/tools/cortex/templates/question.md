@@ -14,6 +14,7 @@ status: open      # open | exploring | answered | abandoned
 priority: medium  # low | medium | high
 due: ""
 related: []
+template_version: 1
 ---
 
 # {{TITLE}}
@@ -42,3 +43,5 @@ related: []
 
 - 上层主题: [[]]
 - 相关来源: [[]]
+
+<!-- TEMPLATE_END -->

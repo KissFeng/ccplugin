@@ -8,6 +8,8 @@ children: [知识管理, 效率, 思维框架]
 last_updated: "{{UPDATED}}"
 tags: [meta, index, 领域, 元学习]
 icon: "🧭"
+template_version: 1
+
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
@@ -111,3 +113,5 @@ views:
   <a href="{{NEW_LINK}}">➕ 新建</a>
   <a href="{{REFRESH_LINK}}">🔄 刷新</a>
 </section>
+
+<!-- TEMPLATE_END -->

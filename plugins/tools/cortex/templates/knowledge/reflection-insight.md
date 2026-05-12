@@ -22,3 +22,5 @@ updated: {{UPDATED}}
 ## 潜在影响
 
 {{IMPLICATIONS}}
+
+<!-- TEMPLATE_END -->

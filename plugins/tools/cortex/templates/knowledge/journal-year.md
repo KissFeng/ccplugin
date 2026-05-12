@@ -25,3 +25,5 @@ updated: {{UPDATED}}
 ## 来年方向
 
 {{NEXT_YEAR}}
+
+<!-- TEMPLATE_END -->

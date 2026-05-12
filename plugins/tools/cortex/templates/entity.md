@@ -13,6 +13,7 @@ cli_session: {{CLI_SESSION}}
 entity_kind: ""   # person | tool | project | org | service
 url: ""
 related: []
+template_version: 1
 ---
 
 # {{TITLE}}
@@ -41,3 +42,5 @@ related: []
 <!-- 与本实体的关键互动事件, 用日期开头的列表。 -->
 
 -
+
+<!-- TEMPLATE_END -->

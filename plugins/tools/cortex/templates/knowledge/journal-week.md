@@ -26,3 +26,5 @@ updated: {{UPDATED}}
 ## 下周计划
 
 {{NEXT_WEEK}}
+
+<!-- TEMPLATE_END -->

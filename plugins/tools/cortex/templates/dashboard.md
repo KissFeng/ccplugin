@@ -11,6 +11,7 @@ lang: {{LANG}}
 cli: {{CLI}}
 cli_session: {{CLI_SESSION}}
 refresh: manual   # manual | daily | weekly
+template_version: 1
 ---
 
 # {{TITLE}}
@@ -72,3 +73,5 @@ tag includes #cortex
 ## 备注
 
 <!-- 维护说明、刷新策略、查询调整记录。 -->
+
+<!-- TEMPLATE_END -->

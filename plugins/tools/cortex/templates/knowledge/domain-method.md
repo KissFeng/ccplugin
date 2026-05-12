@@ -27,3 +27,5 @@ updated: {{UPDATED}}
 ## 反例
 
 {{ANTI_PATTERNS}}
+
+<!-- TEMPLATE_END -->

@@ -6,6 +6,8 @@ namespace: 记忆体系
 level: L0
 last_updated: "{{UPDATED}}"
 tags: [memory, l0, core]
+template_version: 1
+
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
@@ -60,3 +62,5 @@ views:
   <a href="../../仪表盘/记忆-L0-核心.md">📊 仪表盘</a>
   <a href="../../主页.md">⬅ 主页</a>
 </section>
+
+<!-- TEMPLATE_END -->

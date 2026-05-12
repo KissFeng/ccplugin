@@ -31,3 +31,5 @@ updated: {{UPDATED}}
 ## 引用片段
 
 {{QUOTES}}
+
+<!-- TEMPLATE_END -->

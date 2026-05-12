@@ -6,6 +6,10 @@
     {{BRANCHES}} 分支节点 (缩进表示层级)
 -->
 
+---
+template_version: 1
+---
+
 ## {{TITLE}}
 
 ```mermaid
@@ -22,3 +26,5 @@ mindmap
     %%   L0-核心
     %%   L1-长期
 ```
+
+<!-- TEMPLATE_END -->

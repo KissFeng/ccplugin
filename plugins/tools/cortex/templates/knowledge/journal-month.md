@@ -26,3 +26,5 @@ updated: {{UPDATED}}
 ## 下月重点
 
 {{NEXT_MONTH}}
+
+<!-- TEMPLATE_END -->

@@ -17,6 +17,7 @@ publish_date: ""
 read_status: unread  # unread | reading | read | skimmed
 rating: 0          # 0-5
 related: []
+template_version: 1
 ---
 
 # {{TITLE}}
@@ -46,3 +47,5 @@ related: []
 - 衍生概念: [[]]
 - 衍生问题: [[]]
 - 衍生项目: [[]]
+
+<!-- TEMPLATE_END -->

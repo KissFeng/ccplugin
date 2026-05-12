@@ -52,3 +52,5 @@ template_version: 1
 
 用户可直接编辑本目录下模板, cortex-install 默认 **不覆盖** 已存在文件。
 重置某模板, 删除后重跑 `cortex-install`。
+
+<!-- TEMPLATE_END -->

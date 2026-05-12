@@ -26,3 +26,5 @@ updated: {{UPDATED}}
 ## 解答 (若已解)
 
 {{ANSWER}}
+
+<!-- TEMPLATE_END -->

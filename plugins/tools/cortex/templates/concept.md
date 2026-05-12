@@ -14,6 +14,7 @@ status: seed
 related: []
 sources: []
 up: ""
+template_version: 1
 ---
 
 # {{TITLE}}
@@ -56,3 +57,5 @@ up: ""
 <!-- 用 [[wikilink]] 链到 source 类型页。 -->
 
 -
+
+<!-- TEMPLATE_END -->

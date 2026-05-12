@@ -26,3 +26,5 @@ archive_pending: false
 ## transcript
 
 {{TRANSCRIPT}}
+
+<!-- TEMPLATE_END -->

@@ -6,6 +6,10 @@
     {{FLOWS}}  流量定义, 每行形如 `源,目标,权重`
 -->
 
+---
+template_version: 1
+---
+
 ## {{TITLE}}
 
 ```mermaid
@@ -18,3 +22,5 @@ sankey-beta
 %% L2-语义,L1-长期,12
 %% L1-长期,L0-核心,2
 ```
+
+<!-- TEMPLATE_END -->

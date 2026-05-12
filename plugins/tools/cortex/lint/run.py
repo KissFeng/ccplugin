@@ -479,11 +479,228 @@ def _f(rule: str, severity: str, file: str, line: int, msg: str, fixable: bool) 
     return {"rule": rule, "severity": severity, "file": file, "line": line, "msg": msg, "fixable": fixable}
 
 
+# ---- template/seed manifest helpers (rules 17/18/19) ----
+
+TEMPLATE_END_MARKER = "<!-- TEMPLATE_END -->"
+
+
+def _sha256_normalized(p: Path) -> str:
+    """sha256 of file content with CRLF normalized to LF (matches manifest gen)."""
+    try:
+        return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    except Exception:
+        return ""
+
+
+def _load_manifest(p: Path) -> dict[str, Any]:
+    if not p.exists():
+        return {}
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _read_template_version(p: Path) -> int:
+    """Read frontmatter template_version (default 1)."""
+    try:
+        text = p.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return 1
+    fm_match = re.match(r"^(?:<!--[^\n]*-->\n)*---\n(.*?)\n---", text, re.S)
+    if fm_match:
+        vm = re.search(r"^template_version\s*:\s*(\d+)", fm_match.group(1), re.M)
+        if vm:
+            return int(vm.group(1))
+    hm = re.search(r"<!--\s*cortex-template-version:\s*(\d+)\s*-->", text)
+    if hm:
+        return int(hm.group(1))
+    return 1
+
+
+def _check_template_outdated(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
+    """Rule template-outdated/template-missing — vault/_templates vs plugin manifest."""
+    findings: list[dict[str, Any]] = []
+    manifest = _load_manifest(plugin_root / "templates" / "_manifest.json")
+    if not manifest:
+        return findings
+    entries = manifest.get("entries", {}) if isinstance(manifest, dict) else {}
+    for rel, info in entries.items():
+        if not isinstance(info, dict):
+            continue
+        vault_file = vault / "_templates" / rel
+        plugin_sha = info.get("sha256", "")
+        if not vault_file.exists():
+            findings.append(_f(
+                "template-missing", "warn", f"_templates/{rel}", 1,
+                f"vault 缺少模板 {rel} (plugin 有最新版)", True,
+            ))
+            continue
+        vault_sha = _sha256_normalized(vault_file)
+        if vault_sha != plugin_sha:
+            findings.append(_f(
+                "template-outdated", "warn", f"_templates/{rel}", 1,
+                f"模板 _templates/{rel} 与 plugin source 不一致 "
+                f"(vault sha={vault_sha[:8]} plugin sha={plugin_sha[:8]})",
+                True,
+            ))
+    return findings
+
+
+def _seed_rel_to_vault_rel(seed_rel: str) -> str | None:
+    """Map presets manifest key (e.g. 'seed/root/主页.md') → vault rel path."""
+    if seed_rel.startswith("seed/root/"):
+        return seed_rel[len("seed/root/"):]
+    if seed_rel.startswith("seed/_meta/"):
+        # _meta files (memory-policy.yaml etc.) excluded from manifest scope
+        return seed_rel[len("seed/"):]
+    if seed_rel.startswith("seed/"):
+        return seed_rel[len("seed/"):]
+    return None
+
+
+def _check_seed_outdated(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
+    """Rule seed-outdated — vault seed files' template_version < plugin manifest."""
+    findings: list[dict[str, Any]] = []
+    manifest = _load_manifest(plugin_root / "presets" / "_manifest.json")
+    if not manifest:
+        return findings
+    entries = manifest.get("entries", {}) if isinstance(manifest, dict) else {}
+    for seed_rel, info in entries.items():
+        if not isinstance(info, dict):
+            continue
+        vault_rel = _seed_rel_to_vault_rel(seed_rel)
+        if not vault_rel:
+            continue
+        vault_file = vault / vault_rel
+        if not vault_file.exists():
+            # User may not have installed this seed — don't warn (lint isn't doctor)
+            continue
+        plugin_ver = int(info.get("template_version", 1))
+        vault_ver = _read_template_version(vault_file)
+        if vault_ver < plugin_ver:
+            findings.append(_f(
+                "seed-outdated", "warn", vault_rel, 1,
+                f"seed 文件 template_version={vault_ver} < plugin={plugin_ver}",
+                True,
+            ))
+    return findings
+
+
+def _find_plugin_seed_source(plugin_root: Path, vault_rel: str) -> Path | None:
+    """Reverse map vault rel → plugin seed/<...> path."""
+    # root entries (主页.md / 焦点.md) live under seed/root/
+    candidates = [
+        plugin_root / "presets" / "seed" / "root" / vault_rel,
+        plugin_root / "presets" / "seed" / vault_rel,
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    return None
+
+
+def _fix_template_outdated(
+    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+) -> bool:
+    """Copy plugin template over vault template (backup existing)."""
+    file_path = finding["file"]
+    if not file_path.startswith("_templates/"):
+        return False
+    rel = file_path[len("_templates/"):]
+    src = plugin_root / "templates" / rel
+    dst = vault / "_templates" / rel
+    if not src.exists():
+        return False
+    if dst.exists():
+        bak = backup_dir / "_templates" / rel
+        bak.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copy2(dst, bak)
+        except Exception:
+            pass
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.copy2(src, dst)
+        return True
+    except Exception:
+        return False
+
+
+def _fix_seed_outdated(
+    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+) -> bool:
+    """Rewrite vault seed file's template-owned region (up to TEMPLATE_END marker)."""
+    vault_rel = finding["file"]
+    src = _find_plugin_seed_source(plugin_root, vault_rel)
+    if src is None:
+        return False
+    dst = vault / vault_rel
+    if not dst.exists():
+        return False
+    try:
+        src_text = src.read_text(encoding="utf-8")
+        dst_text = dst.read_text(encoding="utf-8")
+    except Exception:
+        return False
+    # backup
+    bak = backup_dir / vault_rel
+    bak.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.copy2(dst, bak)
+    except Exception:
+        pass
+    if TEMPLATE_END_MARKER in src_text:
+        src_head = src_text.split(TEMPLATE_END_MARKER, 1)[0] + TEMPLATE_END_MARKER
+    else:
+        src_head = src_text
+    if TEMPLATE_END_MARKER in dst_text:
+        dst_tail = dst_text.split(TEMPLATE_END_MARKER, 1)[1]
+    else:
+        dst_tail = ""  # legacy file w/o marker → full replace
+    try:
+        dst.write_text(src_head + dst_tail, encoding="utf-8")
+        return True
+    except Exception:
+        return False
+
+
 # ---- autofix ----
 
-def apply_fixes(vault: Path, findings: list[dict[str, Any]], backup_dir: Path) -> int:
-    """Apply fixes for autofix-eligible findings. Backup before write."""
+def apply_fixes(
+    vault: Path,
+    findings: list[dict[str, Any]],
+    backup_dir: Path,
+    plugin_root: Path | None = None,
+    rules_filter: set[str] | None = None,
+) -> int:
+    """Apply fixes for autofix-eligible findings. Backup before write.
+
+    `rules_filter`: if set, only fix findings whose rule is in this set
+    (used by `--sync-templates` to limit autofix to template/seed rules).
+    """
     fixed = 0
+
+    # 1) template-outdated / template-missing / seed-outdated — whole-file replacement
+    for f in findings:
+        if not f.get("fixable"):
+            continue
+        rule = f["rule"]
+        if rule not in {"template-outdated", "template-missing", "seed-outdated"}:
+            continue
+        if rules_filter is not None and rule not in rules_filter:
+            continue
+        if plugin_root is None:
+            continue
+        ok = False
+        if rule in ("template-outdated", "template-missing"):
+            ok = _fix_template_outdated(f, vault, plugin_root, backup_dir)
+        elif rule == "seed-outdated":
+            ok = _fix_seed_outdated(f, vault, plugin_root, backup_dir)
+        if ok:
+            fixed += 1
+
     by_file: dict[str, list[dict[str, Any]]] = {}
     for f in findings:
         if not f.get("fixable"):
@@ -492,6 +709,8 @@ def apply_fixes(vault: Path, findings: list[dict[str, Any]], backup_dir: Path) -
             "fm-missing-type", "fm-missing-created", "hot-too-long",
             "index-missing-section", "title-h1-mismatch", "block-id-duplicate",
         }:
+            continue
+        if rules_filter is not None and f["rule"] not in rules_filter:
             continue
         by_file.setdefault(f["file"], []).append(f)
 
@@ -605,6 +824,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--vault", required=True, help="Obsidian vault absolute path")
     ap.add_argument("--fix", action="store_true", help="apply autofix (writes to disk + backup)")
+    ap.add_argument(
+        "--sync-templates", action="store_true",
+        dest="sync_templates",
+        help="only auto-fix template-outdated/template-missing/seed-outdated (no other rules)",
+    )
     ap.add_argument("--scope", default=None, help="glob filter, e.g. '10_concepts/*'")
     ap.add_argument("--json", action="store_true", help="JSON output (default)")
     ap.add_argument("--lang", default=None, help="override vault.lang for i18n checks")
@@ -638,6 +862,10 @@ def main() -> int:
     whitelist = _load_lint_whitelist(vault)
     findings.extend(check_vault_structure(vault, preset, whitelist, locale_dirs))
 
+    # rule #17/18/19: template-outdated / template-missing / seed-outdated
+    findings.extend(_check_template_outdated(vault, plugin_root))
+    findings.extend(_check_seed_outdated(vault, plugin_root))
+
     # vault-structure-violation: attach backup_target + emit structure_purge
     # mv plan (executed by cortex-lint skill, never by this python process).
     structure_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -648,11 +876,18 @@ def main() -> int:
         v["backup_target"] = f"{structure_backup_root}/{v['path']}"
 
     fixed = 0
-    if args.fix:
+    if args.fix or args.sync_templates:
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         backup_dir = vault / "_meta" / ".cortex-backup" / "lint" / ts
         backup_dir.mkdir(parents=True, exist_ok=True)
-        fixed = apply_fixes(vault, findings, backup_dir)
+        rules_filter: set[str] | None = None
+        if args.sync_templates and not args.fix:
+            rules_filter = {"template-outdated", "template-missing", "seed-outdated"}
+        fixed = apply_fixes(
+            vault, findings, backup_dir,
+            plugin_root=plugin_root,
+            rules_filter=rules_filter,
+        )
 
     errors = [f for f in findings if f["severity"] == "error"]
     warns = [f for f in findings if f["severity"] == "warn"]

@@ -7,6 +7,8 @@ refresh: daily
 namespace: 仪表盘
 last_updated: "{{UPDATED}}"
 tags: [dashboard, cron, ops]
+template_version: 1
+
 ---
 
 > [!info] 记忆-cron 状态
@@ -69,3 +71,5 @@ tags: [dashboard, cron, ops]
   <a href="总览.md">📊 总览</a>
   <a href="../主页.md">⬅ 主页</a>
 </section>
+
+<!-- TEMPLATE_END -->

@@ -23,3 +23,5 @@ archive_pending: false
 ## full
 
 {{FULL}}
+
+<!-- TEMPLATE_END -->

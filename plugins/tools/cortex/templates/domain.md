@@ -13,6 +13,7 @@ cli_session: {{CLI_SESSION}}
 git_remote: ""    # 如 github.com/org/repo
 status: active    # active | dormant | archived
 related: []
+template_version: 1
 ---
 
 # {{TITLE}}
@@ -45,3 +46,5 @@ related: []
 - 涉及概念: [[]]
 - 关键实体 / 工具: [[]]
 - 外部来源: [[]]
+
+<!-- TEMPLATE_END -->

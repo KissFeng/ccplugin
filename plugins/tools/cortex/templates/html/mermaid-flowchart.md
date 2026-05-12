@@ -4,6 +4,10 @@
   变量占位:
     {{TITLE}}  图标题 (markdown H2 上方)
     {{NODES}}  节点定义 (由 cortex-html 注入, 形如 A[开始] --> B{判断})
+---
+template_version: 1
+---
+
 -->
 
 ## {{TITLE}}
@@ -18,3 +22,5 @@ flowchart TD
     %% DoA --> End([结束])
     %% DoB --> End
 ```
+
+<!-- TEMPLATE_END -->

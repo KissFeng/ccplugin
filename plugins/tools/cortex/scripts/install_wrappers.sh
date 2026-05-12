@@ -129,6 +129,11 @@ EOB
 #   - no flag (or any args without --fix): cron mode, exec cron/lint.sh (JSON output, read-only).
 #   - --fix: interactive fix mode via cortex-lint skill (AskUserQuestion flow).
 emit lint.sh "$(cat <<EOB
+# Modes:
+#   --fix             interactive autofix via cortex-lint skill (all fixable rules)
+#   --sync-templates  cron-friendly auto-sync of template/seed drift only
+#                     (passes through to cron/lint.sh which sets CORTEX_SYNC_TEMPLATES=1)
+#   (no flag)         read-only lint report
 if [[ "\${1:-}" == "--fix" ]]; then
   shift
   SKILL_PATH="$INSTALL_PATH/skills/cortex-lint/SKILL.md"

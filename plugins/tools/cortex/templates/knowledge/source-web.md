@@ -23,3 +23,5 @@ updated: {{UPDATED}}
 ## 我的笔记
 
 {{NOTES}}
+
+<!-- TEMPLATE_END -->

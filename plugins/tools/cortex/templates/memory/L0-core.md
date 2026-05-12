@@ -24,3 +24,5 @@ needs_user_confirm: true
 ## full
 
 {{FULL}}
+
+<!-- TEMPLATE_END -->

@@ -7,6 +7,8 @@ level: L1
 children: [procedural, semantic-stable]
 last_updated: "{{UPDATED}}"
 tags: [memory, l1, long-term]
+template_version: 1
+
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
@@ -74,3 +76,5 @@ views:
   <a href="../../仪表盘/记忆-L1-长期.md">📊 仪表盘</a>
   <a href="../../主页.md">⬅ 主页</a>
 </section>
+
+<!-- TEMPLATE_END -->

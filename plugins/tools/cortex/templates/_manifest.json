@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "generated": "2026-05-12T07:45:34Z",
+  "entries": {
+    "_index.md": {
+      "sha256": "4875e24ff565b0e913be7a4e95dab932e12c4992a107260c8681bb1f8ec15e87",
+      "template_version": 1
+    },
+    "concept.md": {
+      "sha256": "8af1ff87356a8111b23979b6da71c17f2f32553e7fc88900c3fb4dde09c91f2c",
+      "template_version": 1
+    },
+    "dashboard.md": {
+      "sha256": "4b63dfa3639084479058aba0091d4994cff9986e5bbca59e2e0b190e1c4d677a",
+      "template_version": 1
+    },
+    "domain.md": {
+      "sha256": "90a1c36407a408162cd2e70afa1ff3e38c0b461fb72427aba3e6e8073d392b58",
+      "template_version": 1
+    },
+    "entity.md": {
+      "sha256": "271d853cad91fa051d72afb30cfc275371bccabc3b58d0ecf4f8b1edb337402f",
+      "template_version": 1
+    },
+    "html/mermaid-flowchart.md": {
+      "sha256": "e2f07dc62b0644029f373564106289793d786756350dbfb3a50c9553288fe3b2",
+      "template_version": 1
+    },
+    "html/mermaid-mindmap.md": {
+      "sha256": "84a1ed4d246267f05c16471216995013f166e1f5e7e5f3747eb04f808b44835b",
+      "template_version": 1
+    },
+    "html/mermaid-sankey.md": {
+      "sha256": "aeaced88d44316ca153a1fe5f8c687ec58233a9c5b8cde85fbe3b441b4f51ae6",
+      "template_version": 1
+    },
+    "knowledge/domain-concept.md": {
+      "sha256": "860ea9772bfdca9ab78df748fc257686616841972c474afe50bf36f2a2a5d1ed",
+      "template_version": 1
+    },
+    "knowledge/domain-fact.md": {
+      "sha256": "e0eaba61160364dd0f1fa6482581549ca99afb7adc82e09f95ff3134f4eccaeb",
+      "template_version": 1
+    },
+    "knowledge/domain-method.md": {
+      "sha256": "ef4928b0bb68321c437e48f9e0902e3bc744b206907a53a6007d9755afefc58a",
+      "template_version": 1
+    },
+    "knowledge/journal-day.md": {
+      "sha256": "08e28f8612e4a21ffa898ee9c229109e0d163af3eb32a0cd5f72f76022f833f2",
+      "template_version": 1
+    },
+    "knowledge/journal-month.md": {
+      "sha256": "75d7e5550a51956ea868abf462ac4ddb2ac19033e35c0cdf17539ac8587b42d3",
+      "template_version": 1
+    },
+    "knowledge/journal-week.md": {
+      "sha256": "320b03c6df652f919602704f3133fc550e9fa0febf0672feadc6805a1ab1dd48",
+      "template_version": 1
+    },
+    "knowledge/journal-year.md": {
+      "sha256": "54b82879dd2353c9292153132eb819ab9e204721825248e7e576059d64564943",
+      "template_version": 1
+    },
+    "knowledge/project.md": {
+      "sha256": "5d618adf0d58b9a7877256df7a37df6d31791faeb537a8958310ad0ba7c60271",
+      "template_version": 1
+    },
+    "knowledge/reflection-connection.md": {
+      "sha256": "4fa38518c620b0730076de6445566749fb562a70e657aee34ffdd451b6bd5255",
+      "template_version": 1
+    },
+    "knowledge/reflection-insight.md": {
+      "sha256": "5d6f67048a3e6103c8a1af7c2f198dcf294bca9c0508d2660219a4d9112d7723",
+      "template_version": 1
+    },
+    "knowledge/reflection-question.md": {
+      "sha256": "7beef477b77ed3708a49a1f7261161c380c19f51e6056c0170605df7f2e044c5",
+      "template_version": 1
+    },
+    "knowledge/source-book.md": {
+      "sha256": "5cf38ed318fd1c3dcec1bc4dcd945e6c7547ab55c3adc7841d9ca8d23d75541b",
+      "template_version": 1
+    },
+    "knowledge/source-paper.md": {
+      "sha256": "d90b4b60e3ae326ff5f219b4f5a9d9e2be08ed09caa2d25f50245b434a830a0b",
+      "template_version": 1
+    },
+    "knowledge/source-repo.md": {
+      "sha256": "8398528a06c64b333c769f5bddabb5b9bd35bedd22cba175d8ebe0aa52de0738",
+      "template_version": 1
+    },
+    "knowledge/source-web.md": {
+      "sha256": "178129eb51db1ca847a41a595075e03b17451e6f37eed9dd6c0132944b36b097",
+      "template_version": 1
+    },
+    "memory/L0-core.md": {
+      "sha256": "5be5b7db05bfb326ba408f708e63f04eb34f70b1f3669cdd3ae7c951a049b8ee",
+      "template_version": 1
+    },
+    "memory/L1-procedural.md": {
+      "sha256": "79c3e9fa3aace0aa55d12a000752e8a0546ee0e2e3a15231689941a41ef7695e",
+      "template_version": 1
+    },
+    "memory/L1-semantic-stable.md": {
+      "sha256": "b77f711dec75e8bd398f204a358978c9ef29082d823261ed033d730a94b70ea3",
+      "template_version": 1
+    },
+    "memory/L2-semantic.md": {
+      "sha256": "3d06162677839bdd21a47e3643b0b78542fe8d7caaa2fedd9882e55565323c06",
+      "template_version": 1
+    },
+    "memory/L3-episodic.md": {
+      "sha256": "9b66e844751799d92f625fc6b6ead1f3cac9a7505a7346013471dec79f62ce23",
+      "template_version": 1
+    },
+    "memory/L4-session.md": {
+      "sha256": "41309345d573fca9bfc0e01f4833bce77cc18df0a3734a5b737c6d2b9b285b2f",
+      "template_version": 1
+    },
+    "question.md": {
+      "sha256": "6dc12c46e060960967c31cff1d22552b8e8527870c2d4862932464fa652227de",
+      "template_version": 1
+    },
+    "source.md": {
+      "sha256": "18d4c4a94a22e3d33dfdbca48cdb4301cd25c25da8220ece55fa170cf7a109bb",
+      "template_version": 1
+    },
+    "html/badge.html": {
+      "sha256": "a18eda7f8416f373de704478d10ace5c6fe6205193c22bdb0eccc89357beb47e",
+      "template_version": 1
+    },
+    "html/canvas-heatmap.html": {
+      "sha256": "feda117c4303ea12f2f56abb1c973fcf265aec81ba9d94dca551fa7641492aea",
+      "template_version": 1
+    },
+    "html/card.html": {
+      "sha256": "49b5a574fa0863d4d3d528c9f14eadd579a88d0e8ff91309a8b28098124280f8",
+      "template_version": 1
+    },
+    "html/progressive-disclosure.html": {
+      "sha256": "be3f333110ee00875c80127ec080b34293ed017387a0c21aabff47665e840fa8",
+      "template_version": 1
+    },
+    "html/timeline.html": {
+      "sha256": "a80bb0bef6f0ac185a99662afcace9da8d7dbc66b9e16947867c05dc914a516e",
+      "template_version": 1
+    }
+  }
+}

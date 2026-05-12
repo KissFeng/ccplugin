@@ -90,6 +90,7 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
 - `_meta/lint-baseline.json` — `{"exempt": []}`
 - `_meta/memory-policy.yaml` — 从 `<PLUGIN_ROOT>/templates/memory-policy.yaml` (或 `<PLUGIN_ROOT>/presets/seed/_meta/memory-policy.yaml` 若存在) 复制; 定义 L0-L4 写入/遗忘/晋级 + recall + 9 cron 配置
 - `_meta/uri-index.json` — 空骨架 `{"version": 1, "rebuilt_at": "<UTC ISO>", "count": 0, "entries": {}}`
+- `_meta/template-manifest.json` — 复制 `<PLUGIN_ROOT>/templates/_manifest.json` (vault 侧基线, 供 lint `template-outdated` / `seed-outdated` 快速比对; lint 也支持 fallback 到每文件 sha256)
 - `_meta/migrations/` — `mkdir -p` (放 `.gitkeep`)
 - `_templates/` — 完整复制 `<PLUGIN_ROOT>/templates/`:
   - 既有: `concept.md` / `entity.md` / `domain.md` / `dashboard.md` / `question.md` / `source.md` / `_index.md`
@@ -247,6 +248,7 @@ lang: zh-CN
 ✅ 写入 _meta/lint-baseline.json
 ✅ 写入 _meta/memory-policy.yaml
 ✅ 写入 _meta/uri-index.json (空骨架)
+✅ 写入 _meta/template-manifest.json (复制 plugin manifest 基线)
 ✅ 创建 _meta/migrations/
 ✅ 复制 _templates/concept.md ... _index.md (7 既有)
 ✅ 复制 _templates/html/ (8 片段)
