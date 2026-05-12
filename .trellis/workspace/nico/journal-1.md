@@ -1939,3 +1939,36 @@ lint backup 路径 vault 内 → ~/.cache/cortex/lint-backup/<hash>/<ts>/. 新 b
 ### Next Steps
 
 - None - task complete
+
+
+## Session 59: cortex wrapper 自动 git commit vault
+
+**Date**: 2026-05-12
+**Task**: cortex wrapper 自动 git commit vault
+**Branch**: `master`
+
+### Summary
+
+PRELUDE cx_git_commit_vault helper + trap EXIT, 16 wrapper + cron run.sh 完成后自动 commit vault 变更 (不 push, 非 git repo 静默跳)。emit_exec 改 chain 保证 trap 触发。278 tests。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `217bac66` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
