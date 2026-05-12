@@ -145,9 +145,122 @@ def _extract_skill_name(system_prompt: str | None) -> str | None:
     return None
 
 
+def _render_system_event(evt: dict) -> RenderableType | None:
+    """Render claude stream-json `system` events (init/hook/task/api_retry/plugin_install).
+
+    Unknown subtypes return None (silent skip per PRD: 仅适配类型 rich 渲, 未适配静默).
+    """
+    sub = evt.get("subtype")
+    if sub == "init":
+        model = evt.get("model", "?")
+        tools = len(evt.get("tools", []) or [])
+        mcp_n = sum(
+            1 for s in (evt.get("mcp_servers", []) or [])
+            if s.get("status") == "connected"
+        )
+        plugins_n = len(evt.get("plugins", []) or [])
+        return Panel(
+            Text(
+                f"model={model} · tools={tools} · mcp={mcp_n} · plugins={plugins_n}",
+                style="dim",
+            ),
+            title="▸ claude 启动",
+            border_style="dim",
+            padding=(0, 1),
+        )
+    if sub == "hook_started":
+        name = evt.get("hook_name", "?")
+        event_name = evt.get("hook_event", "")
+        suffix = f" ({event_name})" if event_name else ""
+        return Text(f"  ▸ hook {name}{suffix}", style="dim")
+    if sub == "hook_response":
+        name = evt.get("hook_name", "?")
+        exit_code = evt.get("exit_code", 0)
+        outcome = evt.get("outcome", "")
+        if exit_code == 0 and outcome in ("", "success"):
+            return Text(f"  ✓ hook {name}", style="dim green")
+        suffix = f" (exit={exit_code}{', ' + outcome if outcome else ''})"
+        return Text(f"  ✗ hook {name}{suffix}", style="red")
+    if sub == "task_started":
+        desc = evt.get("description") or evt.get("task") or "?"
+        return Text(f"  ▸ task {desc}", style="dim cyan")
+    if sub == "task_notification":
+        desc = evt.get("description") or evt.get("task") or "?"
+        status = evt.get("status", "")
+        suffix = f" ({status})" if status else ""
+        return Text(f"  ✓ task {desc}{suffix}", style="dim green")
+    if sub == "api_retry":
+        attempt = evt.get("attempt", "?")
+        max_retries = evt.get("max_retries", "?")
+        delay = evt.get("retry_delay_ms", "?")
+        err = evt.get("error", "")
+        suffix = f": {err}" if err else ""
+        return Text(
+            f"  ⟳ api retry {attempt}/{max_retries}, in {delay}ms{suffix}",
+            style="yellow",
+        )
+    if sub == "plugin_install":
+        status = evt.get("status", "")
+        name = evt.get("name", "?")
+        err = evt.get("error", "")
+        style = "red" if err else "dim"
+        suffix = f" — {err}" if err else ""
+        return Text(f"  ▸ plugin {name} {status}{suffix}", style=style)
+    return None
+
+
+def _render_user_event(evt: dict) -> RenderableType | None:
+    """Render `user` event tool_result blocks (truncated). Other shapes → None."""
+    msg = evt.get("message", {}) or {}
+    content = msg.get("content", []) or []
+    for item in content:
+        if item.get("type") != "tool_result":
+            continue
+        raw = item.get("content", "")
+        # tool_result.content can be string OR list of {type:text, text:...} blocks.
+        if isinstance(raw, list):
+            parts: list[str] = []
+            for blk in raw:
+                if isinstance(blk, dict) and blk.get("type") == "text":
+                    parts.append(str(blk.get("text", "")))
+                else:
+                    parts.append(str(blk))
+            text = "\n".join(parts)
+        else:
+            text = str(raw)
+        is_error = bool(item.get("is_error", False))
+        cap = 500
+        truncated = len(text) > cap
+        preview = text[:cap] + ("...(truncated)" if truncated else "")
+        style = "red" if is_error else "dim"
+        title = "↩ tool_result (error)" if is_error else "↩ tool_result"
+        return Panel(
+            Text(preview, style=style),
+            title=title,
+            border_style=style,
+            padding=(0, 1),
+        )
+    return None
+
+
 def _render_event(evt: dict) -> RenderableType | None:
-    """Map one stream-json event to a rich renderable. Unknown → None."""
+    """Map one stream-json event to a rich renderable. Unknown → None.
+
+    Silent-skip policy (PRD): 已适配 type 渲染 rich, 未适配 type 默认静默.
+    CORTEX_STREAM_DEBUG=1 时未知 type 显 1 行调试.
+    """
     etype = evt.get("type")
+    if etype == "system":
+        rendered = _render_system_event(evt)
+        if rendered is None and os.environ.get("CORTEX_STREAM_DEBUG"):
+            sub = evt.get("subtype", "")
+            return Text(f"[debug] unhandled system subtype={sub}", style="yellow dim")
+        return rendered
+    if etype == "user":
+        return _render_user_event(evt)
+    if etype == "stream_event":
+        # 增量 text_delta 等 — 主流由 assistant.text 渲, 此处静默避重复.
+        return None
     if etype == "assistant":
         msg = evt.get("message", {}) or {}
         renderables: list[RenderableType] = []
@@ -185,6 +298,10 @@ def _render_event(evt: dict) -> RenderableType | None:
         if msg:
             return Text(f"[OK] {msg[:_TEXT_CAP]}", style="bold green")
         return Text("[OK] done", style="bold green")
+    # 完全未知 type — 默认静默, CORTEX_STREAM_DEBUG=1 显 1 行调试.
+    if os.environ.get("CORTEX_STREAM_DEBUG"):
+        sub = evt.get("subtype", "")
+        return Text(f"[debug] unknown type={etype} sub={sub}", style="yellow dim")
     return None
 
 

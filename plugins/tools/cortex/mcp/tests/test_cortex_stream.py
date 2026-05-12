@@ -165,6 +165,248 @@ def test_render_event_result_empty_falls_back_to_done() -> None:
     assert r.plain.strip() == "[OK] done"
 
 
+# ---------- system / user / unknown event handlers ----------
+
+
+def test_render_system_init_renders_panel() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "init",
+        "model": "claude-opus-4",
+        "tools": ["Bash", "Read", "Write"],
+        "mcp_servers": [
+            {"name": "a", "status": "connected"},
+            {"name": "b", "status": "error"},
+        ],
+        "plugins": [{"name": "cortex"}, {"name": "task"}],
+    }
+    r = _render_event(evt)
+    assert r is not None
+    # Panel renderable; inner text has tools=3, mcp=1, plugins=2.
+    inner = r.renderable.plain  # type: ignore[attr-defined]
+    assert "model=claude-opus-4" in inner
+    assert "tools=3" in inner
+    assert "mcp=1" in inner
+    assert "plugins=2" in inner
+
+
+def test_render_system_hook_started_dim_text() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "hook_started",
+        "hook_name": "pre_tool_use",
+        "hook_event": "PreToolUse",
+    }
+    r = _render_event(evt)
+    assert r is not None
+    assert "hook pre_tool_use" in r.plain
+    assert "PreToolUse" in r.plain
+
+
+def test_render_system_hook_response_success_green() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "hook_response",
+        "hook_name": "post_tool_use",
+        "exit_code": 0,
+        "outcome": "success",
+    }
+    r = _render_event(evt)
+    assert r is not None
+    assert "✓" in r.plain
+    assert "post_tool_use" in r.plain
+
+
+def test_render_system_hook_response_failure_red() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "hook_response",
+        "hook_name": "stop",
+        "exit_code": 1,
+        "outcome": "blocked",
+    }
+    r = _render_event(evt)
+    assert r is not None
+    assert "✗" in r.plain
+    assert "exit=1" in r.plain
+    assert "blocked" in r.plain
+
+
+def test_render_system_task_started() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "task_started",
+        "description": "research X",
+    }
+    r = _render_event(evt)
+    assert r is not None
+    assert "task research X" in r.plain
+
+
+def test_render_system_task_notification() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "task_notification",
+        "description": "research X",
+        "status": "completed",
+    }
+    r = _render_event(evt)
+    assert r is not None
+    assert "research X" in r.plain
+    assert "completed" in r.plain
+
+
+def test_render_system_api_retry_yellow() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "api_retry",
+        "attempt": 2,
+        "max_retries": 5,
+        "retry_delay_ms": 1500,
+        "error": "529 overloaded",
+    }
+    r = _render_event(evt)
+    assert r is not None
+    assert "2/5" in r.plain
+    assert "1500ms" in r.plain
+    assert "529 overloaded" in r.plain
+
+
+def test_render_system_plugin_install() -> None:
+    evt = {
+        "type": "system",
+        "subtype": "plugin_install",
+        "name": "cortex",
+        "status": "installed",
+    }
+    r = _render_event(evt)
+    assert r is not None
+    assert "plugin cortex installed" in r.plain
+
+
+def test_render_system_unknown_subtype_silent() -> None:
+    evt = {"type": "system", "subtype": "never_seen_before", "foo": "bar"}
+    assert _render_event(evt) is None
+
+
+def test_render_stream_event_silent() -> None:
+    evt = {"type": "stream_event", "event": {"type": "content_block_delta"}}
+    assert _render_event(evt) is None
+
+
+def test_render_user_tool_result_string_content() -> None:
+    evt = {
+        "type": "user",
+        "message": {
+            "content": [
+                {
+                    "type": "tool_result",
+                    "content": "file written ok",
+                    "is_error": False,
+                }
+            ]
+        },
+    }
+    r = _render_event(evt)
+    assert r is not None
+    inner = r.renderable.plain  # type: ignore[attr-defined]
+    assert "file written ok" in inner
+
+
+def test_render_user_tool_result_truncates_long_content() -> None:
+    evt = {
+        "type": "user",
+        "message": {
+            "content": [
+                {
+                    "type": "tool_result",
+                    "content": "x" * 1000,
+                    "is_error": False,
+                }
+            ]
+        },
+    }
+    r = _render_event(evt)
+    assert r is not None
+    inner = r.renderable.plain  # type: ignore[attr-defined]
+    assert "truncated" in inner
+    assert inner.count("x") == 500
+
+
+def test_render_user_tool_result_list_content() -> None:
+    evt = {
+        "type": "user",
+        "message": {
+            "content": [
+                {
+                    "type": "tool_result",
+                    "content": [
+                        {"type": "text", "text": "line a"},
+                        {"type": "text", "text": "line b"},
+                    ],
+                    "is_error": False,
+                }
+            ]
+        },
+    }
+    r = _render_event(evt)
+    assert r is not None
+    inner = r.renderable.plain  # type: ignore[attr-defined]
+    assert "line a" in inner
+    assert "line b" in inner
+
+
+def test_render_user_tool_result_error_red() -> None:
+    evt = {
+        "type": "user",
+        "message": {
+            "content": [
+                {
+                    "type": "tool_result",
+                    "content": "boom",
+                    "is_error": True,
+                }
+            ]
+        },
+    }
+    r = _render_event(evt)
+    assert r is not None
+    # Panel title 含 "error"
+    # rich Panel.title is a stylized text object; access via attribute.
+    title = r.title  # type: ignore[attr-defined]
+    assert "error" in str(title)
+
+
+def test_render_user_without_tool_result_silent() -> None:
+    evt = {"type": "user", "message": {"content": [{"type": "text", "text": "hi"}]}}
+    assert _render_event(evt) is None
+
+
+def test_render_unknown_type_silent_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CORTEX_STREAM_DEBUG", raising=False)
+    assert _render_event({"type": "totally_made_up"}) is None
+
+
+def test_render_unknown_type_with_debug_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CORTEX_STREAM_DEBUG", "1")
+    r = _render_event({"type": "totally_made_up", "subtype": "x"})
+    assert r is not None
+    assert "unknown type=totally_made_up" in r.plain
+
+
+def test_render_unknown_system_subtype_with_debug_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CORTEX_STREAM_DEBUG", "1")
+    r = _render_event({"type": "system", "subtype": "brand_new_sub"})
+    assert r is not None
+    assert "unhandled system subtype=brand_new_sub" in r.plain
+
+
 # ---------- prompt extraction ----------
 
 
