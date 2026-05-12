@@ -137,12 +137,17 @@ prompt 含 `[AUTO_MODE]` 时 (来自 `~/.cortex/scripts/lint.sh` wrapper), **严
    - `errors_remaining: N` (若 > 0)
 3. 结束。
 
-**严禁** (违反契约):
-- "手动修复建议" 表 / 段
-- "需要执行 --fix 吗?" / "是否需要..." / 任何 confirmation 询问
-- fix 后的清理/优化建议
-- "下一步建议..."
-- AskUserQuestion (--allowed-tools 已禁, 强行调用必失败)
+**严禁** (任一出现 = 契约违反, 立即终止):
+
+| # | 禁止模式 | 反例 (绝对不可输出) |
+|---|---------|------|
+| 1 | "修复建议" / "建议" / "推荐操作" 章节、表格、列表 | `## 修复建议`, `\| 类型 \| 操作 \|`, `### 建议` |
+| 2 | 任何形式的用户确认问句 | `需确认?`, `是否执行?`, `需要 --fix 吗?`, `要继续吗?`, `ok?`, 末尾问号 |
+| 3 | 针对非 autofix 规则的人工操作引导 | `dead-wikilink → 需创建 stub`, `orphan-page → 人工补 tag`, `vault-structure-violation → 需 cortex-refactor` |
+| 4 | "下一步" / "后续" / "可选" / "如需" 导引语 | `下一步建议...`, `后续可...`, `如需进一步处理...` |
+| 5 | AskUserQuestion 工具调用 | (allowed-tools 已禁, 调用必失败) |
+
+**针对未 autofix 规则的命中** (dead-wikilink / orphan-page / vault-structure-violation 等): 仅在 `errors_remaining` 计数中体现, **不**展开任何处理建议或操作引导。
 
 **fail-fast**: lint exit ≠ 0 → 报错误码 + 1 行原因, 立即返回, **不**询问回退方案。
 
