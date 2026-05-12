@@ -751,3 +751,36 @@ tty 检测染色, step cyan+bold, [text] green, [tool] yellow, 心跳 dim, [OK] 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 23: cortex Phase A — stream parser rich 化
+
+**Date**: 2026-05-12
+**Task**: cortex Phase A — stream parser rich 化
+**Branch**: `master`
+
+### Summary
+
+mcp/cortex_stream.py rich-based stream parser, console-script entry. subprocess line-buffered + rich.Live spinner + 历史滚动 5 (text green/tool Panel yellow/[OK] bold green/[FAILED] bold red). stdout NDJSON 透传 + CORTEX_STREAM_TEE_FILE env. 非 tty auto 降级. stream_progress.sh cortex_stream_runner 委托 cortex-stream, 不在 PATH fallback. 删 _cortex_heartbeat + jq filter 变量. 18 新 pytest, 204 不回归. Phase B/C 后续.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `918cfa6b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

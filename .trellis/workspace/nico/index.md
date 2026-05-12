@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 22
+- **Total Sessions**: 23
 - **Last Active**: 2026-05-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~753 | Active |
+| `journal-1.md` | ~786 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 23 | 2026-05-12 | cortex Phase A — stream parser rich 化 | `918cfa6b` | `master` |
 | 22 | 2026-05-12 | stream_progress.sh ANSI 配色美化 | `08b115c2` | `master` |
 | 21 | 2026-05-12 | cron/run.sh stderr tty 路由 (交互终端进度可见) | `9a064772` | `master` |
 | 20 | 2026-05-12 | cortex deep_search MCP tool + 4 类 deep refactor 子命令 | `4328ccd5` | `master` |
