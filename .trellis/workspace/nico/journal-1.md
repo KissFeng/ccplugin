@@ -850,3 +850,36 @@ mcp/cortex_stream.py rich-based stream parser, console-script entry. subprocess 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 26: stream_runner 系统 python3 优先 + rich 探测
+
+**Date**: 2026-05-12
+**Task**: stream_runner 系统 python3 优先 + rich 探测
+**Branch**: `master`
+
+### Summary
+
+上次修选 pipx venv python (Phase A 前装的, 无 rich) → ImportError. 用户偏好不用 venv. 路径优先级反转: 系统 python3+rich 优先 → cortex-stream PATH → pipx venv (必须 import rich 才走) → fallback. install.sh 加 step_rich_install 检测缺则 pip3 install 提示. 不阻塞.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `99cc8fe7` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
