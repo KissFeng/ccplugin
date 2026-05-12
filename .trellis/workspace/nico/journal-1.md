@@ -1873,3 +1873,36 @@ lint 默认走 python -m lint.run --fix (不绕 LLM), 真强制对齐。新增 -
 ### Next Steps
 
 - None - task complete
+
+
+## Session 57: cortex wrapper prompt + SKILL AUTO_MODE 强化
+
+**Date**: 2026-05-12
+**Task**: cortex wrapper prompt + SKILL AUTO_MODE 强化
+**Branch**: `master`
+
+### Summary
+
+用户诊断: prompt 问题非路径问题。撤回 lint 直调 python, 11 wrapper prompt 加 [AUTO_MODE strict] + allowed-tools 硬阻 AskUserQuestion + 11 SKILL 加统一 AUTO_MODE 段 (cortex-lint 明确 python -m lint.run --fix)。278 tests + marketplace 同步。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `22903ced` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
