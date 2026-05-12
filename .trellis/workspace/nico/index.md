@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 57
+- **Total Sessions**: 58
 - **Last Active**: 2026-05-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1908 | Active |
+| `journal-1.md` | ~1941 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 58 | 2026-05-12 | cortex lint backup 移 vault 外 | `b12d0d30` | `master` |
 | 57 | 2026-05-12 | cortex wrapper prompt + SKILL AUTO_MODE 强化 | `22903ced` | `master` |
 | 56 | 2026-05-12 | cortex 记忆体系→记忆 重命名 | `61533fbb` | `master` |
 | 55 | 2026-05-12 | cortex lint.sh 直调 python + 禁 AskUserQuestion | `39cbe9b9` | `master` |

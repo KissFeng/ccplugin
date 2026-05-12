@@ -1906,3 +1906,36 @@ lint 默认走 python -m lint.run --fix (不绕 LLM), 真强制对齐。新增 -
 ### Next Steps
 
 - None - task complete
+
+
+## Session 58: cortex lint backup 移 vault 外
+
+**Date**: 2026-05-12
+**Task**: cortex lint backup 移 vault 外
+**Branch**: `master`
+
+### Summary
+
+lint backup 路径 vault 内 → ~/.cache/cortex/lint-backup/<hash>/<ts>/. 新 backup-in-vault 规则 priority=0 迁老 backup。30d auto-prune。vault 完全干净。278 tests。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b12d0d30` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
