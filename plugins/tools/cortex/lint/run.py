@@ -19,7 +19,7 @@ import json
 import re
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -638,6 +638,15 @@ def main() -> int:
     whitelist = _load_lint_whitelist(vault)
     findings.extend(check_vault_structure(vault, preset, whitelist, locale_dirs))
 
+    # vault-structure-violation: attach backup_target + emit structure_purge
+    # mv plan (executed by cortex-lint skill, never by this python process).
+    structure_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    structure_backup_root = f"_meta/.cortex-backup/lint-{structure_ts}"
+    sp_violations = [f for f in findings
+                     if f.get("rule") == "vault-structure-violation"]
+    for v in sp_violations:
+        v["backup_target"] = f"{structure_backup_root}/{v['path']}"
+
     fixed = 0
     if args.fix:
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -660,6 +669,16 @@ def main() -> int:
             "files_scanned": len(files),
         },
     }
+    if sp_violations:
+        out["structure_purge"] = {
+            "preset": preset,
+            "violation_count": len(sp_violations),
+            "backup_root": structure_backup_root,
+            "mv_plan": [
+                {"from": v["path"], "to": v["backup_target"]}
+                for v in sp_violations
+            ],
+        }
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0
 

@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import json
+import re
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -154,6 +157,77 @@ class VaultStructureRuleTest(unittest.TestCase):
             )
             self.assertEqual(lint_run._load_vault_preset(vault), "LYT")
             self.assertEqual(lint_run._load_lint_whitelist(vault), set())
+
+
+class StructurePurgeMvPlanTest(unittest.TestCase):
+    """run.py main() emits structure_purge.mv_plan for vault-structure violations."""
+
+    RUN_PY = (
+        Path(__file__).resolve().parent.parent.parent / "lint" / "run.py"
+    )
+
+    def _run_lint(self, vault: Path) -> dict:
+        proc = subprocess.run(
+            [sys.executable, str(self.RUN_PY), "--vault", str(vault)],
+            capture_output=True, text=True, check=False,
+        )
+        # run.py exits 0 even with findings; stderr only on hard errors
+        self.assertEqual(proc.returncode, 0, msg=proc.stderr)
+        return json.loads(proc.stdout)
+
+    def test_mv_plan_emitted_with_iso_backup_root(self):
+        with tempfile.TemporaryDirectory() as d:
+            vault = _bare_vault(Path(d), preset="LYT")
+            (vault / "foobar").mkdir()
+            (vault / "random.txt").write_text("x", encoding="utf-8")
+
+            report = self._run_lint(vault)
+            self.assertIn("structure_purge", report)
+            sp = report["structure_purge"]
+            self.assertEqual(sp["preset"], "LYT")
+            self.assertEqual(sp["violation_count"], 2)
+
+            # backup_root format: _meta/.cortex-backup/lint-YYYYMMDDTHHMMSSZ
+            self.assertRegex(
+                sp["backup_root"],
+                r"^_meta/\.cortex-backup/lint-\d{8}T\d{6}Z$",
+            )
+
+            mv_plan = sp["mv_plan"]
+            self.assertEqual(len(mv_plan), 2)
+            froms = {item["from"] for item in mv_plan}
+            self.assertEqual(froms, {"foobar/", "random.txt"})
+            for item in mv_plan:
+                self.assertTrue(
+                    item["to"].startswith("_meta/.cortex-backup/lint-"),
+                    msg=f"unexpected to: {item['to']}",
+                )
+                # to == backup_root + "/" + from
+                self.assertEqual(item["to"], f"{sp['backup_root']}/{item['from']}")
+
+            # individual violations also carry backup_target
+            sp_errors = [e for e in report["errors"]
+                         if e.get("rule") == "vault-structure-violation"]
+            self.assertEqual(len(sp_errors), 2)
+            for v in sp_errors:
+                self.assertIn("backup_target", v)
+                self.assertTrue(
+                    re.match(
+                        r"^_meta/\.cortex-backup/lint-\d{8}T\d{6}Z/",
+                        v["backup_target"],
+                    )
+                )
+
+    def test_no_structure_purge_when_clean(self):
+        with tempfile.TemporaryDirectory() as d:
+            vault = _bare_vault(Path(d), preset="LYT")
+            # clean vault: only _meta/, no violations
+            report = self._run_lint(vault)
+            # Either absent or violation_count == 0; PRD allows either.
+            sp = report.get("structure_purge")
+            if sp is not None:
+                self.assertEqual(sp["violation_count"], 0)
+                self.assertEqual(sp.get("mv_plan", []), [])
 
 
 if __name__ == "__main__":

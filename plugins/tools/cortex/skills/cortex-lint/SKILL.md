@@ -75,22 +75,42 @@ errors: E   warns: W   fixed: F
 
 ## 交互修复 (--fix 模式 vault-structure-violation 专用)
 
-run.py 的 python 进程不交互, 只输出 JSON 违规列表; **交互全在本 SKILL 流程内**。
+run.py 的 python 进程不交互, 只输出 JSON 违规列表 + `structure_purge.mv_plan`; **交互全在本 SKILL 流程内**, 实际 mv 操作也在此执行。
 
-cortex-lint --fix 输出 JSON 含 `vault-structure-violation` 违规时:
+cortex-lint --fix 输出 JSON 含 `structure_purge` 字段且 `violation_count > 0` 时:
 
-1. 解析违规列表 (`errors[]` 中 `rule == "vault-structure-violation"` 项)。每项含 `path` / `kind` (dir|file) / `reason`
-2. 对每个违规, **必须** 用 `AskUserQuestion` 工具询问 (禁文本式提问), 4 个选项:
-   - 选项 1: **移到允许目录** — 列 schema.root_dirs 候选 (LYT preset: `_meta`, `10_concepts`, `20_efforts`, `30_domains`, `40_anchors`, `50_calendar`, `60_journal`, `70_attachments`, `80_archive`, `90_inbox`, `folds`, `log`, `sessions` 等)
-   - 选项 2: **删除** — 危险操作, **必须** 再次 `AskUserQuestion` 二次确认 (展示路径 + 建议先 backup)
-   - 选项 3: **加白名单** — 写 `_meta/version.json:.lint_whitelist[]`, 后续 lint 跳过
-   - 选项 4: **跳过** — 单次不动, 不写白名单
+1. 解析 `structure_purge` (字段: `preset` / `violation_count` / `backup_root` / `mv_plan[{from,to}]`); 同步从 `errors[]` 拿 `vault-structure-violation` 项 (每项含 `path` / `kind` / `reason` / `backup_target`)
+2. **一次性总体确认** — 用 `AskUserQuestion` 工具 (禁文本提问), 4 个选项:
+   - **BATCH_MV (推荐)**: 全部移除到 backup — 将 N 个不在 `<preset>` preset 内的项批量 mv 到 `<backup_root>/` (非真删, 可恢复)
+   - **BATCH_WHITELIST**: 全部加入白名单 — 全部追加 `_meta/version.json:.lint_whitelist[]`
+   - **PER_ITEM**: 逐个询问 — 走原逐项 4 选项流程 (向后兼容)
+   - **CANCEL**: 取消, 本次不动
+
+   AskUserQuestion 文案示例:
+   > "lint 发现 N 个不在 <preset> preset 内的项. 将批量 mv 到 `<backup_root>/` (非真删, 可恢复). 如何处理?"
+
 3. 按选择落操作:
-   - **move**: obsidian CLI move 或 `mcp__obsidian` 或 `mv` (按 fallback 顺序)
-   - **delete**: 二次 `AskUserQuestion` 确认 → `rm` / `rm -rf` (dir 需 -rf)。建议先 `cp -r` 到 `_meta/.cortex-backup/lint/<ts>/deleted/`
-   - **whitelist**: 读 `_meta/version.json` (JSON), append `path` 到 `.lint_whitelist[]` (dir 含尾 `/`, file 不含), 写回
-   - **skip**: 不动
-4. 每个违规处理完后, 打 `[done]` 状态行 (rule + path + 选择)
+   - **BATCH_MV (默认推荐)**:
+     - `mkdir -p <vault>/<backup_root>`
+     - 遍历 `mv_plan[]`, 每项执行:
+       - L1: obsidian CLI `obsidian move "<from>" "<to>"` (保 wikilink 更新)
+       - L2: `mcp__obsidian` 工具兜底
+       - L3: `mkdir -p $(dirname <vault>/<to>) && mv <vault>/<from> <vault>/<to>` (因已总体确认, **跳过 per-item 二次确认**)
+     - 报告 `moved N items to <backup_root>`
+   - **BATCH_WHITELIST**:
+     - 读 `_meta/version.json`, 把所有 `violations[].path` 追加到 `.lint_whitelist[]` (dir 含尾 `/`, file 不含, 去重), 写回
+     - 报告 `whitelisted N items`
+   - **PER_ITEM** (原 P6 流程, 向后兼容): 对每个违规分别 `AskUserQuestion`, 4 个选项:
+     - **移到 backup**: mv 单项到 `<backup_target>` (obsidian CLI → mcp → mv)
+     - **移到允许目录**: 列 schema.root_dirs 候选 (LYT: `_meta`, `10_concepts`, `20_efforts`, `30_domains`, `40_anchors`, `50_calendar`, `60_journal`, `70_attachments`, `80_archive`, `90_inbox`, `folds`, `log`, `sessions` 等), 用户选目标
+     - **加白名单**: 写 `_meta/version.json:.lint_whitelist[]` (dir 含尾 `/`, file 不含)
+     - **跳过**: 单次不动, 不写白名单
+   - **CANCEL**: 不动, 跳过结构修复段
+4. 后续 `errors[]` / `warns[]` 中非 `vault-structure-violation` 项:
+   - `rules.json autofix=true` 项: run.py 已自动改盘 (rule 1/2/6/8/9/11)
+   - 其它项: 走原 SKILL autofix 流程或单独 `AskUserQuestion`
+
+**数据安全**: 永远 mv 到 backup, **从不**真 rm。backup_root 累积大时用户可手动清 `_meta/.cortex-backup/`。
 
 完整 preset schema 见 `plugins/tools/cortex/lint/schemas.py` (LYT / PARA / flat 三套)。
 
