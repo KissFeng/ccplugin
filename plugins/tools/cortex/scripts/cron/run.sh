@@ -32,6 +32,25 @@ iso_now() {
   date -u +%Y-%m-%dT%H:%M:%SZ
 }
 
+# cron 跑完自动 git commit vault 变更 (不 push); 非 git repo / 无变更静默跳
+cx_git_commit_vault() {
+  local job="${1:-cortex}"
+  local config="$HOME/.cortex/config.json"
+  [[ -f "$config" ]] || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+  command -v git >/dev/null 2>&1 || return 0
+  local vault
+  vault=$(jq -r '.vault // empty' "$config" 2>/dev/null) || return 0
+  [[ -n "$vault" && -d "$vault/.git" ]] || return 0
+  (
+    cd "$vault" 2>/dev/null || exit 0
+    if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+      git add -A 2>/dev/null && \
+      git commit -m "[cortex/$job] auto $(date -u +%Y-%m-%dT%H:%M:%SZ)" --no-verify -q 2>/dev/null
+    fi
+  ) || true
+}
+
 # resolve_timeout_cmd: print "gtimeout" / "timeout" / "PERL_TIMEOUT" sentinel,
 # return non-zero if none available. macOS lacks GNU `timeout(1)` by default.
 resolve_timeout_cmd() {
@@ -175,7 +194,7 @@ echo "[$(iso_now)] cortex-${JOB}: start" >> "$LOG_FILE"
 
 # Run with timeout; pipe to jq to extract result line
 TMP_NDJSON="$(mktemp)"
-trap 'rm -f "$TMP_NDJSON"' EXIT
+trap 'rm -f "$TMP_NDJSON"; cx_git_commit_vault "cortex-${JOB}"' EXIT
 
 export CORTEX_JOB_LABEL="cortex-${JOB}"
 export CORTEX_STREAM_TEE_FILE="$TMP_NDJSON"

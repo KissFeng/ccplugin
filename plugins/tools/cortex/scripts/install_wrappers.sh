@@ -106,6 +106,26 @@ for line in sys.stdin:
         pass
 '
 }
+# wrapper 退出时自动 git commit vault 变更 (不 push); 非 git repo / 无变更静默跳
+cx_git_commit_vault() {
+  local job="${1:-cortex}"
+  local config="$HOME/.cortex/config.json"
+  [[ -f "$config" ]] || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+  command -v git >/dev/null 2>&1 || return 0
+  local vault
+  vault=$(jq -r '.vault // empty' "$config" 2>/dev/null) || return 0
+  [[ -n "$vault" && -d "$vault/.git" ]] || return 0
+  (
+    cd "$vault" 2>/dev/null || exit 0
+    if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+      git add -A 2>/dev/null && \
+      git commit -m "[cortex/$job] auto $(date -u +%Y-%m-%dT%H:%M:%SZ)" --no-verify -q 2>/dev/null && \
+        printf '%s✓%s git commit vault (%s)\n' "$_CX_G" "$_CX_0" "$vault" >&2
+    fi
+  ) || true
+}
+trap 'cx_git_commit_vault "${CORTEX_JOB_LABEL:-cortex}"' EXIT
 CXPRELUDE
 
 # Emit one wrapper. $1 = filename, $2 = body (single command line after `exec`
@@ -131,9 +151,10 @@ emit() {
   chmod +x "$dest"
 }
 
-# `exec` keeps a single PID and forwards signals correctly.
+# `exec` would replace this PID (and skip the EXIT trap that runs
+# cx_git_commit_vault). We chain with `&&`/`exit` instead so the trap fires.
 emit_exec() {
-  emit "$1" "exec $2 \"\$@\""
+  emit "$1" "$2 \"\$@\"; exit \$?"
 }
 
 emit_exec fold.sh           "bash \"$INSTALL_PATH/scripts/cron/fold.sh\""
