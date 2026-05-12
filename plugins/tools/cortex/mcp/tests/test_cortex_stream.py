@@ -87,8 +87,10 @@ def test_render_event_result_failed() -> None:
     assert "boom" in r.plain
 
 
-def test_render_event_unknown_returns_none() -> None:
-    assert _render_event({"type": "system"}) is None
+def test_render_event_unknown_system_returns_raw() -> None:
+    r = _render_event({"type": "system"})
+    assert r is not None
+    assert "[raw]" in r.plain
 
 
 def test_render_event_empty_assistant_returns_none() -> None:
@@ -284,9 +286,12 @@ def test_render_system_plugin_install() -> None:
     assert "plugin cortex installed" in r.plain
 
 
-def test_render_system_unknown_subtype_silent() -> None:
+def test_render_system_unknown_subtype_raw() -> None:
     evt = {"type": "system", "subtype": "never_seen_before", "foo": "bar"}
-    assert _render_event(evt) is None
+    r = _render_event(evt)
+    assert r is not None
+    assert "[raw]" in r.plain
+    assert "never_seen_before" in r.plain
 
 
 def test_render_stream_event_silent() -> None:
@@ -377,34 +382,34 @@ def test_render_user_tool_result_error_red() -> None:
     assert "error" in str(title)
 
 
-def test_render_user_without_tool_result_silent() -> None:
+def test_render_user_without_tool_result_raw() -> None:
     evt = {"type": "user", "message": {"content": [{"type": "text", "text": "hi"}]}}
-    assert _render_event(evt) is None
-
-
-def test_render_unknown_type_silent_by_default(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.delenv("CORTEX_STREAM_DEBUG", raising=False)
-    assert _render_event({"type": "totally_made_up"}) is None
-
-
-def test_render_unknown_type_with_debug_env(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("CORTEX_STREAM_DEBUG", "1")
-    r = _render_event({"type": "totally_made_up", "subtype": "x"})
+    r = _render_event(evt)
     assert r is not None
-    assert "unknown type=totally_made_up" in r.plain
+    assert "[raw]" in r.plain
 
 
-def test_render_unknown_system_subtype_with_debug_env(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("CORTEX_STREAM_DEBUG", "1")
+def test_render_unknown_type_raw_by_default() -> None:
+    r = _render_event({"type": "totally_made_up"})
+    assert r is not None
+    assert "[raw]" in r.plain
+    assert "totally_made_up" in r.plain
+
+
+def test_render_unknown_system_subtype_raw_by_default() -> None:
     r = _render_event({"type": "system", "subtype": "brand_new_sub"})
     assert r is not None
-    assert "unhandled system subtype=brand_new_sub" in r.plain
+    assert "[raw]" in r.plain
+    assert "brand_new_sub" in r.plain
+
+
+def test_render_raw_caps_long_payload() -> None:
+    huge = {"type": "x", "data": "y" * 500}
+    r = _render_event(huge)
+    assert r is not None
+    # cap 250 chars + "[raw] " prefix
+    assert r.plain.endswith("...")
+    assert len(r.plain) <= len("[raw] ") + 250
 
 
 # ---------- prompt extraction ----------

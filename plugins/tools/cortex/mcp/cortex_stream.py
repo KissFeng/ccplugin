@@ -145,10 +145,18 @@ def _extract_skill_name(system_prompt: str | None) -> str | None:
     return None
 
 
+def _render_raw(evt: dict) -> RenderableType:
+    """未适配 event 显原 JSON 1 行 (cap 250 chars)."""
+    raw = json.dumps(evt, ensure_ascii=False)
+    if len(raw) > 250:
+        raw = raw[:247] + "..."
+    return Text(f"[raw] {raw}", style="dim white")
+
+
 def _render_system_event(evt: dict) -> RenderableType | None:
     """Render claude stream-json `system` events (init/hook/task/api_retry/plugin_install).
 
-    Unknown subtypes return None (silent skip per PRD: 仅适配类型 rich 渲, 未适配静默).
+    Unknown subtypes return None — caller (_render_event) fallbacks to raw JSON.
     """
     sub = evt.get("subtype")
     if sub == "init":
@@ -244,20 +252,18 @@ def _render_user_event(evt: dict) -> RenderableType | None:
 
 
 def _render_event(evt: dict) -> RenderableType | None:
-    """Map one stream-json event to a rich renderable. Unknown → None.
+    """Map one stream-json event to a rich renderable.
 
-    Silent-skip policy (PRD): 已适配 type 渲染 rich, 未适配 type 默认静默.
-    CORTEX_STREAM_DEBUG=1 时未知 type 显 1 行调试.
+    Policy (PRD): 已适配 type 渲染 rich, 未适配 type/subtype 默认显原 JSON 1 行.
+    仅 stream_event 静默 (主流 assistant.text 已渲, 避免重复).
     """
     etype = evt.get("type")
     if etype == "system":
         rendered = _render_system_event(evt)
-        if rendered is None and os.environ.get("CORTEX_STREAM_DEBUG"):
-            sub = evt.get("subtype", "")
-            return Text(f"[debug] unhandled system subtype={sub}", style="yellow dim")
-        return rendered
+        return rendered if rendered is not None else _render_raw(evt)
     if etype == "user":
-        return _render_user_event(evt)
+        rendered = _render_user_event(evt)
+        return rendered if rendered is not None else _render_raw(evt)
     if etype == "stream_event":
         # 增量 text_delta 等 — 主流由 assistant.text 渲, 此处静默避重复.
         return None
@@ -298,11 +304,8 @@ def _render_event(evt: dict) -> RenderableType | None:
         if msg:
             return Text(f"[OK] {msg[:_TEXT_CAP]}", style="bold green")
         return Text("[OK] done", style="bold green")
-    # 完全未知 type — 默认静默, CORTEX_STREAM_DEBUG=1 显 1 行调试.
-    if os.environ.get("CORTEX_STREAM_DEBUG"):
-        sub = evt.get("subtype", "")
-        return Text(f"[debug] unknown type={etype} sub={sub}", style="yellow dim")
-    return None
+    # 完全未知 type — 显原 JSON 1 行.
+    return _render_raw(evt)
 
 
 def _build_view(history: list[RenderableType], spinner: Spinner) -> RenderableType:
