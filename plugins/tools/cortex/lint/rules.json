@@ -90,6 +90,12 @@
       "severity": "warn",
       "description": "业务目录名不在 vault.lang 的 dirs map (仅给 rename 建议, 不 autofix)",
       "autofix": false
+    },
+    {
+      "id": "vault-structure-violation",
+      "severity": "error",
+      "description": "vault 根或子目录含非 preset schema 允许的文件/文件夹 (需交互修复)",
+      "autofix": false
     }
   ]
 }

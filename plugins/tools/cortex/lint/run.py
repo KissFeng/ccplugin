@@ -76,6 +76,104 @@ def _load_vault_lang(vault: Path) -> str:
     return "zh-CN"
 
 
+def _load_vault_meta(vault: Path) -> dict[str, Any]:
+    """Parse vault `_meta/version.json` into dict; return `{}` on any error."""
+    p = vault / "_meta" / "version.json"
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _load_vault_preset(vault: Path) -> str:
+    """Return preset from `_meta/version.json:.preset`, default LYT."""
+    v = _load_vault_meta(vault).get("preset")
+    return v if isinstance(v, str) and v else "LYT"
+
+
+def _load_lint_whitelist(vault: Path) -> set[str]:
+    """Return whitelist set from `_meta/version.json:.lint_whitelist[]`."""
+    v = _load_vault_meta(vault).get("lint_whitelist")
+    if isinstance(v, list):
+        return {x for x in v if isinstance(x, str) and x}
+    return set()
+
+
+def check_vault_structure(
+    vault: Path,
+    preset: str,
+    whitelist: set[str],
+    extra_allowed_dirs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Scan vault root (non-recursive); return list of violations.
+
+    Each violation uses the standard finding shape `{rule, severity, file,
+    line, msg, fixable}` plus `{path, kind, reason}` extras so the
+    cortex-lint skill can drive interactive fixes.
+
+    Whitelist matches by exact relative-path string. Dirs are matched with
+    a trailing `/` (e.g. `"foobar/"`); files without it.
+
+    `extra_allowed_dirs` lets callers add i18n / locale-derived directory
+    names (e.g. `概念`, `concepts`) so localized layouts don't get flagged.
+    """
+    from schemas import get_schema  # type: ignore
+
+    schema = get_schema(preset)
+    allowed_dirs = set(schema["root_dirs"])
+    if extra_allowed_dirs:
+        allowed_dirs |= extra_allowed_dirs
+    allowed_files = set(schema["root_files"])
+    violations: list[dict[str, Any]] = []
+
+    try:
+        entries = sorted(vault.iterdir(), key=lambda p: p.name)
+    except OSError:
+        return violations
+
+    for entry in entries:
+        name = entry.name
+        if entry.is_dir():
+            rel = f"{name}/"
+            if rel in whitelist or name in whitelist:
+                continue
+            if name in allowed_dirs:
+                continue
+            reason = f"目录 '{name}' 不在 {preset} preset 允许列表"
+            violations.append({
+                "rule": "vault-structure-violation",
+                "severity": "error",
+                "file": rel,
+                "line": 0,
+                "msg": reason,
+                "fixable": False,
+                "path": rel,
+                "kind": "dir",
+                "reason": reason,
+            })
+        elif entry.is_file():
+            rel = name
+            if rel in whitelist:
+                continue
+            if name in allowed_files:
+                continue
+            reason = f"文件 '{name}' 不在 {preset} preset 允许列表"
+            violations.append({
+                "rule": "vault-structure-violation",
+                "severity": "error",
+                "file": rel,
+                "line": 0,
+                "msg": reason,
+                "fixable": False,
+                "path": rel,
+                "kind": "file",
+                "reason": reason,
+            })
+
+    return violations
+
+
 def _load_locale_dirs(plugin_root: Path, vault: Path, lang: str) -> set[str]:
     """Load `dirs` mapping for given lang; return set of localized dir names."""
     sys.path.insert(0, str(plugin_root / "hooks" / "_lib"))
@@ -534,6 +632,11 @@ def main() -> int:
         findings.extend(check_file(p, rel, text, by_name, by_alias, referrers, vault_lang))
 
     findings.extend(check_global(vault, files, by_alias, locale_dirs if locale_dirs else None))
+
+    # rule #16: vault-structure-violation — strict preset schema check at root
+    preset = _load_vault_preset(vault)
+    whitelist = _load_lint_whitelist(vault)
+    findings.extend(check_vault_structure(vault, preset, whitelist, locale_dirs))
 
     fixed = 0
     if args.fix:

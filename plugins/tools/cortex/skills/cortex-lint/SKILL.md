@@ -72,3 +72,26 @@ errors: E   warns: W   fixed: F
 - 默认 dry-run, 不动盘
 - `--fix` 前在 `_meta/.cortex-backup/lint/<ts>/` 全量 backup 待修改文件
 - backup 目录由 cortex 维护, 用户可手动 git ignore (`_meta/.cortex-backup/`)
+
+## 交互修复 (--fix 模式 vault-structure-violation 专用)
+
+run.py 的 python 进程不交互, 只输出 JSON 违规列表; **交互全在本 SKILL 流程内**。
+
+cortex-lint --fix 输出 JSON 含 `vault-structure-violation` 违规时:
+
+1. 解析违规列表 (`errors[]` 中 `rule == "vault-structure-violation"` 项)。每项含 `path` / `kind` (dir|file) / `reason`
+2. 对每个违规, **必须** 用 `AskUserQuestion` 工具询问 (禁文本式提问), 4 个选项:
+   - 选项 1: **移到允许目录** — 列 schema.root_dirs 候选 (LYT preset: `_meta`, `10_concepts`, `20_efforts`, `30_domains`, `40_anchors`, `50_calendar`, `60_journal`, `70_attachments`, `80_archive`, `90_inbox`, `folds`, `log`, `sessions` 等)
+   - 选项 2: **删除** — 危险操作, **必须** 再次 `AskUserQuestion` 二次确认 (展示路径 + 建议先 backup)
+   - 选项 3: **加白名单** — 写 `_meta/version.json:.lint_whitelist[]`, 后续 lint 跳过
+   - 选项 4: **跳过** — 单次不动, 不写白名单
+3. 按选择落操作:
+   - **move**: obsidian CLI move 或 `mcp__obsidian` 或 `mv` (按 fallback 顺序)
+   - **delete**: 二次 `AskUserQuestion` 确认 → `rm` / `rm -rf` (dir 需 -rf)。建议先 `cp -r` 到 `_meta/.cortex-backup/lint/<ts>/deleted/`
+   - **whitelist**: 读 `_meta/version.json` (JSON), append `path` 到 `.lint_whitelist[]` (dir 含尾 `/`, file 不含), 写回
+   - **skip**: 不动
+4. 每个违规处理完后, 打 `[done]` 状态行 (rule + path + 选择)
+
+完整 preset schema 见 `plugins/tools/cortex/lint/schemas.py` (LYT / PARA / flat 三套)。
+
+白名单匹配规则: vault 根相对路径**精确串相等** (dir 加尾 `/`, file 不加), 不支持 glob。隐藏目录 `.obsidian` / `.trash` 默认 allowed, 无需白名单。
