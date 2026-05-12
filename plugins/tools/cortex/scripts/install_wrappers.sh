@@ -275,7 +275,7 @@ plugin: $INSTALL_PATH
 cortex_stream_runner claude --bare \\
   --no-session-persistence \\
   --settings "\$SETTINGS" \\
-  --max-budget-usd 0.30 \\
+  --max-budget-usd 2.00 \\
   -p "\$PROMPT" \\
   --append-system-prompt "\$(cat "\$SKILL_PATH")" \\
   --allowed-tools "Bash Read Glob Edit Write" \\
@@ -428,7 +428,7 @@ if [[ -f "\$LIB_PATH" ]] && source "\$LIB_PATH" 2>/dev/null; then
   cortex_stream_runner claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content" \\
     | cx_filter_stream
@@ -438,7 +438,7 @@ else
   claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob mcp__obsidian__obsidian_list_files_in_vault mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_append_content" \\
     | cx_filter_stream
@@ -450,7 +450,7 @@ EOB
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Memory wrappers (4 total): memory / recall / promote / consolidate
-# 每个走 claude --bare AUTO_MODE 调对应 SKILL, --max-budget-usd 0.30 限额。
+# 每个走 claude --bare AUTO_MODE 调对应 SKILL, --max-budget-usd 2.00 限额。
 # 风格同 init.sh: 检 ~/.cortex/config.json → jq 解析 vault → exec claude --bare。
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -498,7 +498,7 @@ if [[ -f "\$LIB_PATH" ]] && source "\$LIB_PATH" 2>/dev/null; then
   cortex_stream_runner claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob" \\
     | cx_filter_stream
@@ -508,7 +508,7 @@ else
   claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob" \\
     | cx_filter_stream
@@ -555,7 +555,7 @@ if [[ -f "\$LIB_PATH" ]] && source "\$LIB_PATH" 2>/dev/null; then
   cortex_stream_runner claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Glob" \\
     | cx_filter_stream
@@ -565,7 +565,7 @@ else
   claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Glob" \\
     | cx_filter_stream
@@ -626,7 +626,7 @@ if [[ -f "\$LIB_PATH" ]] && source "\$LIB_PATH" 2>/dev/null; then
   cortex_stream_runner claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob" \\
     | cx_filter_stream
@@ -636,7 +636,7 @@ else
   claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob" \\
     | cx_filter_stream
@@ -686,7 +686,7 @@ if [[ -f "\$LIB_PATH" ]] && source "\$LIB_PATH" 2>/dev/null; then
   cortex_stream_runner claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob" \\
     | cx_filter_stream
@@ -696,7 +696,7 @@ else
   claude --bare \\
     --no-session-persistence \\
     --settings "\$SETTINGS" \\
-    --max-budget-usd 0.30 \\
+    --max-budget-usd 2.00 \\
     -p "\$PROMPT" \\
     --allowed-tools "Bash Read Write Edit Glob" \\
     | cx_filter_stream

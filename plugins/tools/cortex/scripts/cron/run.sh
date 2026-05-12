@@ -212,7 +212,7 @@ CMD=(claude
   --bare
   --no-session-persistence
   --settings "$SETTINGS"
-  --max-budget-usd 0.30
+  --max-budget-usd 2.00
   -p "$FULL_PROMPT"
 )
 # Note: --output-format stream-json --verbose is injected by cortex_stream_runner.

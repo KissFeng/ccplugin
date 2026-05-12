@@ -62,8 +62,24 @@ allowed-tools: Read Write Glob mcp__obsidian__obsidian_simple_search mcp__obsidi
 - 模板渲染失败 (cortex-html 报错) → 跳过该页, 末尾汇总
 - 写盘并发 (多个 cron 同时跑) → 配合 cron run.sh 提供的 flock
 
-## AUTO_MODE 兼容
-[AUTO_MODE: ...] (cron 默认) 全自动执行, 无交互。stale 判定照常生效, 不无脑全渲。
+## AUTO_MODE 行为 (cron 调用, 强约束)
+
+[AUTO_MODE: ...] (cron 默认) 全自动执行, 无交互。避免漫游和 token 爆炸:
+
+1. **Glob 一次**: `仪表盘/*.md` (cap 20 页, 多了取前 20)
+2. **仅读 frontmatter**: 每页前 30 行 (Read offset=1 limit=30), 不读全文
+3. **query.kind 行为限制**:
+   - memory: Glob `记忆/<level>/_index.md` 取计数, **不读** 子文件
+   - ledger: `wc -l 记忆/L4-流水账/ledger/*.jsonl` 取行数, **不读** jsonl 内容
+   - knowledge: `mcp__obsidian__obsidian_simple_search` query 限 top 10
+   - cron: 读 `~/.cache/cortex/cron/*.log` 仅最后 5 行
+4. **渲染**: 调 cortex-html 取模板拼 HTML, 注入 `<!-- DASH:BEGIN -->...<!-- DASH:END -->`
+5. **stale_after 检查**: 24h 内不重渲, fail-fast 退
+6. **输出**: 单行 JSON `{refreshed: [...], skipped: M, errors: K}`
+7. **禁**: 读 vault 外文件 / 读 vault 内任何 .jsonl/.md 全文 (除非 frontmatter < 30 行)
+8. **失败处理**: 单页失败 → errors++, 继续下一页, 不 hang
+
+stale 判定照常生效, 不无脑全渲。
 
 ## Grok Live Artifacts 风格契约 (仪表盘 HTML 输出强制)
 
