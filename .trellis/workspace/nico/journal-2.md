@@ -336,3 +336,36 @@ cortex-lint SKILL AUTO_MODE 加严: bash 触发禁手动建议表/询问/AskUser
 ### Next Steps
 
 - None - task complete
+
+
+## Session 70: cortex_stream subtype 扩展
+
+**Date**: 2026-05-12
+**Task**: cortex_stream subtype 扩展
+**Branch**: `master`
+
+### Summary
+
+扩 cortex_stream 渲染分支: system compact_boundary/error/tool_permission/subagent_*/session_*; assistant server_tool_use/web_search_tool_result/redacted_thinking; user tool_use; result error_max_turns/error_during_execution。54 stream tests + 113 mcp tests PASS。lint 既存失败非本次范围。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `79bfebbf` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
