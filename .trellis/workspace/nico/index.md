@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 65
+- **Total Sessions**: 66
 - **Last Active**: 2026-05-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~205 | Active |
+| `journal-2.md` | ~239 | Active |
 | `journal-1.md` | ~1974 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 66 | 2026-05-12 | cortex wrapper stream-json + rich 实时 | `becd3696`
+`f6802e39` | `master` |
 | 65 | 2026-05-12 | cortex wrapper → claude commands 全权限 | `ac7c63c6` | `master` |
 | 64 | 2026-05-12 | cortex budget 提升 + dashboard 真测 (未通) | `50424104` | `master` |
 | 63 | 2026-05-12 | cortex cron run cd vault + SKILL 注入 | `ccaa3bd7` | `master` |

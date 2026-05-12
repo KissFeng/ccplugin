@@ -203,3 +203,37 @@ wrapper 全部走 /cortex-<name> slash commands (claude 全权限/无 args/无 -
 ### Next Steps
 
 - None - task complete
+
+
+## Session 66: cortex wrapper stream-json + rich 实时
+
+**Date**: 2026-05-12
+**Task**: cortex wrapper stream-json + rich 实时
+**Branch**: `master`
+
+### Summary
+
+wrapper claude 调用全用 stream-json + cortex_stream_runner 实时 rich 渲染。stderr UI panel + heartbeat, stdout 仅 result.text。dashboard.sh 真测 EXIT=0。286 tests。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `becd3696
+f6802e39` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
