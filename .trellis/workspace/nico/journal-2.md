@@ -237,3 +237,36 @@ f6802e39` | (see git log) |
 ### Next Steps
 
 - None - task complete
+
+
+## Session 67: cortex_stream system/hook event handlers
+
+**Date**: 2026-05-12
+**Task**: cortex_stream system/hook event handlers
+**Branch**: `master`
+
+### Summary
+
+cortex_stream.py 加 system/user event handlers (init/hook_*/task_*/api_retry/plugin_install/tool_result), 未适配 silent skip。CORTEX_STREAM_DEBUG opt-in 显未知。54 stream tests + 112 mcp PASS。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `53dfe6b2` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
