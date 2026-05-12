@@ -1774,3 +1774,36 @@ vault 偏差强制对齐, sha 比对 3 类 (seed/meta/templates) + TEMPLATE_END 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 54: cortex MCP 3 骨架工具完整实现
+
+**Date**: 2026-05-12
+**Task**: cortex MCP 3 骨架工具完整实现
+**Branch**: `master`
+
+### Summary
+
+consolidate (ledger→views 聚合) + promote (_do_promote 真 mv + fm update) + session_import (transcript→sessions+ledger)。not_implemented 0/3。278 tests PASS。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `091fdef5` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
