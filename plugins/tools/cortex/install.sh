@@ -367,8 +367,8 @@ collect_fields_from_prompt() {
 if [[ "$OVERWRITE_CONFIG" == "1" ]]; then
   if [[ "$NON_INTERACTIVE" == "1" ]]; then
     if [[ -z "$VAULT" ]]; then
-      echo "[install.sh] 非交互模式缺 --vault" >&2
-      echo "  curl|bash 用例: curl ... | bash -s -- --non-interactive --vault \$HOME/path/to/vault" >&2
+      log_error "非交互模式缺 --vault"
+      log_hint "curl|bash 用例: curl ... | bash -s -- --non-interactive --vault \$HOME/path/to/vault"
       exit 2
     fi
   else
@@ -382,7 +382,7 @@ else
     log_warn "解析 ~/.cortex/config.json 失败, 回退到 prompt"
     if [[ "$NON_INTERACTIVE" == "1" ]]; then
       if [[ -z "$VAULT" ]]; then
-        echo "[install.sh] 非交互模式缺 --vault (现有 config 不可解析)" >&2
+        log_error "非交互模式缺 --vault (现有 config 不可解析)"
         exit 2
       fi
     else
