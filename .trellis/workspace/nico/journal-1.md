@@ -1642,3 +1642,36 @@ lint.sh 默认 autofix, 新增 --check 走 cron/lint.sh read-only。--fix backwa
 ### Next Steps
 
 - None - task complete
+
+
+## Session 50: cortex UserPromptSubmit hook
+
+**Date**: 2026-05-12
+**Task**: cortex UserPromptSubmit hook
+**Branch**: `master`
+
+### Summary
+
+加 UserPromptSubmit hook 每次输入触发, 命中触发词强 reminder + 记住/忘了指令追加 write/forget。258 tests PASS。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f5d08670` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
