@@ -949,3 +949,36 @@ Phase A 把 bash function perl_timeout 作 cmd[0] 传 python subprocess → File
 ### Next Steps
 
 - None - task complete
+
+
+## Session 29: run.sh 丢弃 stdout NDJSON 防终端污染
+
+**Date**: 2026-05-12
+**Task**: run.sh 丢弃 stdout NDJSON 防终端污染
+**Branch**: `master`
+
+### Summary
+
+timeout 内联重构丢了 stdout > TMP_NDJSON. cortex_stream.py 仍 stdout 透传 NDJSON, 终端见污染. 修: run.sh cortex_stream_runner 两分支加 > /dev/null. jq 解析走 CORTEX_STREAM_TEE_FILE.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1a002389` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
