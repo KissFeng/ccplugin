@@ -405,8 +405,137 @@ MEMORY_CONSOLIDATE_TOOL = Tool(
 
 
 async def handle_memory_consolidate(args: dict[str, Any]) -> list[TextContent]:
-    # TODO: implement ledger → views consolidation (delegate to cortex-consolidate skill).
-    return _wrap(_err(1, "not_implemented"))
+    """Aggregate last week's ledger events → views + reflection links.
+
+    week_offset = -1 (last week) by default. Reads
+    `L4-流水账/ledger/<date>.jsonl` for the 7-day window and produces:
+      - `views/candidates.md`: rows for entity/topic seen ≥3 times (promotion candidates)
+      - `知识库/反思/连接/<YYYY-Wnn>.md`: cross-domain connections (≥3 freq)
+      - `views/consolidated/<YYYY-Wnn>.md`: top-20 entities/topics for the week
+    """
+    week_offset = int(args.get("week_offset", -1))
+    vault, err = _vault_or_err()
+    if err:
+        return _wrap(err)
+    assert vault is not None
+
+    today = _dt.datetime.now(tz=_dt.timezone.utc).date()
+    # Anchor at week_offset weeks ago, take 7 days
+    end = today + _dt.timedelta(days=7 * week_offset + 6)
+    start = end - _dt.timedelta(days=6)
+
+    ledger_dir = vault / "记忆体系" / "L4-流水账" / "ledger"
+    entity_freq: dict[str, int] = {}
+    topic_freq: dict[str, int] = {}
+    entity_topics: dict[str, set[str]] = {}
+
+    events_read = 0
+    if ledger_dir.is_dir():
+        for i in range(7):
+            d = start + _dt.timedelta(days=i)
+            f = ledger_dir / f"{d.isoformat()}.jsonl"
+            if not f.is_file():
+                continue
+            try:
+                for raw in f.read_text(encoding="utf-8").splitlines():
+                    raw = raw.strip()
+                    if not raw:
+                        continue
+                    try:
+                        evt = json.loads(raw)
+                    except json.JSONDecodeError:
+                        continue
+                    events_read += 1
+                    entity = (
+                        evt.get("entity")
+                        or evt.get("subject")
+                        or evt.get("actor")
+                        or evt.get("session_id")
+                    )
+                    topic = (
+                        evt.get("topic")
+                        or evt.get("type")
+                        or evt.get("kind")
+                        or evt.get("category")
+                    )
+                    if isinstance(entity, str) and entity:
+                        entity_freq[entity] = entity_freq.get(entity, 0) + 1
+                    if isinstance(topic, str) and topic:
+                        topic_freq[topic] = topic_freq.get(topic, 0) + 1
+                    if isinstance(entity, str) and isinstance(topic, str) and entity and topic:
+                        entity_topics.setdefault(entity, set()).add(topic)
+            except OSError:
+                continue
+
+    iso_year, iso_week, _ = end.isocalendar()
+    week_tag = f"{iso_year}-W{iso_week:02d}"
+
+    # 1) candidates (freq ≥ 3)
+    candidates = []
+    for k, v in entity_freq.items():
+        if v >= 3:
+            candidates.append(("entity", k, v))
+    for k, v in topic_freq.items():
+        if v >= 3:
+            candidates.append(("topic", k, v))
+
+    views_dir = vault / "记忆体系" / "views"
+    views_dir.mkdir(parents=True, exist_ok=True)
+    cand_path = views_dir / "candidates.md"
+    cand_added = 0
+    if candidates:
+        header_needed = not cand_path.is_file()
+        with file_lock(str(cand_path)):
+            with cand_path.open("a", encoding="utf-8") as fp:
+                if header_needed:
+                    fp.write("# 晋级候选\n\n| week | kind | name | freq |\n|---|---|---|---|\n")
+                for kind, name, freq in candidates:
+                    fp.write(f"| {week_tag} | {kind} | {name} | {freq} |\n")
+                    cand_added += 1
+
+    # 2) cross-domain connections (entity touching ≥3 topics)
+    conn_added = 0
+    cross = [(e, sorted(ts)) for e, ts in entity_topics.items() if len(ts) >= 3]
+    if cross:
+        conn_dir = vault / "知识库" / "反思" / "连接"
+        conn_dir.mkdir(parents=True, exist_ok=True)
+        conn_path = conn_dir / f"{week_tag}.md"
+        with file_lock(str(conn_path)):
+            with conn_path.open("a", encoding="utf-8") as fp:
+                if conn_path.stat().st_size == 0:
+                    fp.write(f"# 连接 {week_tag}\n\n")
+                for entity, topics in cross:
+                    fp.write(f"- **{entity}** ↔ {', '.join(topics)}\n")
+                    conn_added += 1
+
+    # 3) top-20 consolidated view
+    top_entities = sorted(entity_freq.items(), key=lambda kv: -kv[1])[:20]
+    top_topics = sorted(topic_freq.items(), key=lambda kv: -kv[1])[:20]
+    cons_dir = views_dir / "consolidated"
+    cons_dir.mkdir(parents=True, exist_ok=True)
+    cons_path = cons_dir / f"{week_tag}.md"
+    consolidated_file: str | None = None
+    if top_entities or top_topics or events_read:
+        with file_lock(str(cons_path)):
+            lines = [f"# Consolidated {week_tag}", "",
+                     f"period: {start.isoformat()} → {end.isoformat()}",
+                     f"events: {events_read}", "", "## Top Entities", ""]
+            for name, freq in top_entities:
+                lines.append(f"- {name} ({freq})")
+            lines += ["", "## Top Topics", ""]
+            for name, freq in top_topics:
+                lines.append(f"- {name} ({freq})")
+            lines.append("")
+            cons_path.write_text("\n".join(lines), encoding="utf-8")
+        consolidated_file = str(cons_path.relative_to(vault))
+
+    return _wrap(_ok({
+        "consolidated_file": consolidated_file,
+        "candidates_added": cand_added,
+        "connections_added": conn_added,
+        "events_read": events_read,
+        "week": week_tag,
+    }))
 
 
 # ── Tool: cortex_memory_promote ─────────────────────────────────────
@@ -437,8 +566,79 @@ async def handle_memory_promote(args: dict[str, Any]) -> list[TextContent]:
     # L2→L1 and L1→L0 need approval
     if target in ("L0", "L1") and not user_approved:
         return _wrap(_err(6, f"promote to {target} needs user_approved=true"))
-    # TODO: actually move file + rewrite frontmatter.uri + update parents/children.
-    return _wrap(_err(1, "not_implemented"))
+    vault, err = _vault_or_err()
+    if err:
+        return _wrap(err)
+    assert vault is not None
+    return _wrap(_do_promote(uri, target, vault))
+
+
+def _do_promote(uri: str, target_level: str, vault: Path) -> dict[str, Any]:
+    """Actually move file to new level dir, update frontmatter + uri-index."""
+    m = URI_RE.match(uri)
+    if not m:
+        return _err(5, f"URI invalid: {uri}")
+    rest = m.group(2)
+    try:
+        src_path = resolve_uri(uri, vault)
+    except (ValueError, FileNotFoundError) as e:
+        return _err(2, f"resolve src failed: {e}")
+    if not src_path.is_file():
+        return _err(2, f"uri not found: {uri}")
+
+    new_uri = f"{target_level}://{rest}"
+    try:
+        new_path = resolve_uri(new_uri, vault)
+    except ValueError as e:
+        return _err(5, f"resolve target failed: {e}")
+
+    text = src_path.read_text(encoding="utf-8")
+    fm, body = fm_parse(text)
+    if not fm:
+        return _err(1, "invalid or missing frontmatter")
+
+    fm["uri"] = new_uri
+    fm["level"] = target_level
+    fm["promoted_at"] = _iso_now()
+    try:
+        weight = float(fm.get("weight", 0.5) or 0.5)
+    except (TypeError, ValueError):
+        weight = 0.5
+    fm["weight"] = min(1.0, weight + 0.1)
+
+    new_path.parent.mkdir(parents=True, exist_ok=True)
+    new_text = fm_dump(fm, body)
+    new_path.write_text(new_text, encoding="utf-8")
+    if src_path.resolve() != new_path.resolve():
+        try:
+            src_path.unlink()
+        except OSError:
+            pass
+
+    # update uri-index.json
+    idx_path = vault / "_meta" / "uri-index.json"
+    if idx_path.is_file():
+        try:
+            idx = json.loads(idx_path.read_text(encoding="utf-8"))
+            entries = idx.get("entries", [])
+            for e in entries:
+                if e.get("uri") == uri:
+                    e["uri"] = new_uri
+                    e["level"] = target_level
+                    e["path"] = str(new_path.relative_to(vault))
+                    break
+            idx["entries"] = entries
+            idx_path.write_text(
+                json.dumps(idx, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return _ok({
+        "new_uri": new_uri,
+        "new_path": str(new_path.relative_to(vault)),
+        "old_uri": uri,
+    })
 
 
 # ── Tool: cortex_ledger_append ──────────────────────────────────────
@@ -495,9 +695,141 @@ SESSION_IMPORT_TOOL = Tool(
 
 
 async def handle_session_import(args: dict[str, Any]) -> list[TextContent]:
-    # TODO: parse transcript JSONL, derive session_id, write markdown summary,
-    # append ledger event {kind: "session_imported", sid, ...}.
-    return _wrap(_err(1, "not_implemented"))
+    """Import a Claude Code transcript (.jsonl) into the vault.
+
+    Writes `L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md` with summary +
+    appends per-turn events to `L4-流水账/ledger/<date>.jsonl`. Caps at 200
+    turns to avoid log explosions.
+    """
+    transcript_path = args.get("transcript_path")
+    cli = args.get("cli") or "claude-code"
+    if not isinstance(transcript_path, str) or not transcript_path:
+        return _wrap(_err(1, "missing transcript_path"))
+    src = Path(transcript_path).expanduser()
+    if not src.is_file():
+        return _wrap(_err(2, f"transcript not found: {transcript_path}"))
+    if src.suffix not in (".jsonl", ".ndjson"):
+        return _wrap(_err(1, f"expect .jsonl: {transcript_path}"))
+
+    vault, err = _vault_or_err()
+    if err:
+        return _wrap(err)
+    assert vault is not None
+
+    # Parse turns
+    turns: list[dict[str, Any]] = []
+    try:
+        for raw in src.read_text(encoding="utf-8").splitlines():
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                turns.append(json.loads(raw))
+            except json.JSONDecodeError:
+                continue
+    except OSError as e:
+        return _wrap(_err(1, f"read transcript: {e}"))
+
+    if not turns:
+        return _wrap(_err(1, "empty transcript"))
+
+    CAP = 200
+    capped = turns[:CAP]
+
+    # Derive metadata
+    sid = (
+        capped[0].get("session_id")
+        or capped[0].get("sessionId")
+        or src.stem
+    )
+    sid = str(sid)
+
+    def _ts(t: dict[str, Any]) -> str | None:
+        for k in ("ts", "timestamp", "time", "created_at"):
+            v = t.get(k)
+            if isinstance(v, str) and v:
+                return v
+        return None
+
+    started_at = _ts(capped[0]) or _iso_now()
+    ended_at = _ts(capped[-1]) or started_at
+
+    # Date for directory + ledger from started_at (best-effort)
+    try:
+        started_dt = _dt.datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+    except ValueError:
+        started_dt = _dt.datetime.now(tz=_dt.timezone.utc)
+    yyyy_mm = started_dt.strftime("%Y-%m")
+    ledger_date = started_dt.strftime("%Y-%m-%d")
+
+    sessions_dir = vault / "记忆体系" / "L4-流水账" / "sessions" / cli / yyyy_mm
+    sessions_dir.mkdir(parents=True, exist_ok=True)
+    sess_path = sessions_dir / f"{sid}.md"
+
+    # Build summary body: first ~20 turns previews
+    PREVIEW_N = 20
+    PREVIEW_LEN = 200
+    body_lines = [f"# Session {sid}", "", f"- cli: {cli}", f"- started: {started_at}",
+                  f"- ended: {ended_at}", f"- turns: {len(turns)} (imported: {len(capped)})",
+                  f"- source: {src}", "", "## 摘要 (前 20 条)", ""]
+    for i, t in enumerate(capped[:PREVIEW_N]):
+        role = t.get("role") or t.get("type") or "?"
+        content = t.get("content") or t.get("text") or t.get("message") or ""
+        if isinstance(content, (list, dict)):
+            content = json.dumps(content, ensure_ascii=False)[:PREVIEW_LEN]
+        else:
+            content = str(content)[:PREVIEW_LEN]
+        body_lines.append(f"### turn {i} · {role}")
+        body_lines.append("")
+        body_lines.append(content)
+        body_lines.append("")
+
+    sess_uri = f"L4://session/{cli}/{sid}"
+    fm = {
+        "uri": sess_uri,
+        "level": "L4",
+        "cli": cli,
+        "session_id": sid,
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "turn_count": len(turns),
+        "source_path": str(src),
+        "created": _iso_now(),
+    }
+    sess_path.write_text(fm_dump(fm, "\n".join(body_lines) + "\n"), encoding="utf-8")
+
+    # Append per-turn events to ledger
+    ledger_path = vault / "记忆体系" / "L4-流水账" / "ledger" / f"{ledger_date}.jsonl"
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    appended = 0
+    with file_lock(str(ledger_path)):
+        with ledger_path.open("a", encoding="utf-8") as fp:
+            for idx, t in enumerate(capped):
+                role = t.get("role") or t.get("type") or "?"
+                content = t.get("content") or t.get("text") or t.get("message") or ""
+                if isinstance(content, (list, dict)):
+                    preview = json.dumps(content, ensure_ascii=False)[:160]
+                else:
+                    preview = str(content)[:160]
+                rec = {
+                    "ts": _ts(t) or _iso_now(),
+                    "type": "session_event",
+                    "session_id": sid,
+                    "cli": cli,
+                    "turn_idx": idx,
+                    "role": role,
+                    "content_preview": preview,
+                }
+                fp.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                appended += 1
+
+    return _wrap(_ok({
+        "session_uri": sess_uri,
+        "session_path": str(sess_path.relative_to(vault)),
+        "events_appended": appended,
+        "turn_count": len(turns),
+        "capped": len(turns) > CAP,
+    }))
 
 
 # ── Tool: cortex_uri_index_rebuild ──────────────────────────────────

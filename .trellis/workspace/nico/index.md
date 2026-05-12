@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 52
+- **Total Sessions**: 53
 - **Last Active**: 2026-05-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1743 | Active |
+| `journal-1.md` | ~1776 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 53 | 2026-05-12 | cortex lint vault-misaligned (强制对齐) | `17d4f1c1` | `master` |
 | 52 | 2026-05-12 | cortex lint dead-wikilink + duplicate-alias autofix | `ba49488d` | `master` |
 | 51 | 2026-05-12 | cortex frontmatter+tag schema + skills/agents 对齐 | `a28b5663` | `master` |
 | 50 | 2026-05-12 | cortex UserPromptSubmit hook | `f5d08670` | `master` |
