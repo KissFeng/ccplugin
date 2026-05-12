@@ -452,7 +452,21 @@ step_mcp_install() {
   log_ok "cortex-mcp 已就绪 (which cortex-mcp 应返路径)"
 }
 
+# ── rich 可用检测 ──────────────────────────────────────────────────
+# cortex-stream 进度 UI 依赖 system python3 + rich (路径 1 优先).
+# 缺则 warn + hint, 不阻塞 install.
+step_rich_install() {
+  if command -v python3 >/dev/null 2>&1 && python3 -c "import rich" 2>/dev/null; then
+    log_info "rich 已装 (system python3)"
+    return 0
+  fi
+  log_warn "rich 未在 system python3 中可用. cortex-stream 进度 UI 不可用."
+  log_hint "装: pip3 install rich  (或 pip3 install --user rich)"
+  return 0
+}
+
 step_mcp_install
+step_rich_install
 
 # ── cron 幂等性 ────────────────────────────────────────────────────
 # 检测 crontab / launchd 中是否已有 cortex job

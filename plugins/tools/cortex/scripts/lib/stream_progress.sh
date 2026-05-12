@@ -96,30 +96,7 @@ cortex_stream_runner() {
   fi
   local stream_script="$plugin_root/mcp/cortex_stream.py"
 
-  # Path 1: cortex-stream console-script on PATH (new installs).
-  if command -v cortex-stream >/dev/null 2>&1; then
-    cortex-stream --label "$label" -- "$@"
-    return $?
-  fi
-
-  # Path 2: pipx venv python directly runs the absolute script path.
-  # Covers users who installed pre-Phase-A cortex-mcp (no console-script entry yet).
-  local pipx_home="${PIPX_HOME:-$HOME/.local/pipx}"
-  local venv_pys=(
-    "$pipx_home/venvs/cortex-mcp/bin/python"
-    "$pipx_home/venvs/cortex-mcp/bin/python3"
-  )
-  if [[ -f "$stream_script" ]]; then
-    local py
-    for py in "${venv_pys[@]}"; do
-      if [[ -x "$py" ]]; then
-        "$py" "$stream_script" --label "$label" -- "$@"
-        return $?
-      fi
-    done
-  fi
-
-  # Path 3: system python3 with rich available (non-pipx fallback).
+  # Path 1 (preferred): system python3 with rich (用户偏好: 不走 venv).
   if [[ -f "$stream_script" ]] && command -v python3 >/dev/null 2>&1; then
     if python3 -c "import rich" 2>/dev/null; then
       python3 "$stream_script" --label "$label" -- "$@"
@@ -127,8 +104,30 @@ cortex_stream_runner() {
     fi
   fi
 
+  # Path 2: cortex-stream console-script on PATH (兼容路径, 假定 entry 自带 rich).
+  if command -v cortex-stream >/dev/null 2>&1; then
+    cortex-stream --label "$label" -- "$@"
+    return $?
+  fi
+
+  # Path 3: pipx venv python — 必须 import rich 成功才走 (防 ImportError).
+  if [[ -f "$stream_script" ]]; then
+    local pipx_home="${PIPX_HOME:-$HOME/.local/pipx}"
+    local venv_pys=(
+      "$pipx_home/venvs/cortex-mcp/bin/python"
+      "$pipx_home/venvs/cortex-mcp/bin/python3"
+    )
+    local py
+    for py in "${venv_pys[@]}"; do
+      if [[ -x "$py" ]] && "$py" -c "import rich" 2>/dev/null; then
+        "$py" "$stream_script" --label "$label" -- "$@"
+        return $?
+      fi
+    done
+  fi
+
   # Path 4: raw fallback — warn, preserve stream-json + verbose so run.sh tee still works.
-  echo "${_C_YELLOW}${_C_BOLD}[${label}]${_C_RESET} no rich-capable python found (try: pipx install --force <plugin>/mcp/), no progress UI" >&2
+  echo "${_C_YELLOW}${_C_BOLD}[${label}]${_C_RESET} rich not available (try: pip3 install rich), no progress UI" >&2
   if [[ -n "$tee_file" ]]; then
     "$@" --output-format stream-json --verbose | tee "$tee_file" >/dev/null
     return ${PIPESTATUS[0]}
