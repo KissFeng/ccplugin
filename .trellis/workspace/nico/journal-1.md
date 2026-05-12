@@ -916,3 +916,36 @@ Phase A 把 bash function perl_timeout 作 cmd[0] 传 python subprocess → File
 ### Next Steps
 
 - None - task complete
+
+
+## Session 28: cortex 移除 pipx 依赖 (pip3 --user + python3 直跑)
+
+**Date**: 2026-05-12
+**Task**: cortex 移除 pipx 依赖 (pip3 --user + python3 直跑)
+**Branch**: `master`
+
+### Summary
+
+全删 pipx: install.sh step_mcp_install + step_rich_install 并入 step_python_deps (pip3 install --user mcp pypdf ebooklib python-docx rich, --reinstall 触发 upgrade, 失败 fail-soft). plugin.json mcpServers.cortex command python3 + args mcp/server.py. stream_progress.sh 删 pipx venv 路径, 3 级降级 (系统 python3 / PATH cortex-stream / fallback). pyproject.toml 保留供本地开发. grep pipx 三文件空.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0ccb1534` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
