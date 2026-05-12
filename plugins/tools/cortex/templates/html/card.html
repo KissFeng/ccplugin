@@ -1,0 +1,14 @@
+<!-- cortex-template-version: 1 -->
+<!--
+  card.html — 三段信息卡 (title / desc / footer)
+  变量占位:
+    {{TITLE}}   卡片标题
+    {{DESC}}    主体描述 (单段)
+    {{FOOTER}}  脚注 (元数据 / 链接)
+    {{ACCENT}}  左侧强调色 (默认 #3b82f6)
+-->
+<div style="border:1px solid #e5e7eb;border-left:4px solid {{ACCENT}};border-radius:6px;padding:12px 16px;margin:8px 0;background:#fafafa">
+  <div style="font-weight:600;font-size:14px;margin-bottom:4px">{{TITLE}}</div>
+  <div style="font-size:13px;color:#374151;line-height:1.5">{{DESC}}</div>
+  <div style="font-size:11px;color:#6b7280;margin-top:8px;border-top:1px solid #e5e7eb;padding-top:6px">{{FOOTER}}</div>
+</div>

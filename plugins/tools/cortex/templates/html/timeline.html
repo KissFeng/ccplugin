@@ -1,0 +1,19 @@
+<!-- cortex-template-version: 1 -->
+<!--
+  timeline.html — CSS-only 竖排时间线
+  变量占位:
+    {{ITEMS}}  由 cortex-dashboard 注入, 每条形如:
+               <li><time>YYYY-MM-DD</time><strong>{{title}}</strong><p>{{desc}}</p></li>
+  纯 CSS, 不依赖 JS。
+-->
+<ul style="list-style:none;padding:0;margin:12px 0;border-left:2px solid #d1d5db">
+  {{ITEMS}}
+  <!-- 示例条目 (供 cortex-html 渲染前参考)
+  <li style="position:relative;padding:8px 0 8px 20px">
+    <span style="position:absolute;left:-7px;top:14px;width:12px;height:12px;border-radius:50%;background:#3b82f6"></span>
+    <time style="font-size:11px;color:#6b7280">2026-05-12</time>
+    <strong style="display:block;font-size:13px">事件标题</strong>
+    <p style="font-size:12px;color:#374151;margin:2px 0 0">事件描述</p>
+  </li>
+  -->
+</ul>

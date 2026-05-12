@@ -1,0 +1,25 @@
+<!-- cortex-template-version: 1 -->
+<!--
+  progressive-disclosure.html — 折叠面板 (3 级嵌套)
+  变量占位:
+    {{L1_SUMMARY}} / {{L1_BODY}}
+    {{L2_SUMMARY}} / {{L2_BODY}}
+    {{L3_SUMMARY}} / {{L3_BODY}}
+  用途: 渐进披露, 默认仅显示 summary, 用户点开展开 body
+-->
+<details>
+  <summary style="cursor:pointer;font-weight:600">{{L1_SUMMARY}}</summary>
+  <div style="margin:8px 0 8px 16px">
+    {{L1_BODY}}
+    <details>
+      <summary style="cursor:pointer;font-weight:500">{{L2_SUMMARY}}</summary>
+      <div style="margin:6px 0 6px 16px">
+        {{L2_BODY}}
+        <details>
+          <summary style="cursor:pointer">{{L3_SUMMARY}}</summary>
+          <div style="margin:4px 0 4px 16px">{{L3_BODY}}</div>
+        </details>
+      </div>
+    </details>
+  </div>
+</details>

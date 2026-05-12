@@ -24,6 +24,9 @@ from tools.ingest_url import INGEST_URL_TOOL, handle_ingest_url  # noqa: E402
 from tools.save import SAVE_TOOL, handle_save  # noqa: E402
 from tools.search import SEARCH_TOOL, handle_search  # noqa: E402
 
+from cortex_mcp import HANDLERS as MEMORY_HANDLERS  # noqa: E402
+from cortex_mcp import MEMORY_TOOLS  # noqa: E402
+
 app: Server = Server("cortex")
 
 
@@ -35,6 +38,7 @@ async def list_tools() -> list[Tool]:
         INGEST_URL_TOOL,
         INGEST_FILE_TOOL,
         DEEP_SEARCH_TOOL,
+        *MEMORY_TOOLS,
     ]
 
 
@@ -50,6 +54,9 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         return await handle_ingest_file(arguments)
     if name == DEEP_SEARCH_TOOL.name:
         return await handle_deep_search(arguments)
+    handler = MEMORY_HANDLERS.get(name)
+    if handler is not None:
+        return await handler(arguments)
     raise ValueError(f"cortex-mcp: unknown tool {name!r}")
 
 

@@ -1,0 +1,10 @@
+<!-- cortex-template-version: 1 -->
+<!--
+  badge.html — 状态徽章片段
+  变量占位:
+    {{LABEL}}  徽章文本 (如 L0 / active / 0.8)
+    {{COLOR}}  背景色 (如 #eee / #4ade80 / #fbbf24)
+    {{FG}}     前景文本色 (默认 #111)
+  用法: 由 cortex-html / cortex-dashboard 注入实际值后内联到 markdown
+-->
+<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:{{COLOR}};color:{{FG}};font-size:12px;font-family:ui-monospace,monospace">{{LABEL}}</span>

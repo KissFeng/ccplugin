@@ -1,0 +1,18 @@
+<!-- cortex-template-version: 1 -->
+<!--
+  canvas-heatmap.html — canvas 热力图骨架 (L4 流水账活跃度可视)
+  变量占位:
+    {{ID}}     canvas DOM id (用于 cortex-dashboard 注入数据时定位)
+    {{WIDTH}}  canvas 宽度 px (默认 720)
+    {{HEIGHT}} canvas 高度 px (默认 120)
+    {{DATA}}   JSON 形如 [{"date":"2026-05-12","count":12}, ...]
+  注: 真实渲染由 cortex-dashboard 在生成阶段把 DATA 注入 <script> 占位。
+-->
+<canvas id="{{ID}}" width="{{WIDTH}}" height="{{HEIGHT}}" style="border:1px solid #e5e7eb;border-radius:4px"></canvas>
+<!-- cortex-dashboard: 把以下脚本占位替换为实际数据绘制逻辑
+<script>
+  // const data = {{DATA}};
+  // const ctx = document.getElementById("{{ID}}").getContext("2d");
+  // ...heatmap render
+</script>
+-->

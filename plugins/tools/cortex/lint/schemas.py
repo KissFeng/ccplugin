@@ -22,6 +22,10 @@ SCHEMAS: dict[str, VaultSchema] = {
         "root_dirs": {
             "_meta",
             "_templates",
+            "_assets",
+            # v3.0 双 namespace 顶层
+            "知识库",
+            "记忆体系",
             # 原 10_concepts/20_efforts/... 编号目录 (legacy, 保留兼容老 vault)
             "10_concepts",
             "20_efforts",
@@ -59,6 +63,8 @@ SCHEMAS: dict[str, VaultSchema] = {
             "home.md",
             "topics-moc.md",
             "projects-moc.md",
+            "主页.md",
+            "焦点.md",
         },
     },
     "PARA": {

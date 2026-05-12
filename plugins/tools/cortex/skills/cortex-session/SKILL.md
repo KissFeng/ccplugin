@@ -1,62 +1,80 @@
 ---
 name: cortex-session
-description: 列 sessions/<cli>/<YYYY-MM>/ 备份, 解析 transcript, 重放摘要。Triggers on "list sessions", "session 备份".
-allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_dir mcp__obsidian__obsidian_get_file_contents
+description: 导入 claude code / cli transcript → 记忆体系/L4-流水账/sessions/, 同步关键事件 append 到 ledger。触发: "import session" / "导入会话" / Stop hook 自动触发。
+disable-model-invocation: true
+allowed-tools: Bash Read Write Glob
 ---
 
 # cortex-session
 
-操作 vault 内的 session transcript 备份。
+解析 CLI transcript (claude code jsonl / 其他) → 写入 `记忆体系/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md` 摘要骨架; 同步 append 关键事件到 `ledger/<date>.jsonl`。
 
 ## 触发场景
+- Claude Code Stop hook 自动触发 (SessionEnd 事件)
+- 用户显式 "import this session" / "归档会话" / "导入 transcript"
+- cortex-historian agent 多月汇总前的预处理
 
-- 用户问"上周哪些会话动了 auth 模块" → 列 sessions/, 找含关键词的 transcript
-- 跨 CLI 审计 — 同一 vault 收 claude-code / codex / copilot 多源 session 备份
-- 重放某次 session 摘要 (不依赖 ~/.claude/projects/ 原 jsonl, vault 自带副本即可)
+## 输入
+- transcript_path: 默认从 hook stdin 的 `transcript_path` 字段, 或 `$CLAUDE_TRANSCRIPT_PATH`
+- --cli: 默认 `claude-code`; 可 `aider` / `cursor` / 自定义
+- --sid: 默认 transcript 文件名去后缀; 可显式覆盖
+- --since: 仅导入此时间点后的事件 (用于增量, 默认全量)
 
-## 子命令
+## 流程
 
-| 子命令 | 行为 |
-|--------|------|
-| `cortex-session list [--cli <name>] [--month YYYY-MM]` | 列备份, 默认全部 cli, 默认本月 |
-| `cortex-session show <path>` | 打印 transcript 关键摘要 (user prompt + assistant text + 文件引用) |
-| `cortex-session search <query>` | grep transcript 内容, 返回 file:line + 上下文 |
-| `cortex-session size` | 统计各 cli/月份占用, 提示是否需清理 |
+1. **解析路径**:
+   - transcript 必须可读 + 在用户 home 内 (防 path injection)
+   - 推导日期: 取 transcript 第一条事件的 timestamp → `YYYY-MM`
+2. **读 transcript** (jsonl 每行一 event):
+   - 解析: `type` (user / assistant / tool_use / tool_result / system), `timestamp`, `content`, `tool_name`, `cwd`
+   - 跳过空/损坏行
+3. **提取摘要**:
+   - 首条 user prompt 作为 title
+   - 工具调用统计: 各 tool_name 次数
+   - 文件变更: 抽 Edit/Write tool 的 file_path
+   - 关键 timestamps: session_start / session_end / errors
+4. **写 session md**: `记忆体系/L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md`
+   - frontmatter:
+     ```yaml
+     ---
+     uri: L4://session/<cli>/<sid>
+     level: L4
+     cli: <cli>
+     sid: <sid>
+     started: <ISO>
+     ended: <ISO>
+     duration_sec: <int>
+     tool_calls: {Edit: 5, Read: 12, Bash: 3}
+     files_touched: [...]
+     errors: <count>
+     created: <ISO>
+     ---
+     ```
+   - body: title + 关键事件时间线 (折叠详情, 不全文)
+5. **append ledger**: 每个关键事件 (tool error / file write / user clarification) → `记忆体系/L4-流水账/ledger/<YYYY-MM-DD>.jsonl` 一行:
+   ```json
+   {"ts":"...","sid":"...","kind":"file_write","path":"...","level":"L4"}
+   ```
+6. **幂等**: 若目标 session md 已存且 `--since` 未指定 → 跳过, 标 `(skipped, exists)`
 
-## 数据布局
-
+## 输出
 ```
-<vault>/sessions/
-├── claude-code/
-│   └── 2026-05/
-│       ├── 11-1430-<slug>.jsonl       # 原始 transcript
-│       └── 11-1430-<slug>.tar.gz      # 可选打包
-├── codex/                # 未来扩展
-└── copilot/
+[session] import: <transcript_path>
+  cli: claude-code  sid: sess-abc123  duration: 1842s
+  events: 87 (user 12, assistant 12, tool 63)
+  tool calls: Read=22, Edit=8, Bash=15, Glob=18
+  files touched: 6
+  errors: 1
+  written: 记忆体系/L4-流水账/sessions/claude-code/2026-05/sess-abc123.md
+  ledger appended: 9 events to 记忆体系/L4-流水账/ledger/2026-05-12.jsonl
 ```
 
-## 启用 / 禁用 transcript 备份
+## 错误处理
+- transcript 不存在/不可读 → 退出 1, 不部分写入
+- transcript 行 JSON 解析失败 → 跳过, 末尾汇总 invalid_lines
+- 目标目录创建失败 → 退出 1
+- 路径校验失败 (越界) → 拒绝
+- ledger 文件锁冲突 → 重试 3 次 (50ms), 仍失败 → warning, 不阻塞 session md 写入
 
-仅当 `_meta/version.json:.preserve_transcript == true` 时, Stop / SubagentStop / PostCompact hook 才复制原始 transcript 到 sessions/。默认 `false` (省盘)。
-
-```bash
-# 启用
-cortex-locale 不能改这个; 直接编辑 _meta/version.json:
-{"preset":"lyt","lang":"zh-CN","preserve_transcript":true,"created":"..."}
-```
-
-## 关键约束
-
-1. **不写 transcript** — 本 skill 仅读 / 检索, 备份由 hook 自动处理。
-2. **大小敏感** — 原始 transcript 易膨胀, 用户应自行轮转 (e.g. `cortex-refactor` 删旧月)。
-3. **frontmatter 提炼版** — 提炼后笔记仍走 `log/`, 通过 `cli`/`cli_session` 字段反查原 transcript。
-
-## 输出示例
-
-```text
-$ cortex-session list --cli claude-code --month 2026-05
-2026-05 (claude-code) — 12 sessions, 4.2 MB
-  11-1430 debug-auth-middleware.jsonl   (2.1k lines)
-  11-1612 obsidian-vault-layout.jsonl   (1.8k lines)
-  ...
-```
+## AUTO_MODE 兼容
+[AUTO_MODE: ...] (Stop hook 默认场景) 全自动执行, 无交互。已存 session md → 静默跳过。
