@@ -1444,3 +1444,36 @@ install_wrappers.sh 加 init.sh 生成 (+64 行), wrapper 总数 11→12。init.
 ### Next Steps
 
 - None - task complete
+
+
+## Session 44: cortex 记忆系统强化 (6 需求合并)
+
+**Date**: 2026-05-12
+**Task**: cortex 记忆系统强化 (6 需求合并)
+**Branch**: `master`
+
+### Summary
+
+6 需求合并跨 13 文件: memory-policy L0-L4 加 boundary/judgment/review; locales/triggers 加记忆指令; install_wrappers 加 memory/recall/promote/consolidate 4 wrapper (12→16); memory-promote 三层 freq 算法; doctor 检测 stop hook 脏配; 5 memory SKILL 同步级别速查; 8 新测试 → 235 PASS。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `249ad9d0` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
