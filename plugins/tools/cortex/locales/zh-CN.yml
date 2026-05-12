@@ -43,36 +43,22 @@ prompts:
   triggers_header: "**触发关键词** (匹配则强制召回):"
   contract_header: "### ⚖️ 行为契约 (硬性, 不可跳过)"
   behavior_contract: |
-    1. **回答前必先召回**:
-       - 用户提问含触发关键词 → 立即调 `mcp__cortex__cortex_memory_recall(query, top_k=5)`
-       - 涉及技术/项目/概念 → 立即调 `mcp__cortex__cortex_search(query, scope=knowledge)`
-       - 直接回答不调用 = 违反契约
+    ⚠️ 强制流程 (每个用户问题, 第一个工具调用必须):
+    1. cortex_memory_recall(query) — 召回相关记忆
+    2. cortex_search(query) — 搜知识库
+    跳过 = 违反契约。
 
-    2. **召回结果采纳规则**:
-       - weight ≥ 0.7: 必须采纳, 视为事实
-       - weight 0.4-0.7: 引用 + 标注"记忆来源"
-       - weight < 0.4: 可参考, 不强采
-
-    3. **用户显式记忆指令** (主动写入):
-       - 用户说"记住 X" / "你要记得 X" / "remember X" / "别忘了" → 立即 `cortex_memory_write`
-       - level 判定:
-         · "永远记住" / "硬性" / "绝对" → 提议 L0 (写候选 candidates.md, 用户审批)
-         · "记住" / "remember" 默认 → L1 (weight=0.85)
-         · "短期记一下" / "暂时" → L2 (weight=0.6)
-       - 写入后回复: "✓ 已记 L<N>: <brief 一句话>"
-       - 用户说"忘了 X" / "forget X" → cortex_memory_forget
-
-    4. **写入规则**:
-       - 用户隐式新偏好/约束 → cortex_memory_write L1 (weight ≥ 0.8)
-       - 升 L0 必须用户审批 (不可自动)
-
-    5. hot.md / L0 核心条目优先信任
-  default_triggers: |
-    - 用户偏好: 偏好, 喜好, 习惯, prefer, "I like", "我希望"
-    - 项目相关: 项目, 仓库, repo, 工程, codebase
-    - 技术栈: Go, Python, MySQL, PostgreSQL, Redis, React, Vue, Docker, Kubernetes
-    - 领域: 金融, 投资, 美食, 旅游, 健康, 工作, 学习
-    - 记忆指令 (强触发, 必立即写): 记住, 要记得, remember, please remember, 别忘了, don't forget, 忘了, forget
+    ⚠️ 记忆指令 (匹配关键词立即调):
+    - "记住 X" → memory_write level=L1 weight=0.85
+    - "永远/硬性 X" → 写 candidates.md (L0 候选, 用户审批)
+    - "暂时 X" → L2
+    - "忘了 X" → memory_forget
+    - 写后回 "✓ 已记 L<N>: <brief>"
+  default_triggers: "记住/忘了/remember/forget/偏好/项目/Go/Python/MySQL/React/金融/旅游/美食 (详细: _meta/triggers.yaml)"
+  collab_compact: |
+    落档: cortex-save (项目→domains/, 概念→concepts/);
+    写文件: L1 obsidian CLI → L2 mcp → L3 直写(需授权);
+    自动加 ^cortex-<sha8>; Stop hook 归档技术发现。
   session_header: "## Cortex 已连接 (lang={lang}, vault={vault}, preset={preset})"
   collab_save: 非平凡发现完成后用 cortex-save 落档; 项目特定写 domains/, 通用概念写 concepts/。
   collab_no_direct: |

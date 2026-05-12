@@ -37,10 +37,10 @@ import sys
 import time
 from pathlib import Path
 
-HOT_CAP = 5000           # hot.md head cap
-TOTAL_CAP = 15000        # additionalContext total cap
-L0_TOTAL_CAP = 5000      # L0 core total cap
-L0_PER_FILE_CAP = 1500   # per L0 file
+HOT_CAP = 1000           # hot.md head cap
+TOTAL_CAP = 3000         # additionalContext total cap
+L0_TOTAL_CAP = 1500      # L0 core total cap
+L0_PER_FILE_CAP = 500    # per L0 file
 STATS_MAX_FILES = 2000   # rglob bail-out
 
 plugin_root = Path(os.environ["PLUGIN_ROOT"])
@@ -228,16 +228,11 @@ if triggers:
     trig_h = loc.get_prompt("triggers_header") or "**Triggers**:"
     lines.extend([trig_h, "", triggers, ""])
 
-# 6) collab convention (4 entries, search_first removed)
-collab_title = "协作约定" if lang.startswith("zh") else ("協力規約" if lang == "ja" else "Collaboration")
-lines.extend([
-    f"### {collab_title}",
-    "",
-    "1. " + loc.get_prompt("collab_save"),
-    "2. " + loc.get_prompt("collab_no_direct"),
-    "3. " + loc.get_prompt("collab_block_id"),
-    "4. " + loc.get_prompt("collab_stop_hook"),
-])
+# 6) collab convention (compact single entry)
+collab = loc.get_prompt("collab_compact")
+if collab:
+    collab_title = "协作约定" if lang.startswith("zh") else ("協力規約" if lang == "ja" else "Collaboration")
+    lines.extend([f"### {collab_title}", "", collab, ""])
 
 # Official Obsidian CLI presence + app-running check
 def _obsidian_app_running() -> bool:

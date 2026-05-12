@@ -128,7 +128,7 @@ def test_context_size_under_cap(tmp_path):
     # 也塞超大 hot.md
     (vault / "hot.md").write_text("y" * 50000, encoding="utf-8")
     ctx = _ctx(_run_hook(vault))
-    assert len(ctx.encode("utf-8")) <= 15000 + 200  # 截断 + 标记容差
+    assert len(ctx.encode("utf-8")) <= 3000 + 100  # 截断 + 标记容差
 
 
 def test_silent_exit_when_no_vault(tmp_path):

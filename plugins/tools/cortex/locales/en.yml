@@ -43,36 +43,22 @@ prompts:
   triggers_header: "**Trigger keywords** (match → mandatory recall):"
   contract_header: "### ⚖️ Behavior contract (hard, non-skippable)"
   behavior_contract: |
-    1. **Recall before answering**:
-       - User query contains a trigger keyword → immediately call `mcp__cortex__cortex_memory_recall(query, top_k=5)`
-       - Tech / project / concept involved → immediately call `mcp__cortex__cortex_search(query, scope=knowledge)`
-       - Answering directly without recall = contract violation
+    ⚠️ Mandatory flow (first tool call per user message):
+    1. cortex_memory_recall(query)
+    2. cortex_search(query)
+    Skipping = contract violation.
 
-    2. **Adoption rules for recalled items**:
-       - weight ≥ 0.7: MUST adopt, treat as fact
-       - weight 0.4-0.7: quote + label "memory source"
-       - weight < 0.4: optional reference, not binding
-
-    3. **Explicit user memory instructions** (proactive write):
-       - User says "remember X" / "please remember" / "don't forget X" / "记住 X" → immediately call `cortex_memory_write`
-       - Level decision:
-         · "remember forever" / "hard rule" / "absolute" / "永远记住" → propose L0 (write to candidates.md, user approval required)
-         · "remember" / "记住" default tone → L1 (weight=0.85)
-         · "short-term" / "temporarily" / "暂时" → L2 (weight=0.6)
-       - After write, reply: "✓ Saved to L<N>: <one-line brief>"
-       - User says "forget X" / "忘了 X" → cortex_memory_forget
-
-    4. **Write rules**:
-       - Implicit new user preference / constraint → cortex_memory_write L1 (weight ≥ 0.8)
-       - Promotion to L0 requires explicit user approval (never auto)
-
-    5. hot.md / L0 entries take priority on trust
-  default_triggers: |
-    - User preference: preference, prefer, "I like", habit, "I want"
-    - Project: project, repo, codebase, repository
-    - Tech stack: Go, Python, MySQL, PostgreSQL, Redis, React, Vue, Docker, Kubernetes
-    - Domain: finance, investment, food, travel, health, work, study
-    - Memory instruction (strong trigger, MUST write immediately): remember, "please remember", "don't forget", forget, 记住, 要记得, 别忘了, 忘了
+    ⚠️ Memory directives (call immediately on keyword match):
+    - "remember X" → memory_write level=L1 weight=0.85
+    - "always/permanent X" → write candidates.md (L0 candidate, user approval)
+    - "temporary X" → L2
+    - "forget X" → memory_forget
+    - After write reply: "✓ Saved L<N>: <brief>"
+  default_triggers: "remember/forget/记住/忘了/preference/project/Go/Python/MySQL/React/finance/travel/food (details: _meta/triggers.yaml)"
+  collab_compact: |
+    Archive: cortex-save (project→domains/, concept→concepts/);
+    Write: L1 obsidian CLI → L2 mcp → L3 direct (auth required);
+    Auto ^cortex-<sha8>; Stop hook archives findings.
   session_header: "## Cortex connected (lang={lang}, vault={vault}, preset={preset})"
   collab_save: After non-trivial findings, use cortex-save to archive; project-specific → domains/, general concepts → concepts/.
   collab_no_direct: |
