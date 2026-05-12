@@ -1,20 +1,50 @@
 ---
-description: 摄取源 (url/file/git/dir) 到 cortex vault — 处理 inbox urls (无入参)
+description: 深度分析当前目录摄取到 cortex vault (无入参; 自动识别 git repo / 普通项目)
 ---
 
 # /cortex:ingest
 
-[AUTO_MODE strict: 禁询问, fail-fast]
+[AUTO_MODE persistent: 禁询问, 禁中止, AI 自决执行]
 
-摄取外部源到 cortex vault。
+**默认行为**: 深度分析**当前工作目录** ($PWD) 摄取到 cortex vault。
 
-1. 从 `~/.cortex/config.json` 读 vault
-2. **若 wrapper 无入参调用 (默认)**: 读 `inbox/urls.txt` (一行一 URL) 全部处理:
-   - 按 cortex-ingest SKILL 流程: url_security → fetch → html_sanitize → masking → save (kind=log)
-   - 处理完追加到 `inbox/.processed-urls.log`
-3. 若有显式 args: auto-detect url/file/git/dir 直接摄取
+## 强制流程
 
-输出: 摄取条数 + 失败条数 + 各源路径。
+1. 从 `~/.cortex/config.json` 读 `vault`
+2. **判定目录类型** (按下表自决, 禁问):
+
+   | 检测 | 类型 | 落档位置 |
+   |------|------|---------|
+   | `git remote get-url origin` 命中 `github.com[:/]<org>/<repo>` 或 `<host>/<org>/<repo>.git` 模式 | **代码仓库** | `知识库/来源/代码仓库/<host>/<org>/<repo>.md` (主条目) + `知识库/领域/<host>/<org>/<repo>/<topic>.md` (子文档) |
+   | `git remote get-url origin` 命中 `gitlab.com` / 自建 GitLab (host 含 `gitlab`) | **代码仓库** | 同上 (host=gitlab.com 或对应自建 host) |
+   | 有 `.git` 但 origin 非 github/gitlab (如纯本地 git) | **代码仓库** | `知识库/来源/代码仓库/local/<basename>.md` |
+   | 无 `.git`, 有 `pyproject.toml` / `package.json` / `Cargo.toml` / `go.mod` 等项目文件 | **项目** | `知识库/项目/<basename>/index.md` (主) + `知识库/项目/<basename>/<topic>.md` (子) |
+   | 其余 (普通目录) | **项目** (按目录名兜底) | `知识库/项目/<basename>/index.md` |
+
+3. **深度分析当前目录** (由 AI 自决执行, 用工具组合):
+   - `Bash` 列结构: `find . -maxdepth 3 -type f \( -name '*.md' -o -name 'README*' -o -name '*.toml' -o -name '*.json' -o -name 'Makefile' \) | head -50`
+   - `Read` README/docs/核心配置文件
+   - `Glob` + `Read` 关键源码入口 (按语言识别: src/, lib/, cmd/, main.* )
+   - `git log --oneline -20` 看近期演进 (若是 git repo)
+   - 综合产出: 项目/仓库**主条目** (架构 / 关键概念 / 入口点 / 依赖) + 若干**子文档** (具体模块/决策/陷阱)
+
+4. **落档** (用 MCP `cortex_save` 或直接 Write):
+   - 代码仓库: `kind=domain`, `host`/`org`/`repo` 填好, frontmatter `source_kind: repo`, `tags: [source/repo, host/<host>]`
+   - 项目: `kind=concept` 或 `domain` (按内容自决), 主条目 + 子文档双层
+
+5. 摄取完成后 **直接给最终报告** (无问句):
+
+   ```
+   target_type: <repo|project>
+   location: <落档根路径>
+   files_ingested: <N>
+   main_doc: <主条目路径>
+   sub_docs: [<路径>, ...]
+   ```
+
+## 显式 args 走传统路径
+
+若 wrapper 异常带入 args (url / file / git url / 远程 dir 等): auto-detect 类型, 按 cortex-ingest SKILL 标准流程处理 (url_security → fetch → html_sanitize → masking → save)。
 
 ## AUTO_MODE (shell wrapper 触发, persistent)
 
