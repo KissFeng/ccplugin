@@ -270,3 +270,69 @@ cortex_stream.py 加 system/user event handlers (init/hook_*/task_*/api_retry/pl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 68: cortex_stream default 显 raw json
+
+**Date**: 2026-05-12
+**Task**: cortex_stream default 显 raw json
+**Branch**: `master`
+
+### Summary
+
+未适配 type/subtype 改默认显 raw JSON 1 行 (替代 silent)。stream_event 仍 silent。移除 DEBUG opt-in。286+113 tests PASS。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0c19aa61` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 69: cortex-lint AUTO_MODE 禁手动建议
+
+**Date**: 2026-05-12
+**Task**: cortex-lint AUTO_MODE 禁手动建议
+**Branch**: `master`
+
+### Summary
+
+cortex-lint SKILL AUTO_MODE 加严: bash 触发禁手动建议表/询问/AskUserQuestion, fail-fast 1 行原因。非 AUTO_MODE 主流程不变。286 tests PASS。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e3cb6576` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 67
+- **Total Sessions**: 69
 - **Last Active**: 2026-05-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~272 | Active |
+| `journal-2.md` | ~338 | Active |
 | `journal-1.md` | ~1974 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 69 | 2026-05-12 | cortex-lint AUTO_MODE 禁手动建议 | `e3cb6576` | `master` |
+| 68 | 2026-05-12 | cortex_stream default 显 raw json | `0c19aa61` | `master` |
 | 67 | 2026-05-12 | cortex_stream system/hook event handlers | `53dfe6b2` | `master` |
 | 66 | 2026-05-12 | cortex wrapper stream-json + rich 实时 | `becd3696`
 `f6802e39` | `master` |
