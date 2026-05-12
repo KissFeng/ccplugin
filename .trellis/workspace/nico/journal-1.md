@@ -1180,3 +1180,36 @@ presets/lyt/ 内容上提到 presets/. 删 zettel/para/blank 3 未用 preset. _s
 ### Next Steps
 
 - None - task complete
+
+
+## Session 36: MOC 移 vault 根 + 8 业务目录专用 _index.md
+
+**Date**: 2026-05-12
+**Task**: MOC 移 vault 根 + 8 业务目录专用 _index.md
+**Branch**: `master`
+
+### Summary
+
+3 MOC (home/topics-moc/projects-moc) 从 moc/ 子目录上提到 vault 根, _structure.json dst_key='.' 新 sentinel. 8 业务目录各加专用 _index.md (concepts/entities/domains/sources/questions/dashboards/fleeting/archive), 删通用 _index.md. lint/schemas.py LYT root_files 加 3 MOC. 13 pytest 全绿. 217 python 不回归.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e08e487b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
