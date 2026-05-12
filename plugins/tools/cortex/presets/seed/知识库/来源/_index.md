@@ -1,27 +1,96 @@
 ---
 type: index
 title: 来源
-tags: [meta, index]
-created: {{CREATED}}
+role: 外部输入 — 代码仓库 / 网页 / 论文 / 书籍
+namespace: 知识库
+parent: 主页
+children: [代码仓库, 网页, 论文, 书籍]
+last_updated: "{{UPDATED}}"
+tags: [meta, index, 来源]
+icon: "🌐"
 ---
 
-# 来源
+<section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+  <span style="font-size:24px">🌐</span>
+  <h1 style="margin:0">来源</h1>
+</section>
 
-> 外部输入资料 — 自动路由: GitHub/GitLab → 代码仓库, 通用 URL → 网页, arxiv/pdf → 论文, epub → 书籍。
+> [!info] 来源
+> 外部知识输入, 按来源种类分桶 (source_kind)
+
+<section data-role="kpi" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0">
+  <div data-type="stat" style="padding:12px;background:#f8fafc;border-radius:8px">
+    <div style="font-size:12px;color:#666">📁 子目录</div>
+    <div style="font-size:24px;font-weight:600">{{SUB_COUNT}}</div>
+  </div>
+  <div data-type="stat" style="padding:12px;background:#f8fafc;border-radius:8px">
+    <div style="font-size:12px;color:#666">📄 条目</div>
+    <div style="font-size:24px;font-weight:600">{{ITEM_COUNT}}</div>
+  </div>
+  <div data-type="stat" style="padding:12px;background:#f8fafc;border-radius:8px">
+    <div style="font-size:12px;color:#666">🕐 更新</div>
+    <div style="font-size:14px">{{LAST_UPDATED}}</div>
+  </div>
+</section>
+
+<section data-role="breadcrumb" style="font-size:12px;color:#6b7280;margin:8px 0">
+  {{BREADCRUMB}} · 路径: <code>{{CURRENT_PATH}}</code>
+</section>
 
 ## 子目录
 
-- [[代码仓库/_index|代码仓库]]
-- [[网页/_index|网页]]
-- [[论文/_index|论文]]
-- [[书籍/_index|书籍]]
+<section data-role="children-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+  <!-- cortex-dashboard 注入: 每个子目录一张 card -->
+  {{CHILDREN_CARDS}}
+</section>
 
 ## 最近条目
 
-```
-<!-- cortex-dashboard 自动渲染近期条目 -->
+<details open>
+<summary>近 7 天 (top 10)</summary>
+
+```base
+filters:
+  - field: path
+    op: startswith
+    value: "知识库/来源/"
+sort:
+  - field: last_updated
+    dir: desc
+limit: 10
+views:
+  - type: list
 ```
 
-## 链接
+</details>
 
-- 上级: [[主页]]
+## 全部条目
+
+<details>
+<summary>展开全部</summary>
+
+```base
+filters:
+  - field: path
+    op: startswith
+    value: "知识库/来源/"
+sort:
+  - field: created
+    dir: desc
+views:
+  - type: cards
+```
+
+</details>
+
+## 相关
+
+<section data-role="related" style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0">
+  {{RELATED_LINKS}}
+</section>
+
+<section data-role="operations" style="display:flex;gap:8px;margin-top:16px">
+  <a href="[[主页]]">⬅ 主页</a>
+  <a href="{{NEW_LINK}}">➕ 新建</a>
+  <a href="{{REFRESH_LINK}}">🔄 刷新</a>
+</section>
