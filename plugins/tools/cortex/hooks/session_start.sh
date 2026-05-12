@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # session_start.sh
-# CC SessionStart hook — 注入 cortex 协作约定 (v2 wrapped JSON), locale-aware。
+# CC SessionStart hook — 注入 cortex 协作约定 + 行为契约 + L0 核心 + 库存快照 (v2 wrapped JSON), locale-aware。
 # vault 不存在时沉默退出 (退出码 0, stdout 空), 不阻断会话。
 
 set -u
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex"
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex}"
 LOG_FILE="${HOME}/.cache/cortex/session_start.log"
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
 
@@ -30,12 +30,18 @@ log "vault=$VAULT"
 PLUGIN_ROOT="$PLUGIN_ROOT" VAULT="$VAULT" python3 - <<'PYEOF' 2>>"$LOG_FILE" || exit 0
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
-MAX_BYTES = 5000  # additionalContext soft cap ~10KB total
+HOT_CAP = 5000           # hot.md head cap
+TOTAL_CAP = 15000        # additionalContext total cap
+L0_TOTAL_CAP = 5000      # L0 core total cap
+L0_PER_FILE_CAP = 1500   # per L0 file
+STATS_MAX_FILES = 2000   # rglob bail-out
 
 plugin_root = Path(os.environ["PLUGIN_ROOT"])
 vault = Path(os.environ["VAULT"])
@@ -64,11 +70,104 @@ def truncated(p: Path) -> str:
     if not p.is_file():
         return ""
     raw = p.read_bytes()
-    if len(raw) <= MAX_BYTES:
+    if len(raw) <= HOT_CAP:
         return raw.decode("utf-8", errors="replace")
-    head = raw[:MAX_BYTES].decode("utf-8", errors="replace")
+    head = raw[:HOT_CAP].decode("utf-8", errors="replace")
     return f"{head}\n\n... (truncated, {len(raw)} bytes total)"
 
+
+def load_l0_core(v: Path) -> str:
+    """读 记忆体系/L0-核心/*.md, 拼接 frontmatter + brief, 受 per-file + total cap 约束."""
+    l0_dir = v / "记忆体系" / "L0-核心"
+    if not l0_dir.is_dir():
+        return ""
+    out = []
+    used = 0
+    for p in sorted(l0_dir.glob("*.md")):
+        if p.name.startswith("_"):
+            continue
+        if used >= L0_TOTAL_CAP:
+            break
+        try:
+            text = p.read_text(errors="ignore")
+        except Exception:
+            continue
+        fm_match = re.match(r"^---\n(.*?)\n---\n(.*)", text, re.S)
+        body = fm_match.group(2) if fm_match else text
+        bm = re.search(r"^##\s+brief\s*\n(.*?)(?=^##|\Z)", body, re.S | re.M)
+        brief = (bm.group(1) if bm else body[:L0_PER_FILE_CAP]).strip()
+        brief = brief[:L0_PER_FILE_CAP]
+        section = f"#### {p.stem}\n\n{brief}"
+        used += len(section)
+        out.append(section)
+    return "\n\n".join(out)
+
+
+def _count_md(directory: Path) -> int:
+    if not directory.is_dir():
+        return 0
+    n = 0
+    for _ in directory.rglob("*.md"):
+        n += 1
+        if n >= STATS_MAX_FILES:
+            break
+    return n
+
+
+def stats_snapshot(v: Path) -> dict:
+    """5 知识库桶 + 5 记忆 level 计数."""
+    s = {}
+    kb = v / "知识库"
+    s["kb_projects"] = _count_md(kb / "项目")
+    s["kb_sources"] = _count_md(kb / "来源")
+    s["kb_domains"] = _count_md(kb / "领域")
+    s["kb_journal"] = _count_md(kb / "日记")
+    s["kb_reflect"] = _count_md(kb / "反思")
+    mem = v / "记忆体系"
+    for lvl, key in [("L0-核心", "L0"), ("L1-长期", "L1"), ("L2-中期", "L2"), ("L3-短期", "L3"), ("L4-流水账", "L4")]:
+        s[f"mem_{key}"] = _count_md(mem / lvl)
+    return s
+
+
+def recent_top(v: Path, days: int = 7, top_n: int = 5) -> list:
+    """近 N 天 mtime 最新 top_n 文件相对路径."""
+    cutoff = time.time() - days * 86400
+    items = []
+    n = 0
+    for root in [v / "知识库", v / "记忆体系"]:
+        if not root.is_dir():
+            continue
+        for p in root.rglob("*.md"):
+            n += 1
+            if n >= STATS_MAX_FILES:
+                break
+            try:
+                mt = p.stat().st_mtime
+                if mt > cutoff:
+                    items.append((mt, str(p.relative_to(v))))
+            except Exception:
+                pass
+    items.sort(reverse=True)
+    return [r for _, r in items[:top_n]]
+
+
+def load_triggers(v: Path, locale_obj) -> str:
+    """vault/_meta/triggers.yaml 优先; 不存在或解析失败 fallback locale default_triggers."""
+    tf = v / "_meta" / "triggers.yaml"
+    if tf.is_file():
+        try:
+            txt = tf.read_text(errors="ignore").strip()
+            if txt:
+                return txt
+        except Exception:
+            pass
+    return locale_obj.get_prompt("default_triggers") or ""
+
+
+# --- build context ---
+header = loc.get_prompt("session_header", lang=lang, vault=str(vault), preset=preset)
+if not header:
+    header = f"## Cortex connected (lang={lang}, vault={vault}, preset={preset})"
 
 hot = truncated(vault / "hot.md")
 index_file = vault / "index.md"
@@ -83,27 +182,64 @@ if index_file.is_file():
     except Exception:
         pass
 
-# Build header (locale-aware, single line per prd §4.4)
-header = loc.get_prompt("session_header", lang=lang, vault=str(vault), preset=preset)
-if not header:
-    header = f"## Cortex connected (lang={lang}, vault={vault}, preset={preset})"
+lines = [header, "", f"index: {index_entries} entries · hot: {'loaded' if hot else 'empty'}", ""]
 
-lines = [
-    header,
-    "",
-    f"index: {index_entries} entries · hot: {'loaded' if hot else 'empty'}",
-    "",
-    "### " + ("协作约定" if lang.startswith("zh") else ("協力規約" if lang == "ja" else "Collaboration")),
-    "",
-    "1. " + loc.get_prompt("search_first"),
-    "2. " + loc.get_prompt("collab_save"),
-    "3. " + loc.get_prompt("collab_no_direct"),
-    "4. " + loc.get_prompt("collab_block_id"),
-    "5. " + loc.get_prompt("collab_stop_hook"),
-]
+# 1) stats snapshot
+try:
+    s = stats_snapshot(vault)
+    recents = recent_top(vault)
+    stats_h = loc.get_prompt("stats_header") or "### 📊 Stats"
+    lines.append(stats_h)
+    lines.append(
+        f"- 知识库: 项目 {s.get('kb_projects', 0)} / 来源 {s.get('kb_sources', 0)} / 领域 {s.get('kb_domains', 0)} / 日记 {s.get('kb_journal', 0)} / 反思 {s.get('kb_reflect', 0)}"
+    )
+    lines.append(
+        f"- 记忆体系: L0 {s.get('mem_L0', 0)} · L1 {s.get('mem_L1', 0)} · L2 {s.get('mem_L2', 0)} · L3 {s.get('mem_L3', 0)} · L4 {s.get('mem_L4', 0)}"
+    )
+    if recents:
+        lines.append(f"- 最近 7 天 top {len(recents)}: " + " · ".join(recents))
+    lines.append("")
+except Exception as e:
+    log_err = plugin_root  # noqa: silently skip stats on failure
+    sys.stderr.write(f"stats failed: {e}\n")
 
-# Official Obsidian CLI presence + app-running check — surface prompt if either missing,
-# so assistant asks user (degrade to L2 mcp__obsidian__* / L3 direct write).
+# 2) L0 core
+try:
+    l0 = load_l0_core(vault)
+    if l0:
+        l0_h = loc.get_prompt("l0_header") or "### 🔒 L0 core memory"
+        lines.extend([l0_h, "", l0, ""])
+except Exception as e:
+    sys.stderr.write(f"l0 failed: {e}\n")
+
+# 3) hot.md
+if hot:
+    lines.extend([f"### 🔥 hot.md (前 {HOT_CAP} bytes)", "", hot, ""])
+
+# 4) behavior contract
+contract = loc.get_prompt("behavior_contract")
+if contract:
+    contract_h = loc.get_prompt("contract_header") or "### ⚖️ Behavior contract"
+    lines.extend([contract_h, "", contract, ""])
+
+# 5) triggers
+triggers = load_triggers(vault, loc)
+if triggers:
+    trig_h = loc.get_prompt("triggers_header") or "**Triggers**:"
+    lines.extend([trig_h, "", triggers, ""])
+
+# 6) collab convention (4 entries, search_first removed)
+collab_title = "协作约定" if lang.startswith("zh") else ("協力規約" if lang == "ja" else "Collaboration")
+lines.extend([
+    f"### {collab_title}",
+    "",
+    "1. " + loc.get_prompt("collab_save"),
+    "2. " + loc.get_prompt("collab_no_direct"),
+    "3. " + loc.get_prompt("collab_block_id"),
+    "4. " + loc.get_prompt("collab_stop_hook"),
+])
+
+# Official Obsidian CLI presence + app-running check
 def _obsidian_app_running() -> bool:
     try:
         if sys.platform == "darwin":
@@ -134,8 +270,10 @@ if not (cli_ok and app_ok):
 
 context = "\n".join(lines)
 
-if hot:
-    context += f"\n\n### hot.md (前 {MAX_BYTES} bytes)\n\n{hot}\n"
+# Enforce total cap
+encoded = context.encode("utf-8")
+if len(encoded) > TOTAL_CAP:
+    context = encoded[:TOTAL_CAP].decode("utf-8", errors="replace") + "\n... (truncated)"
 
 payload = {
     "hookSpecificOutput": {

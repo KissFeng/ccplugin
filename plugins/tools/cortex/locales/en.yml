@@ -37,8 +37,32 @@ agent_titles:
   summarizer: cortex summarizer
 
 prompts:
-  search_first: For non-trivial questions, search the vault via cortex-search before starting fresh work.
   archive_pending: 📝 cortex archived {path}
+  stats_header: "### 📊 Inventory snapshot"
+  l0_header: "### 🔒 L0 core memory (always-loaded, immutable)"
+  triggers_header: "**Trigger keywords** (match → mandatory recall):"
+  contract_header: "### ⚖️ Behavior contract (hard, non-skippable)"
+  behavior_contract: |
+    1. **Recall before answering**:
+       - User query contains a trigger keyword → immediately call `mcp__cortex__cortex_memory_recall(query, top_k=5)`
+       - Tech / project / concept involved → immediately call `mcp__cortex__cortex_search(query, scope=knowledge)`
+       - Answering directly without recall = contract violation
+
+    2. **Adoption rules for recalled items**:
+       - weight ≥ 0.7: MUST adopt, treat as fact
+       - weight 0.4-0.7: quote + label "memory source"
+       - weight < 0.4: optional reference, not binding
+
+    3. **Write rules**:
+       - New user opinion / preference / hard constraint → `cortex_memory_write` to L1 (weight ≥ 0.8)
+       - Promotion to L0 requires explicit user approval (never auto)
+
+    4. hot.md / L0 entries take priority on trust
+  default_triggers: |
+    - User preference: preference, prefer, "I like", habit, "I want"
+    - Project: project, repo, codebase, repository
+    - Tech stack: Go, Python, MySQL, PostgreSQL, Redis, React, Vue, Docker, Kubernetes
+    - Domain: finance, investment, food, travel, health, work, study
   session_header: "## Cortex connected (lang={lang}, vault={vault}, preset={preset})"
   collab_save: After non-trivial findings, use cortex-save to archive; project-specific → domains/, general concepts → concepts/.
   collab_no_direct: |

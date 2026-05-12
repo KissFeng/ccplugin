@@ -37,8 +37,32 @@ agent_titles:
   summarizer: cortex 总结员
 
 prompts:
-  search_first: 非通用问题先调 cortex-search 搜库, 确认无既有经验再开工。
   archive_pending: 📝 cortex 已落档 {path}
+  stats_header: "### 📊 库存快照"
+  l0_header: "### 🔒 L0 核心记忆 (always-loaded, 不可遗忘)"
+  triggers_header: "**触发关键词** (匹配则强制召回):"
+  contract_header: "### ⚖️ 行为契约 (硬性, 不可跳过)"
+  behavior_contract: |
+    1. **回答前必先召回**:
+       - 用户提问含触发关键词 → 立即调 `mcp__cortex__cortex_memory_recall(query, top_k=5)`
+       - 涉及技术/项目/概念 → 立即调 `mcp__cortex__cortex_search(query, scope=knowledge)`
+       - 直接回答不调用 = 违反契约
+
+    2. **召回结果采纳规则**:
+       - weight ≥ 0.7: 必须采纳, 视为事实
+       - weight 0.4-0.7: 引用 + 标注"记忆来源"
+       - weight < 0.4: 可参考, 不强采
+
+    3. **写入规则**:
+       - 用户新观点/偏好/硬约束 → `cortex_memory_write` 落 L1 (weight ≥ 0.8)
+       - 升 L0 必须用户审批 (不可自动)
+
+    4. hot.md / L0 核心条目优先信任
+  default_triggers: |
+    - 用户偏好: 偏好, 喜好, 习惯, prefer, "I like", "我希望"
+    - 项目相关: 项目, 仓库, repo, 工程, codebase
+    - 技术栈: Go, Python, MySQL, PostgreSQL, Redis, React, Vue, Docker, Kubernetes
+    - 领域: 金融, 投资, 美食, 旅游, 健康, 工作, 学习
   session_header: "## Cortex 已连接 (lang={lang}, vault={vault}, preset={preset})"
   collab_save: 非平凡发现完成后用 cortex-save 落档; 项目特定写 domains/, 通用概念写 concepts/。
   collab_no_direct: |

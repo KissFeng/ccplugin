@@ -37,8 +37,32 @@ agent_titles:
   summarizer: cortex 要約者
 
 prompts:
-  search_first: 一般的でない問題は先に cortex-search で vault を検索し, 既存知識の有無を確認してから着手する。
   archive_pending: 📝 cortex がアーカイブしました {path}
+  stats_header: "### 📊 在庫スナップショット"
+  l0_header: "### 🔒 L0 コア記憶 (always-loaded, 不変)"
+  triggers_header: "**トリガーキーワード** (一致 → 強制リコール):"
+  contract_header: "### ⚖️ 行動規約 (強制, スキップ不可)"
+  behavior_contract: |
+    1. **回答前に必ずリコール**:
+       - ユーザー質問にトリガー語が含まれる → 即座に `mcp__cortex__cortex_memory_recall(query, top_k=5)` を呼ぶ
+       - 技術/プロジェクト/概念に関わる → 即座に `mcp__cortex__cortex_search(query, scope=knowledge)` を呼ぶ
+       - リコールせず直接回答 = 規約違反
+
+    2. **リコール結果の採用ルール**:
+       - weight ≥ 0.7: 必須採用, 事実とみなす
+       - weight 0.4-0.7: 引用 + 「記憶ソース」明記
+       - weight < 0.4: 参考程度, 強制しない
+
+    3. **書き込みルール**:
+       - ユーザーの新意見/嗜好/強制制約 → `cortex_memory_write` で L1 へ (weight ≥ 0.8)
+       - L0 への昇格はユーザー承認必須 (自動不可)
+
+    4. hot.md / L0 コア項目を優先信頼
+  default_triggers: |
+    - ユーザー嗜好: 嗜好, 好み, 習慣, prefer, "I like", "希望"
+    - プロジェクト: プロジェクト, リポジトリ, repo, codebase
+    - 技術スタック: Go, Python, MySQL, PostgreSQL, Redis, React, Vue, Docker, Kubernetes
+    - 領域: 金融, 投資, グルメ, 旅行, 健康, 仕事, 学習
   session_header: "## Cortex 接続済み (lang={lang}, vault={vault}, preset={preset})"
   collab_save: 非自明な発見は cortex-save でアーカイブ; プロジェクト固有 → domains/, 一般概念 → concepts/。
   collab_no_direct: |
