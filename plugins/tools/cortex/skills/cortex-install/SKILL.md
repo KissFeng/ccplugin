@@ -67,7 +67,7 @@ allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian
    **解析 PLUGIN_ROOT (cron daemon 不继承 shell env, snippet 必须用绝对路径)**:
    优先级: `$CORTEX_INSTALL_PATH` env > `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex` > `$CLAUDE_PLUGIN_ROOT`。**避免**用本地开发源码路径 (cron 上下文不可达)。
 
-   **每 job 的 wrapper**: `${PLUGIN_ROOT}/scripts/cron/{lint,fold,dashboard}.sh`, 内部走 `claude --bare --no-session-persistence --settings ~/.claude/settings.glm-4.7-flash.json -p "..." --allowed-tools "Bash Read Glob"` (只读权限, `--fix` 类操作不进 cron)。
+   **每 job 的 wrapper**: `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/{lint,fold,dashboard}.sh`, 内部走 `claude --bare --no-session-persistence --settings ~/.claude/settings.glm-4.7-flash.json -p "..." --allowed-tools "Bash Read Glob"` (只读权限, `--fix` 类操作不进 cron)。
 
    **后端 1: launchd (macOS)** — 为每 job 写 plist:
    - 路径: `~/Library/LaunchAgents/dev.lazygophers.cortex.<job>.plist`

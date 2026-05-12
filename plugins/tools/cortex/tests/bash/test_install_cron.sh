@@ -122,24 +122,24 @@ test_fallback_warns_when_marketplace_absent() {
 }
 
 test_snippet_contains_no_variable_placeholder() {
-  # cron snippet 中 PLUGIN_ROOT 应已被替换为绝对路径字符串, 不含 ${PLUGIN_ROOT} 占位
+  # cron snippet 中 PLUGIN_ROOT 应已被替换为绝对路径字符串, 不含 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex 占位
   out=$(run_install)
-  # cron 段的 lint.sh 行不应该带 '${PLUGIN_ROOT}' 字面量
+  # cron 段的 lint.sh 行不应该带 '~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex' 字面量
   cron_lines=$(printf '%s\n' "$out" | grep -E 'cron/(lint|fold|dashboard)\.sh' || true)
-  if [[ -n "$cron_lines" ]] && [[ "$cron_lines" == *'${PLUGIN_ROOT}'* ]]; then
+  if [[ -n "$cron_lines" ]] && [[ "$cron_lines" == *'~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex'* ]]; then
     _TESTS_RUN=$((_TESTS_RUN + 1))
     _TESTS_FAIL=$((_TESTS_FAIL + 1))
-    printf '  FAIL: cron snippet still contains \${PLUGIN_ROOT} placeholder: %s\n' "$cron_lines"
+    printf '  FAIL: cron snippet still contains \~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex placeholder: %s\n' "$cron_lines"
   else
     _TESTS_RUN=$((_TESTS_RUN + 1))
   fi
   # launchd 同样
   out2=$(run_install launchd)
   launchd_lines=$(printf '%s\n' "$out2" | grep -E 'cron/(lint|fold|dashboard)\.sh' || true)
-  if [[ -n "$launchd_lines" ]] && [[ "$launchd_lines" == *'${PLUGIN_ROOT}'* ]]; then
+  if [[ -n "$launchd_lines" ]] && [[ "$launchd_lines" == *'~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex'* ]]; then
     _TESTS_RUN=$((_TESTS_RUN + 1))
     _TESTS_FAIL=$((_TESTS_FAIL + 1))
-    printf '  FAIL: launchd snippet still contains \${PLUGIN_ROOT} placeholder\n'
+    printf '  FAIL: launchd snippet still contains \~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex placeholder\n'
   else
     _TESTS_RUN=$((_TESTS_RUN + 1))
   fi

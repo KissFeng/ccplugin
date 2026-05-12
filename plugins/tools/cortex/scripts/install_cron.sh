@@ -157,13 +157,13 @@ print_cron() {
 # 注意: PLUGIN_ROOT 已硬编码为 marketplace 绝对路径, 适用于 cron daemon 环境
 
 # daily lint at 01:00
-0 1 * * * CORTEX_VAULT="${VAULT}" bash "${PLUGIN_ROOT}/scripts/cron/lint.sh"
+0 1 * * * CORTEX_VAULT="${VAULT}" bash "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/lint.sh"
 
 # weekly log fold at Sunday 02:00
-0 2 * * 0 CORTEX_VAULT="${VAULT}" bash "${PLUGIN_ROOT}/scripts/cron/fold.sh"
+0 2 * * 0 CORTEX_VAULT="${VAULT}" bash "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/fold.sh"
 
 # weekly dashboard refresh at Sunday 02:30
-30 2 * * 0 CORTEX_VAULT="${VAULT}" bash "${PLUGIN_ROOT}/scripts/cron/dashboard.sh"
+30 2 * * 0 CORTEX_VAULT="${VAULT}" bash "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/dashboard.sh"
 EOF
 }
 
@@ -183,7 +183,7 @@ print_launchd() {
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${PLUGIN_ROOT}/scripts/cron/lint.sh</string>
+    <string>~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/lint.sh</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
@@ -274,7 +274,7 @@ cat <<EOF
 # 注意:
 # 1. 本脚本仅打印 snippet, 不写入任何用户配置 (跨平台风险)
 # 2. 选定方案后用户自行复制安装
-# 3. PLUGIN_ROOT = ${PLUGIN_ROOT}
+# 3. PLUGIN_ROOT = ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex
 # 4. OBSIDIAN_VAULT = ${VAULT}
 # 5. 验证: 复制完成后立即手跑一次, 确认输出与权限正常
 # ----------------------------------------------------------------------

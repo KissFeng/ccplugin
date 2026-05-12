@@ -14,12 +14,13 @@ created: 2026-05-11
 updated: 2026-05-11
 preset: lyt
 lang: zh-CN
-cli: claude-code               # 新: 来源 CLI
-cli_session: a1b2c3d4-...      # 新: 会话 id
+cli: claude-code # 新: 来源 CLI
+cli_session: a1b2c3d4-... # 新: 会话 id
 ---
 ```
 
 `cli` 枚举:
+
 - `claude-code` — Claude Code CLI
 - `codex` — OpenAI Codex (未来)
 - `copilot` — GitHub Copilot CLI (未来)
@@ -99,20 +100,20 @@ vault 同时有多 CLI 写入时:
 新增 CLI 写入支持时, 仅需:
 
 1. 在该 CLI 平台上实现等价 Stop/SessionEnd hook
-2. 调用 `${PLUGIN_ROOT}/hooks/_lib/save_session.py --cli <name>` (现成)
+2. 调用 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/save_session.py --cli <name>` (现成)
 3. 复用 `templates/` (frontmatter 已含 `cli` 占位)
 
 不需要改 vault 结构、不需要改既有 cortex skill, 也不需要改 lint 规则。这就是 "vault 数据兼容" 的含义。
 
 ## 6. cortex 自身 vs adapter 角色
 
-| 维度 | cortex (本插件) | 未来 adapter |
-|------|-----------------|--------------|
-| runtime | Claude Code 专属 | 各自 CLI |
-| vault 结构 | 定义者 | 消费者 |
-| skills | 14 个 | 复用 cortex skill (若 CLI 支持 skill 概念) 或自实现 |
-| hooks | 4 个 (CC) | 自实现 |
-| 数据格式 | 定义 frontmatter / 路径 / locale | 遵守 |
+| 维度       | cortex (本插件)                  | 未来 adapter                                        |
+| ---------- | -------------------------------- | --------------------------------------------------- |
+| runtime    | Claude Code 专属                 | 各自 CLI                                            |
+| vault 结构 | 定义者                           | 消费者                                              |
+| skills     | 14 个                            | 复用 cortex skill (若 CLI 支持 skill 概念) 或自实现 |
+| hooks      | 4 个 (CC)                        | 自实现                                              |
+| 数据格式   | 定义 frontmatter / 路径 / locale | 遵守                                                |
 
 ## 7. 关联
 
