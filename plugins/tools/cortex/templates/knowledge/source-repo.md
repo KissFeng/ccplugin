@@ -9,7 +9,7 @@ url: {{URL}}
 stars: {{STARS}}
 language: {{LANGUAGE}}
 title: {{TITLE}}
-tags: []
+tags: [source/repo, host/{{HOST}}]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

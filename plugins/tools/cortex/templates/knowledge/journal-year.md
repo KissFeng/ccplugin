@@ -3,7 +3,7 @@ template_version: 1
 type: journal
 period: year
 year: {{YEAR}}
-tags: []
+tags: [journal/年]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

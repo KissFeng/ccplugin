@@ -4,7 +4,7 @@ type: journal
 period: month
 month: {{MONTH}}
 year: {{YEAR}}
-tags: []
+tags: [journal/月]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

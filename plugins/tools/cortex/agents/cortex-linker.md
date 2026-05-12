@@ -70,3 +70,14 @@ model: sonnet
 - auto_apply=false: 把提案表回报主线后, 主线 **应调 `AskUserQuestion`** 工具询问: "如何处理增链提案?" options: `批量授权全部应用` / `逐条审批` / `取消`; 据用户选择决定是否再调本 agent + auto_apply=true
 - auto_apply=true: 已 patch 3 处, backup 在 _meta/.cortex-backup/linker/<ts>/
 ```
+
+## Schema-aware Linking
+
+读 vault `_meta/frontmatter-schema.yaml` 取 tags_required 约定。链接推荐用:
+
+- 相同 tag prefix → 跨目录互链 (e.g. `tag:domain/技术/Go` 的项目自动连到对应 Go 概念)
+- source/repo 笔记 → 自动连 `host:<host>` + `org/repo` 顶层 wikilink
+- memory uri 与 ref 字段 → 建反向链接 (记忆 ↔ 知识)
+- tags_required 重叠度 ≥2 → 高优先级链接候选
+
+schema fallback: plugin `templates/frontmatter-schema.yaml`。

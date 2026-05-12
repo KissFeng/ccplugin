@@ -162,6 +162,16 @@ dead links (建议: 跑 /cortex:lint --fix):
 - 模板缺失 → 用最小骨架 (frontmatter + H1) 写入并警告
 - 写入失败 → 保留原文到 `~/.cache/cortex/ingest/<ts>-<slug>.md` 供用户手处理
 
+## Source 类型路由 + Frontmatter
+
+按 URL/file 判定 source_kind (repo/web/paper/book), 落到对应 知识库/来源/<kind>/. 调 cortex-schema `read <target-path>` 取 schema 填 frontmatter (host/domain/year/author 等), 加 tags_required (含 host/domain/year 实际值替代 placeholder)。例:
+
+- GitHub URL → 知识库/来源/代码仓库/<host>/<org>/<repo>.md, frontmatter: source_kind:repo / host / org / repo / url, tags: [source/repo, host/<host>]
+- 网页 URL → 知识库/来源/网页/<slug>.md, tags: [source/web, domain/<domain>]
+- arxiv/doi → 知识库/来源/论文/, tags: [source/paper, year/<year>]
+
+schema 缺字段时由 lint `frontmatter-schema-violation` autofix 补 defaults。
+
 ## 不做
 
 - 不修改源文件 (源是只读)

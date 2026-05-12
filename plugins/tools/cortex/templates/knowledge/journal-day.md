@@ -4,7 +4,7 @@ type: journal
 period: day
 date: {{DATE}}
 mood: {{MOOD}}
-tags: []
+tags: [journal/日]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

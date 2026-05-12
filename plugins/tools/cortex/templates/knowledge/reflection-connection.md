@@ -5,7 +5,7 @@ from_domain: {{FROM_DOMAIN}}
 to_domain: {{TO_DOMAIN}}
 similarity: {{SIMILARITY}}
 title: {{TITLE}}
-tags: []
+tags: [reflect/connection]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

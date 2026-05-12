@@ -96,5 +96,14 @@ write/update/delete 类似, 单行结果 + 落盘路径。
 
 写入前按 level 校验: L0 拒自动写; L1 weight 须 ≥0.8; L2 必 dedupe; L3 无 dedupe; L4 仅 append。
 
+## 写入时 Frontmatter 自动填
+
+write level=L<N> 时, 调 cortex-schema `read 记忆体系/L<N>-<name>/` 取 schema, 自动填 uri/level/weight/recall_when/created, tags 含 memory/L<N> + memory/<type>。例:
+
+- write `L1://procedural/git-flow` → frontmatter: uri / level:L1 / weight / recall_when / created, tags: [memory/L1, memory/procedural]
+- write `L2://semantic/go/goroutine` → frontmatter: 上述 + expires, tags: [memory/L2, memory/semantic]
+
+schema 源: `<vault>/_meta/frontmatter-schema.yaml` `namespaces.记忆体系.*`。缺字段时 policy validator 拒写, lint 后续报 frontmatter-schema-violation。
+
 ## AUTO_MODE 兼容
 若上下文标 `[AUTO_MODE: ...]`, 跳过所有交互, 用 policy 默认值决策。L0 write/delete 与 L1 delete 在 AUTO_MODE 下一律拒绝, 输出候选清单提示用户跑 `~/.cortex/scripts/memory.sh <verb> <uri> --interactive`。

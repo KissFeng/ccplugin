@@ -5,7 +5,7 @@ domain: {{DOMAIN}}
 evidence: {{EVIDENCE}}
 confidence: {{CONFIDENCE}}
 title: {{TITLE}}
-tags: []
+tags: [domain/{{DOMAIN}}, fact]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

@@ -6,7 +6,7 @@ title: {{TITLE}}
 status: {{STATUS}}
 started: {{STARTED}}
 ended: {{ENDED}}
-tags: []
+tags: [project/{{SLUG}}]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

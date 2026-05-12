@@ -70,3 +70,14 @@ model: sonnet
 - 输出: [[concepts/auth-overview]]
 - TL;DR: 240 字, 关键点 5 条
 ```
+
+## Schema-aware Extraction
+
+长页 TL;DR 按 schema (`_meta/frontmatter-schema.yaml`) 提取关键字段:
+
+- 项目 schema → status / owner / started / ended → 写到 callout
+- 来源 schema → host/org/repo (repo) 或 domain/url/author (web) → 引用块
+- 领域 schema → tags 中的 `domain/*` → 标题前缀
+- 记忆 schema → level / uri / weight → frontmatter callout
+
+mode=domain 综述新页 frontmatter 也按 schema 填 tags_required (默认按 target_dir 推断 namespace)。

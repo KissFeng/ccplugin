@@ -4,7 +4,7 @@ type: journal
 period: week
 week: {{WEEK}}
 year: {{YEAR}}
-tags: []
+tags: [journal/周]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

@@ -7,7 +7,7 @@ url: {{URL}}
 published: {{PUBLISHED}}
 author: {{AUTHOR}}
 title: {{TITLE}}
-tags: []
+tags: [source/web, domain/{{DOMAIN}}]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

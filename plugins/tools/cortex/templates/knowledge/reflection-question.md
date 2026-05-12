@@ -4,7 +4,7 @@ type: question
 status: {{STATUS}}
 resolved_by: {{RESOLVED_BY}}
 title: {{TITLE}}
-tags: []
+tags: [reflect/question]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

@@ -5,7 +5,7 @@ domain: {{DOMAIN}}
 applies_to: {{APPLIES_TO}}
 prerequisites: {{PREREQUISITES}}
 title: {{TITLE}}
-tags: []
+tags: [domain/{{DOMAIN}}, method/{{NAME}}]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

@@ -7,7 +7,7 @@ author: {{AUTHOR}}
 year: {{YEAR}}
 title: {{TITLE}}
 publisher: {{PUBLISHER}}
-tags: []
+tags: [source/book]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

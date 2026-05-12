@@ -4,7 +4,7 @@ type: concept
 domain: {{DOMAIN}}
 title: {{TITLE}}
 aliases: []
-tags: []
+tags: [domain/{{DOMAIN}}, concept/{{NAME}}]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

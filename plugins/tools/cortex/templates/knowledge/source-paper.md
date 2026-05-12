@@ -8,7 +8,7 @@ year: {{YEAR}}
 authors: {{AUTHORS}}
 title: {{TITLE}}
 venue: {{VENUE}}
-tags: []
+tags: [source/paper, year/{{YEAR}}]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---

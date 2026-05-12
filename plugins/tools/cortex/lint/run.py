@@ -284,9 +284,14 @@ def check_file(
     by_alias: dict[str, list[Path]],
     referrers: dict[str, set[str]],
     vault_lang: str | None = None,
+    fm_schema: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     fm, body_line = parse_frontmatter(text)
+
+    # rule: frontmatter-schema-violation
+    if fm_schema is not None:
+        findings.extend(_check_frontmatter_schema(rel, fm, fm_schema))
 
     # rule 1: fm-missing-type
     if not fm.get("type"):
@@ -479,6 +484,182 @@ def _f(rule: str, severity: str, file: str, line: int, msg: str, fixable: bool) 
     return {"rule": rule, "severity": severity, "file": file, "line": line, "msg": msg, "fixable": fixable}
 
 
+# ---- frontmatter-schema helpers (rule frontmatter-schema-violation) ----
+
+def _load_frontmatter_schema(vault: Path, plugin_root: Path) -> dict[str, Any] | None:
+    """Load frontmatter schema YAML. vault `_meta/` overrides plugin templates."""
+    try:
+        import yaml  # type: ignore
+    except ImportError:
+        return None
+    for p in (vault / "_meta" / "frontmatter-schema.yaml",
+              plugin_root / "templates" / "frontmatter-schema.yaml"):
+        if p.is_file():
+            try:
+                data = yaml.safe_load(p.read_text(encoding="utf-8"))
+                if isinstance(data, dict):
+                    return data
+            except Exception:
+                continue
+    return None
+
+
+def _resolve_schema_for_path(rel_path: str, schema: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Walk namespaces by path segments (longest-prefix); return matched rule dict."""
+    if not schema:
+        return None
+    ns = schema.get("namespaces", {})
+    if not isinstance(ns, dict):
+        return None
+    parts = [p for p in rel_path.replace("\\", "/").split("/") if p]
+    if not parts:
+        return None
+    dirs = parts[:-1]
+    cur: Any = ns
+    for p in dirs:
+        if isinstance(cur, dict):
+            if p in cur:
+                nxt = cur[p]
+                if isinstance(nxt, dict) and ("required" in nxt or "defaults" in nxt or "tags_required" in nxt):
+                    return nxt
+                cur = nxt
+            elif "*" in cur:
+                nxt = cur["*"]
+                if isinstance(nxt, dict) and ("required" in nxt or "defaults" in nxt or "tags_required" in nxt):
+                    return nxt
+                cur = nxt
+            else:
+                return None
+        else:
+            return None
+    if isinstance(cur, dict) and ("required" in cur or "defaults" in cur or "tags_required" in cur):
+        return cur
+    if isinstance(cur, dict) and "*" in cur:
+        leaf = cur["*"]
+        if isinstance(leaf, dict):
+            return leaf
+    return None
+
+
+def _check_frontmatter_schema(
+    rel_path: str, fm: dict[str, Any], schema: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """Check fm against resolved schema; return findings."""
+    findings: list[dict[str, Any]] = []
+    rule = _resolve_schema_for_path(rel_path, schema)
+    if not rule:
+        return findings
+    required = rule.get("required", []) or []
+    tags_required = rule.get("tags_required", []) or []
+    for k in required:
+        if k not in fm or fm.get(k) in (None, "", []):
+            findings.append(_f(
+                "frontmatter-schema-violation", "warn", rel_path, 1,
+                f"frontmatter 缺 required 字段 '{k}'", True,
+            ))
+    fm_tags = fm.get("tags", []) or []
+    if isinstance(fm_tags, str):
+        fm_tags = [fm_tags]
+    for t in tags_required:
+        prefix = str(t).split("/", 1)[0] + "/"
+        if not any(str(ft).startswith(prefix) for ft in fm_tags):
+            findings.append(_f(
+                "frontmatter-schema-violation", "warn", rel_path, 1,
+                f"frontmatter 缺 required tag prefix '{prefix}*'", True,
+            ))
+    return findings
+
+
+def _fix_frontmatter_schema(
+    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+) -> bool:
+    """Fill missing required (via defaults) + tags_required prefixes."""
+    try:
+        import yaml  # type: ignore
+    except ImportError:
+        return False
+    rel = finding["file"]
+    p = vault / rel
+    if not p.is_file():
+        return False
+    try:
+        text = p.read_text(encoding="utf-8")
+    except Exception:
+        return False
+    m = re.match(r"^---\n(.*?)\n---\n?(.*)", text, re.S)
+    if m:
+        try:
+            fm = yaml.safe_load(m.group(1)) or {}
+        except Exception:
+            return False
+        body = m.group(2)
+        if not isinstance(fm, dict):
+            return False
+    else:
+        fm = {}
+        body = text
+
+    schema = _load_frontmatter_schema(vault, plugin_root)
+    rule = _resolve_schema_for_path(rel, schema)
+    if not rule:
+        return False
+
+    defaults = rule.get("defaults", {}) or {}
+    required = rule.get("required", []) or []
+    tags_required = rule.get("tags_required", []) or []
+
+    changed = False
+    for k, v in defaults.items():
+        if k not in fm or fm.get(k) in (None, ""):
+            fm[k] = v
+            changed = True
+    if "created" in required and not fm.get("created"):
+        fm["created"] = datetime.now(timezone.utc).isoformat()
+        changed = True
+    if "updated" in required and not fm.get("updated"):
+        fm["updated"] = datetime.now(timezone.utc).isoformat()
+        changed = True
+    fm_tags = fm.get("tags", []) or []
+    if isinstance(fm_tags, str):
+        fm_tags = [fm_tags]
+    for t in tags_required:
+        prefix = str(t).split("/", 1)[0] + "/"
+        if not any(str(ft).startswith(prefix) for ft in fm_tags):
+            fm_tags.append(t)
+            changed = True
+    if changed:
+        fm["tags"] = fm_tags
+    for k in required:
+        if k in fm and fm.get(k) not in (None, "", []):
+            continue
+        if k in ("created", "updated"):
+            continue
+        if k in defaults:
+            continue
+        fm[k] = ""
+        changed = True
+
+    if not changed:
+        return False
+
+    bak = backup_dir / rel
+    bak.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.copy2(p, bak)
+    except Exception:
+        pass
+    try:
+        new_fm = yaml.safe_dump(fm, allow_unicode=True, sort_keys=False)
+    except Exception:
+        return False
+    new_text = f"---\n{new_fm}---\n{body}"
+    try:
+        p.write_text(new_text, encoding="utf-8")
+        return True
+    except Exception:
+        return False
+
+
 # ---- template/seed manifest helpers (rules 17/18/19) ----
 
 TEMPLATE_END_MARKER = "<!-- TEMPLATE_END -->"
@@ -627,6 +808,8 @@ def _check_meta_missing(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
          plugin_root / "templates" / "triggers.yaml"),
         ("_meta/template-manifest.json",
          plugin_root / "templates" / "_manifest.json"),
+        ("_meta/frontmatter-schema.yaml",
+         plugin_root / "templates" / "frontmatter-schema.yaml"),
     ]
     for rel, src in targets:
         if src.exists() and not (vault / rel).exists():
@@ -706,6 +889,8 @@ def _fix_meta_missing(
             plugin_root / "templates" / "triggers.yaml",
         "_meta/template-manifest.json":
             plugin_root / "templates" / "_manifest.json",
+        "_meta/frontmatter-schema.yaml":
+            plugin_root / "templates" / "frontmatter-schema.yaml",
     }
     src = src_map.get(rel)
     if src is None or not src.exists():
@@ -887,6 +1072,25 @@ def apply_fixes(
         if ok:
             fixed += 1
 
+    # 1b) frontmatter-schema-violation — dedupe per file (one fix call covers all
+    #     missing keys/tags for that file).
+    seen_fm_schema: set[str] = set()
+    for f in findings:
+        if not f.get("fixable"):
+            continue
+        if f["rule"] != "frontmatter-schema-violation":
+            continue
+        if rules_filter is not None and "frontmatter-schema-violation" not in rules_filter:
+            continue
+        if plugin_root is None:
+            continue
+        key = f["file"]
+        if key in seen_fm_schema:
+            continue
+        seen_fm_schema.add(key)
+        if _fix_frontmatter_schema(f, vault, plugin_root, backup_dir):
+            fixed += 1
+
     by_file: dict[str, list[dict[str, Any]]] = {}
     for f in findings:
         if not f.get("fixable"):
@@ -1031,6 +1235,7 @@ def main() -> int:
     vault_lang = args.lang or _load_vault_lang(vault)
     plugin_root = Path(__file__).resolve().parent.parent
     locale_dirs = _load_locale_dirs(plugin_root, vault, vault_lang)
+    fm_schema = _load_frontmatter_schema(vault, plugin_root)
 
     findings: list[dict[str, Any]] = []
     for p in files:
@@ -1039,7 +1244,7 @@ def main() -> int:
         except Exception:
             continue
         rel = str(p.relative_to(vault))
-        findings.extend(check_file(p, rel, text, by_name, by_alias, referrers, vault_lang))
+        findings.extend(check_file(p, rel, text, by_name, by_alias, referrers, vault_lang, fm_schema))
 
     findings.extend(check_global(vault, files, by_alias, locale_dirs if locale_dirs else None))
 

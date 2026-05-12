@@ -4,7 +4,7 @@ type: insight
 related_domains: {{RELATED_DOMAINS}}
 triggered_by: {{TRIGGERED_BY}}
 title: {{TITLE}}
-tags: []
+tags: [reflect/insight]
 created: {{CREATED}}
 updated: {{UPDATED}}
 ---
