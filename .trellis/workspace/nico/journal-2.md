@@ -137,3 +137,36 @@ cron/run.sh 加 cd vault + JOB→SKILL 映射注入 --append-system-prompt + AUT
 ### Next Steps
 
 - None - task complete
+
+
+## Session 64: cortex budget 提升 + dashboard 真测 (未通)
+
+**Date**: 2026-05-12
+**Task**: cortex budget 提升 + dashboard 真测 (未通)
+**Branch**: `master`
+
+### Summary
+
+budget 0.30→2.00, dashboard SKILL 加严 8 条强约束。真测 EXIT=1 — 非 budget 问题, AI 漫游读 ledger jsonl 致 claude crash, SKILL 文字约束被忽视。后续需机制硬阻 (dashboard.sh 主动 Glob 逐 page 传 / file size guard / 分批调度)。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `50424104` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
