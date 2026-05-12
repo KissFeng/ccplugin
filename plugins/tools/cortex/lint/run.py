@@ -488,6 +488,35 @@ def _f(rule: str, severity: str, file: str, line: int, msg: str, fixable: bool) 
     return {"rule": rule, "severity": severity, "file": file, "line": line, "msg": msg, "fixable": fixable}
 
 
+# ---- backup-root helpers (PRD: lint backup must live outside vault) ----
+
+def _vault_hash(vault: Path) -> str:
+    return hashlib.sha256(str(vault.resolve()).encode()).hexdigest()[:8]
+
+
+def _get_backup_root(vault: Path) -> Path:
+    """Backup root, outside vault: ~/.cache/cortex/lint-backup/<vault-hash>/<ts>/."""
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    base = Path.home() / ".cache" / "cortex" / "lint-backup" / _vault_hash(vault) / ts
+    base.mkdir(parents=True, exist_ok=True)
+    return base
+
+
+def _prune_old_backups(vault: Path, days: int = 30) -> None:
+    """Best-effort: delete backup ts dirs older than `days` for this vault."""
+    root = Path.home() / ".cache" / "cortex" / "lint-backup" / _vault_hash(vault)
+    if not root.is_dir():
+        return
+    import time
+    cutoff = time.time() - days * 86400
+    for child in root.iterdir():
+        try:
+            if child.stat().st_mtime < cutoff:
+                shutil.rmtree(child, ignore_errors=True)
+        except Exception:
+            pass
+
+
 # ---- frontmatter-schema helpers (rule frontmatter-schema-violation) ----
 
 def _load_frontmatter_schema(vault: Path, plugin_root: Path) -> dict[str, Any] | None:
@@ -910,8 +939,43 @@ def _fix_meta_missing(
         return False
 
 
-# Fix priority — structure must precede seed (seed write needs dir tree).
+# ---- backup-in-vault: migrate legacy <vault>/_meta/.cortex-backup/ ----
+
+def _check_backup_in_vault(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
+    """Rule backup-in-vault — legacy lint backup dir found inside vault."""
+    findings: list[dict[str, Any]] = []
+    bak = vault / "_meta" / ".cortex-backup"
+    if bak.is_dir():
+        findings.append(_f(
+            "backup-in-vault", "warn", "_meta/.cortex-backup", 1,
+            "vault 内有 lint backup 目录, 应迁出到 ~/.cache/cortex/lint-backup/",
+            True,
+        ))
+    return findings
+
+
+def _fix_backup_in_vault(
+    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+) -> bool:
+    """mv vault/_meta/.cortex-backup → ~/.cache/cortex/lint-backup/<hash>/migrated-<ts>/."""
+    src = vault / "_meta" / ".cortex-backup"
+    if not src.is_dir():
+        return False
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    dst = (Path.home() / ".cache" / "cortex" / "lint-backup"
+           / _vault_hash(vault) / f"migrated-{ts}")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.move(str(src), str(dst))
+        return True
+    except Exception:
+        return False
+
+
+# Fix priority — backup-in-vault must run first (migrate legacy backup out),
+# then structure must precede seed (seed write needs dir tree).
 RULE_PRIORITY = {
+    "backup-in-vault": 0,
     "structure-missing": 1,
     "meta-missing": 2,
     "seed-missing": 3,
@@ -1443,6 +1507,7 @@ def apply_fixes(
     #    Order matters: seed-missing writes files into dirs created by
     #    structure-missing. Sort by RULE_PRIORITY (default 99).
     sync_rules = {
+        "backup-in-vault": _fix_backup_in_vault,
         "structure-missing": _fix_structure_missing,
         "meta-missing": _fix_meta_missing,
         "seed-missing": _fix_seed_missing,
@@ -1697,6 +1762,9 @@ def main() -> int:
     findings.extend(_check_template_outdated(vault, plugin_root))
     findings.extend(_check_seed_outdated(vault, plugin_root))
 
+    # rule backup-in-vault: legacy lint backup inside vault → migrate out
+    findings.extend(_check_backup_in_vault(vault, plugin_root))
+
     # rule #20/21/22: structure-missing / seed-missing / meta-missing
     # (constructive sync — fills vault from plugin _structure.json + seeds)
     findings.extend(_check_structure_missing(vault, plugin_root))
@@ -1708,8 +1776,12 @@ def main() -> int:
 
     # vault-structure-violation: attach backup_target + emit structure_purge
     # mv plan (executed by cortex-lint skill, never by this python process).
+    # Backup root lives OUTSIDE the vault (PRD: vault stays clean).
     structure_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    structure_backup_root = f"_meta/.cortex-backup/lint-{structure_ts}"
+    structure_backup_root = str(
+        Path.home() / ".cache" / "cortex" / "lint-backup"
+        / _vault_hash(vault) / f"structure-{structure_ts}"
+    )
     sp_violations = [f for f in findings
                      if f.get("rule") == "vault-structure-violation"]
     for v in sp_violations:
@@ -1717,9 +1789,9 @@ def main() -> int:
 
     fixed = 0
     if args.fix or args.sync_templates:
-        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-        backup_dir = vault / "_meta" / ".cortex-backup" / "lint" / ts
-        backup_dir.mkdir(parents=True, exist_ok=True)
+        backup_dir = _get_backup_root(vault)
+        # Best-effort prune of old backups (>30 days) for this vault
+        _prune_old_backups(vault, days=30)
         rules_filter: set[str] | None = None
         if args.sync_templates and not args.fix:
             rules_filter = {"template-outdated", "template-missing", "seed-outdated"}

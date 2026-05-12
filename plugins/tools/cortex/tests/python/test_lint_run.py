@@ -210,9 +210,15 @@ class AutofixTest(unittest.TestCase):
             self.assertGreater(rep["summary"]["fixed"], 0)
             text = f.read_text(encoding="utf-8")
             self.assertIn("type:", text)
-            # backup dir was created
-            backup = vault / "_meta" / ".cortex-backup" / "lint"
-            self.assertTrue(backup.is_dir())
+            # backup dir is created OUTSIDE the vault
+            # (~/.cache/cortex/lint-backup/<vault-hash>/<ts>/), never inside.
+            self.assertFalse((vault / "_meta" / ".cortex-backup").exists())
+            import hashlib
+            vh = hashlib.sha256(str(vault.resolve()).encode()).hexdigest()[:8]
+            backup_root = Path.home() / ".cache" / "cortex" / "lint-backup" / vh
+            self.assertTrue(backup_root.is_dir())
+            # at least one ts subdir
+            self.assertTrue(any(backup_root.iterdir()))
 
     def test_fix_h1_mismatch(self):
         with tempfile.TemporaryDirectory() as d:

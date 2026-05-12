@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 import sys
 import tempfile
@@ -187,11 +186,13 @@ class StructurePurgeMvPlanTest(unittest.TestCase):
             self.assertEqual(sp["preset"], "LYT")
             self.assertEqual(sp["violation_count"], 2)
 
-            # backup_root format: _meta/.cortex-backup/lint-YYYYMMDDTHHMMSSZ
+            # backup_root lives OUTSIDE the vault:
+            # <home>/.cache/cortex/lint-backup/<vault-hash>/structure-<ts>
             self.assertRegex(
                 sp["backup_root"],
-                r"^_meta/\.cortex-backup/lint-\d{8}T\d{6}Z$",
+                r"/\.cache/cortex/lint-backup/[0-9a-f]{8}/structure-\d{8}T\d{6}Z$",
             )
+            self.assertNotIn(str(vault), sp["backup_root"])
 
             mv_plan = sp["mv_plan"]
             self.assertEqual(len(mv_plan), 2)
@@ -199,7 +200,7 @@ class StructurePurgeMvPlanTest(unittest.TestCase):
             self.assertEqual(froms, {"foobar/", "random.txt"})
             for item in mv_plan:
                 self.assertTrue(
-                    item["to"].startswith("_meta/.cortex-backup/lint-"),
+                    item["to"].startswith(sp["backup_root"] + "/"),
                     msg=f"unexpected to: {item['to']}",
                 )
                 # to == backup_root + "/" + from
@@ -212,10 +213,8 @@ class StructurePurgeMvPlanTest(unittest.TestCase):
             for v in sp_errors:
                 self.assertIn("backup_target", v)
                 self.assertTrue(
-                    re.match(
-                        r"^_meta/\.cortex-backup/lint-\d{8}T\d{6}Z/",
-                        v["backup_target"],
-                    )
+                    v["backup_target"].startswith(sp["backup_root"] + "/"),
+                    msg=f"unexpected backup_target: {v['backup_target']}",
                 )
 
     def test_no_structure_purge_when_clean(self):
