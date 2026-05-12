@@ -22,6 +22,7 @@ SCHEMAS: dict[str, VaultSchema] = {
         "root_dirs": {
             "_meta",
             "_templates",
+            # 原 10_concepts/20_efforts/... 编号目录 (legacy, 保留兼容老 vault)
             "10_concepts",
             "20_efforts",
             "30_domains",
@@ -31,6 +32,15 @@ SCHEMAS: dict[str, VaultSchema] = {
             "70_attachments",
             "80_archive",
             "90_inbox",
+            # 新中文目录 (直接 directories_keys 落, 不经 locales 映射)
+            "概念",
+            "实体",
+            "领域",
+            "来源",
+            "问题",
+            "仪表盘",
+            "临时",
+            "归档",
             "folds",
             "log",
             "locales",

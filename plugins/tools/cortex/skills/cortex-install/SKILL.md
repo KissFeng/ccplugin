@@ -17,7 +17,7 @@ allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian
 ## v2 增项 (M1+M3)
 
 1. **询问 lang** — 默认 `zh-CN`, 可选 `en` / `ja` / 用户自定义。写入 `_meta/version.json:.lang`。
-2. **目录按 lang 渲染** — preset `_structure.json:directories_keys` 经 `locales/<lang>.yml:dirs` 解析为实际目录名。
+2. **目录直接中文** — preset `_structure.json:directories_keys` 直接列中文目录名 (`概念/实体/领域/来源/问题/仪表盘/临时/归档`), 不再经 `locales/<lang>.yml:dirs` 映射。`lang` 字段仍写 `_meta/version.json` 供其它 skill (translator 等) 使用。
 3. **询问 cron 注册 (P6 内联)** — 流程末尾用 `AskUserQuestion` 询问是否注册 daily lint / weekly fold / weekly dashboard; 选启用则**内联**注册 (原 cortex-cron skill 并入)。
 4. **写 `_meta/version.json`** — 含 `schema/preset/lang/preserve_transcript/created` 字段。
 
@@ -42,10 +42,10 @@ allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian
    - `folds/_index.md` — 空骨架
 4. **写 LYT 业务目录 + 根 MOC**:
    - 读 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/presets/_structure.json`
-   - 按 `directories_keys[]` 经 `locales/<lang>.yml:dirs` 映射为本地化目录名, 在 vault 内创建空目录
+   - 按 `directories_keys[]` (现直接中文, 不再 locale 映射) 在 vault 内创建对应目录 (`概念/实体/领域/来源/问题/仪表盘/临时/归档`)
    - 按 `seed_files[]` 把 `<plugin>/presets/<src>` 复制到目标位置:
-     - `dst_key="."` (root sentinel) → 直落 `<vault>/<name>` (**不经** locales dirs 映射), 用于 3 个根 MOC: `home.md` / `topics-moc.md` / `projects-moc.md`
-     - 其他 `dst_key` → 复制到 `<vault>/<localized_dir>/<name>`, 用于 8 业务目录的 `_index.md`
+     - `dst_key="."` (root sentinel) → 直落 `<vault>/<name>`, 用于 3 个根 MOC: `home.md` / `topics-moc.md` / `projects-moc.md`
+     - 其他 `dst_key` → 复制到 `<vault>/<dst_key>/<name>` (dst_key 即中文目录名), 用于 8 业务目录的 `_index.md`
 5. **询问 git auto-sync (P5)** — 若 `<vault>/.git` 存在 (vault 是 git repo), **必须**用 `AskUserQuestion` 工具(不能用文本式提问) 询问 1 个 single-choice 问题:
    - 问题: "vault 是 git repo, 是否启用 Stop hook 自动 commit?"
    - 选项:
