@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 34
+- **Total Sessions**: 35
 - **Last Active**: 2026-05-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1149 | Active |
+| `journal-1.md` | ~1182 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 35 | 2026-05-12 | cortex presets/ 扁平化 + seed_files desc 中文 | `906f9926` | `master` |
 | 34 | 2026-05-12 | cortex-install 硬编码 LYT (移除目录结构选择) | `e321ba02` | `master` |
 | 33 | 2026-05-12 | wrapper 全 auto 模式 (claude --bare 单轮无交互) | `f2f7d86c` | `master` |
 | 32 | 2026-05-12 | lint --fix 默认批量移除非 schema 到 backup | `b8f6c1d6` | `master` |
