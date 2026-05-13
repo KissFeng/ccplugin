@@ -304,7 +304,7 @@ def _render_event(evt: dict) -> RenderableType | None:
                 if name == "Bash":
                     renderables.append(
                         Panel(
-                            Text(blk.get("command", blk.get("description", "")),  style="yellow"),
+                            Text(blk.get("input", {}).get("command", blk.get("input", {}).get("description", "")),  style="yellow"),
                             title=f"tool: {name}",
                             border_style="yellow",
                             padding=(0, 1),
@@ -313,7 +313,7 @@ def _render_event(evt: dict) -> RenderableType | None:
                 elif name == "Read":
                     renderables.append(
                         Panel(
-                            Text(blk.get("file_path", ""),  style="yellow"),
+                            Text(blk.get("input", {}).get("file_path", ""),  style="yellow"),
                             title=f"tool: {name}",
                             border_style="yellow",
                             padding=(0, 1),
@@ -322,7 +322,7 @@ def _render_event(evt: dict) -> RenderableType | None:
                 elif name == "Write":
                     renderables.append(
                         Panel(
-                            Text(blk.get("file_path", ""),  style="yellow"),
+                            Text(blk.get("input", {}).get("file_path", ""),  style="yellow"),
                             title=f"tool: {name}",
                             border_style="yellow",
                             padding=(0, 1),
@@ -336,7 +336,7 @@ def _render_event(evt: dict) -> RenderableType | None:
                             border_style="yellow",
                             padding=(0, 1),
                         )
-                    )
+                    )   
             elif btype == "server_tool_use":
                 name = blk.get("name", "?")
                 inp = json.dumps(blk.get("input", {}), ensure_ascii=False)[:_TOOL_INPUT_CAP]
