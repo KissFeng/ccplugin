@@ -62,8 +62,8 @@ plugins/tools/cortex/
 - 仓库/项目用**目录**承载: `index.md` 主条目 + ≥4 子文档 (architecture/decisions/pitfalls/dependencies)
 - 嵌套 git repo: `find . -name .git ≥2` 时父+子各自独立 ingest
 - 深度 L1-L6: 结构/文档/配置/入口码/历史/派生
-- 强制 frontmatter: type / title / desc / created / updated / tags(≥3) / source_url / version / when_to_read / score(1-5) / maturity
-- tags 强制: ≥3 个,含 `source/<kind>` + `topic/<domain>` + `stack/<lang>`
+- 强制 frontmatter: type / title / desc / created / updated / tags(**≥10**) / source_url / version / when_to_read / score(1-5) / maturity
+- tags 强制: **≥10 个**, 严禁占位符 (`<...>` / placeholder / TODO / 待填 / TBD); 派生维度: `type/` `topic/` `stack/` `lang/` `source/` `host/` `org/` `repo/` `score/` `maturity/` `created/` `keyword/`
 
 ## 测试基线
 
@@ -156,7 +156,8 @@ plugins/tools/cortex/
 - `fm-duplicate-tags`: tags 列表内重复, autofix 保序去重
 - `fm-banned-tags`: tags 含结构标记 (index/meta/template/_index/stub), autofix 移除
 - `fm-banned-fields`: fm 含禁止字段 (preset 等), autofix pop
-- `fm-missing-tags`: fm 缺 tags 字段, autofix 补 `tags: []`
+- `fm-missing-tags`: **2026-05-13 v3 升级** — 三分支 (字段缺 / 非 list / `<10`); autofix 读 fm + 正文 h1/h2 + 首 500 字派生 ≥10 tag, 严禁占位符 (`<...>` / placeholder / TODO / 待填 / TBD); 派生不足 10 保 warn 不写盘, 由 AI 二次循环
+- `lint-skip: true` (frontmatter 短路标志): 任何 md 含此字段, check_file 入口直接返空 findings; 31 个 `_templates/*.md` 全加 (模板演示占位符不应被 lint 拦)
 
 行为升级:
 - `vault-structure-violation`: root 上的 知识库 子层名 → autofix **merge 到 知识库/<name>/** (非备份). 子层集: 项目/来源/领域/日记/反思/收件箱/概念/实体/问题/临时 + en alt
@@ -203,3 +204,34 @@ plugins/tools/cortex/
 - `grep "mcp__cortex__"` in `agents/ commands/ skills/ scripts/hooks/` = 0
 - python tests 286 pass + 9 subtests, 0 fail
 - 用户角度: 装 plugin 不再自动启 cortex MCP server;`mcp-obsidian` 为可选,走 install.sh 文末引导手动注册
+
+## tags ≥10 强制 (`2e5d53d9`, 2026-05-13 v3)
+
+**动机**: 用户要求知识库每一个 md 必须有 ≥10 个语义标签, 严禁占位符。
+
+### Lint 规则升级
+
+- `fm-missing-tags`: 单规则三分支 (字段缺 / 非 list / `<10`)
+- autofix 改为派生器: 读 fm (type/lang/host/org/repo/source_url/score/maturity/created 等) + 正文 h1/h2 (→ `topic/<slug>`) + 首 500 字中文 2-4 字 + 英文 PascalCase (→ `keyword/<x>`)
+- 去重保序, 截断 ≤20, 严禁 5 类占位符
+- 派生不足 10 不写盘, 保 warn
+
+### Lint 短路标志
+
+`lint-skip: true` 入口短路, 跳过所有规则。用于 31 个 `_templates/*.md` (含 memory/html/knowledge 子目录), 让模板演示占位符不被 lint 拦。
+
+### Ingest 落档强制
+
+`scripts/cli/save.py:_save_internal` 写盘前调 `_derive_tags(fm, body)`, 自动扩展到 ≥10。host/org/repo 同步写入 fm 顶层。
+
+### 文档同步
+
+- `skills/cortex-ingest/SKILL.md`: "tags ≥ 3" → "≥10 严禁占位"
+- `skills/cortex-lint/SKILL.md`: rules 表加 `lint-skip` 短路说明
+- `commands/ingest.md`: "(≥3)" → "(≥10, 严禁占位)"
+
+### 验收
+
+- pytest 286 → 292 pass (6 新 case), 0 fail
+- 模板 31 个 `lint-skip: true` 全加
+- grep `≥3 tag` 残留 = 0

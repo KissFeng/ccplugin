@@ -128,6 +128,15 @@ uv run scripts/update_version.py
 
 ## 更新日志
 
+**2026-05-13** (晚批 v3)：Cortex 知识库 md 强制 tags ≥10
+
+- `2e5d53d9` lint `fm-missing-tags` 单规则升级三分支 + autofix 派生器 (读 fm/h1/h2/正文 500 字, 严禁占位符 `<...>`/placeholder/TODO/待填/TBD)
+- `lint-skip: true` frontmatter 短路标志, 31 个 `_templates/*.md` 全加
+- `scripts/cli/save.py` 落档强制 ≥10 (`_derive_tags`)
+- 文档同步: cortex-ingest SKILL / cortex-lint SKILL / commands/ingest "≥3"→"≥10"
+- 测试 286→292 pass (6 新 case), 0 fail
+- 派生维度 12 类: type/topic/stack/lang/source/host/org/repo/score/maturity/created/keyword
+
 **2026-05-13** (晚批 v2)：Cortex 插件**自研 MCP server 完全移除**, 改用官方 mcp-obsidian (可选)
 
 - `015a4a30` Phase 1: `plugin.json:mcpServers.cortex` 删 + `install.sh` 加 `claude mcp add obsidian uvx mcp-obsidian` 引导
@@ -143,7 +152,7 @@ uv run scripts/update_version.py
   - `fm-duplicate-tags` (保序去重)
   - `fm-banned-tags` (移除 index/meta/template/_index/stub)
   - `fm-banned-fields` (移除 preset 等)
-  - `fm-missing-tags` (强制 tags 存在, 空 list 可)
+  - `fm-missing-tags` (**v3 升级**: 字段缺/非 list/<10 三分支, autofix 读 fm + 正文派生 ≥10, 严禁占位符)
 - Lint root namespace 强制收纳 (`49e3c217`): vault root 上 子层名 (实体/概念/领域/来源/...) autofix mv 入 知识库/<name>/, locale_dirs 改顶层化
 - Lint 自动清 `_meta/version.json:lint_whitelist` 中废弃条目 (log/folds/sessions; `19952bae`)
 - Digest 单一真相搬到 SKILL.md (`7a4573da`); L4 全清漏斗 (`135f497f`); 既有 L0-L3 + 知识库 交叉学习 (`4cc5d8aa`)
