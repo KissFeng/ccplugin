@@ -39,10 +39,14 @@
   - **方法论**：三路并行 Agent 审查（代码复用/质量/效率）
 - `cortex-plugin-2026-05-13.md` — **@cortex 整体重构基线**（2026-05-13）
   - **单一真相清单**：vault 结构 / 配置 / env var 政策 / slash 形式 / AUTO_MODE persistent / 插件路径硬编码 / MOC 已删
-  - **实际计数**：8 agent · 21 skill · 20 command · 17 wrapper · 17 lint · 5 hook · 15 MCP
+  - **实际计数**：8 agent · 21 skill · 20 command · 17 wrapper · 20 lint · 5 hook · 15 MCP
   - **目录布局**：所有 python/bash 集中 `scripts/`,install.sh 例外
   - **ingest 全局规则**：folder-first + 嵌套 git 独立 + L1-L6 深度 + 评分制度
-  - **测试基线**：python 238 / bash 8 files / mcp 113 全绿
+  - **Digest SKILL.md 单一真相**：L4 单向漏斗 0 残留 + 既有 L0-L3 交叉学习 (update/enrich/conflict)
+  - **Lint 4 新规则**：fm-{duplicate,banned,missing}-tags + fm-banned-fields;parse_frontmatter 多行 list bug 修
+  - **Vault root 强制 merge**：实体/概念/领域/来源 等子层名 mv 入 知识库/
+  - **Dashboard seed 12 页重构**：清 100 个 `{{X}}` runtime 占位符,DASH:BEGIN/END 单一数据源
+  - **测试基线**：python 243 / bash 8 files / mcp 113 全绿
 
 ## Rules文件索引
 
@@ -122,6 +126,19 @@ uv run scripts/update_version.py
 - `.claude/skills/gitnexus/` — 代码智能工具（exploring/impact-analysis/debugging/refactoring/cli）
 
 ## 更新日志
+
+**2026-05-13** (晚批)：Cortex 插件 lint/digest/dashboard 三轨升级
+
+- Lint 4 新规则 + parse_frontmatter 多行 YAML list bug 修 (`332f7a10` / `2492ce47`)
+  - `fm-duplicate-tags` (保序去重)
+  - `fm-banned-tags` (移除 index/meta/template/_index/stub)
+  - `fm-banned-fields` (移除 preset 等)
+  - `fm-missing-tags` (强制 tags 存在, 空 list 可)
+- Lint root namespace 强制收纳 (`49e3c217`): vault root 上 子层名 (实体/概念/领域/来源/...) autofix mv 入 知识库/<name>/, locale_dirs 改顶层化
+- Lint 自动清 `_meta/version.json:lint_whitelist` 中废弃条目 (log/folds/sessions; `19952bae`)
+- Digest 单一真相搬到 SKILL.md (`7a4573da`); L4 全清漏斗 (`135f497f`); 既有 L0-L3 + 知识库 交叉学习 (`4cc5d8aa`)
+- Dashboard 12 个 seed 体清 100 个 runtime 占位符 (`d7210ffa`), 数据生产权归 cortex-dashboard skill
+- cortex_stream: TodoWrite/Edit/Write 渲染 + 多 bug 修
 
 **2026-05-13**：Cortex 插件整体重构 (25+ commits, 多轮迭代收尾)
 

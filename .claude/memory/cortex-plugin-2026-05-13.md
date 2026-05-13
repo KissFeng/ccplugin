@@ -14,7 +14,7 @@ type: project
 
 | 项 | 真相 |
 |----|------|
-| Vault 顶层目录 | `知识库/{项目,来源/{代码仓库,网页,论文,书籍},领域/{...},日记/{日,周,月,年},反思,收件箱}` + `记忆/{L0-核心,L1-长期,L2-中期,L3-短期,L4-流水账,working,views}` + `_meta` `_templates` `_assets` `仪表盘` `归档` |
+| Vault 顶层目录 | `知识库/{项目,来源/{代码仓库,网页,论文,书籍},领域/{...},日记/{日,周,月,年},反思,收件箱,实体,概念}` + `记忆/{L0-核心,L1-长期,L2-中期,L3-短期,L4-流水账,working,views}` + `_meta` `_templates` `_assets` `仪表盘` `归档`; **root 上 知识库 子层名 (项目/来源/领域/日记/反思/收件箱/概念/实体/...) lint 强制 mv 入 知识库/<name>/** |
 | 配置 | `~/.cortex/config.json` (keys: vault / lang / settings / install_path / timeout_default) |
 | Env var 政策 | 禁配置类 (`OBSIDIAN_VAULT`/`CORTEX_VAULT`/`CORTEX_LANG`/`CORTEX_INSTALL_PATH`/`CORTEX_SETTINGS`); 仅 install.sh bootstrap 期允许; 平台契约保留 (`CLAUDE_PLUGIN_ROOT`, `CORTEX_VAULT_PATH` for MCP, `CORTEX_JOB_LABEL`, `CORTEX_STREAM_TEE_FILE`) |
 | Slash 形式 | `/cortex:<name>` (冒号),dash `/cortex-<name>` claude 无法解析 |
@@ -31,7 +31,7 @@ type: project
 | Skill | 21 (`skills/<name>/SKILL.md`) |
 | Slash command | 20 (`commands/<name>.md`) |
 | Bash wrapper | 17 (`~/.cortex/scripts/<name>.sh`) |
-| Lint 规则 | 17 (`scripts/lint/rules.json`) |
+| Lint 规则 | 20 (`scripts/lint/rules.json`) |
 | Hook | 5 (SessionStart / PostCompact / Stop / SubagentStop / UserPromptSubmit) |
 | MCP 工具 | 15 |
 
@@ -61,10 +61,10 @@ plugins/tools/cortex/
 
 ## 测试基线
 
-- python 238 PASS
+- python 243 PASS
 - bash 8 files / 11 assertions PASS
 - mcp 113 PASS
-- **总 359 + 8 全绿**
+- **总 364 + 8 全绿**
 
 ## 文档分层
 
@@ -100,6 +100,15 @@ plugins/tools/cortex/
 | `1e74eb60` | ingest 默认深度分析 PWD |
 | `169ba3a1` | cortex_stream stdout 严禁 raw NDJSON |
 | `41ced4c3` | cortex_stream 顺序渲染 (去 Live 区) |
+| `19952bae` | lint: log/folds/sessions 移出 root_dirs + fm-duplicate-tags 规则 + 自动清 lint_whitelist 旧条目 |
+| `f515cb8c` | digest: L4 全量处理, 不限文件类型, 不限时间窗 |
+| `135f497f` | digest: L4 全清空 — 删 7d 时间窗例外, 单向漏斗 0 残留 |
+| `4cc5d8aa` | digest: 既有 L0-L3 + 知识库 参与交叉学习, 数据更新不删条目 (update_target/enrich_target/conflict) |
+| `7a4573da` | digest: 五阶段 spec 单一真相搬到 SKILL.md, command/cron 仅委托 |
+| `332f7a10` | lint: fm-banned-tags 规则 + parse_frontmatter 多行 YAML list bug 修 (核心 bug — `- item` 无缩进时被丢弃) |
+| `2492ce47` | lint: fm-banned-fields (禁 preset 字段) + fm-missing-tags (强制 tags 存在) |
+| `49e3c217` | lint: vault root 上 知识库 子层 namespace 强制收纳 (实体/概念/领域/来源 等 mv 到 知识库/) + locale_dirs 顶层化 |
+| `d7210ffa` | dashboard: seed 12 页清 `{{X}}` runtime 占位符 (KB_TOTAL/CHART_*/L*_TOTAL 等 ~100 个), DASH:BEGIN/END 单一数据源; cortex_stream Edit 分支 `=` → `==` 语法 |
 
 ## 定时任务最终调度
 
@@ -122,3 +131,34 @@ plugins/tools/cortex/
 - **当前目录** — PWD (wrapper 调用时 cwd, 如 ingest 深度分析)
 - **知识库** — vault (~/.cortex/config.json:.vault)
 - **记忆层** — 记忆/L0-L4 子树
+
+## Digest skill 单一真相 (2026-05-13 后期)
+
+- 操作规范从 `commands/digest.md` + `scripts/cron/digest.sh` 内联 PROMPT 搬到 `skills/cortex-digest/SKILL.md`
+- command/cron 改为单行委托 ("Invoke Skill cortex-digest")
+- **L4 = 单向漏斗**: 每次 digest 必清 0 残留 (promote-L3 / archive-到-归档/L4-<YYYY>/<rel> / delete 三选一), 无时间窗例外
+- **既有 L0-L3 + 知识库 参与交叉学习** (数据更新不删条目):
+  - update_target (L1/L2/L3 命中) → `cortex_memory_write` append + weight += 0.05 (cap 1.0)
+  - enrich_target (知识库命中) → patch 加 `## 新增例证 <date>` + wikilink
+  - conflict → 新写 `知识库/反思/矛盾/<date>-<topic>.md`, 不动既有
+  - concretize (疑问页 backlinks≥3) → 阶段 5 删
+- 日记归档目标: `归档/日记/<YYYY-QN>.md` 季度桶
+
+## Lint 规则总览 (20 条)
+
+新增 (2026-05-13 后期):
+- `fm-duplicate-tags`: tags 列表内重复, autofix 保序去重
+- `fm-banned-tags`: tags 含结构标记 (index/meta/template/_index/stub), autofix 移除
+- `fm-banned-fields`: fm 含禁止字段 (preset 等), autofix pop
+- `fm-missing-tags`: fm 缺 tags 字段, autofix 补 `tags: []`
+
+行为升级:
+- `vault-structure-violation`: root 上的 知识库 子层名 → autofix **merge 到 知识库/<name>/** (非备份). 子层集: 项目/来源/领域/日记/反思/收件箱/概念/实体/问题/临时 + en alt
+- 自动清 `_meta/version.json:lint_whitelist` 中废弃条目 (log/, folds/, sessions/)
+- `parse_frontmatter` 修多行 YAML list bug — `- item` 无缩进时被丢弃 (yaml 标准合法但 lightweight parser 忽略); 现 `stripped.startswith("- ")` 即追加
+
+## Dashboard seed 重构
+
+- 12 个仪表盘 seed (`presets/seed/仪表盘/*.md`) 体清空所有 runtime 占位符 (~100 个 `{{KB_TOTAL}}` / `{{CHART_*}}` / `{{L*_TOTAL}}` 等)
+- 新结构: frontmatter (`view_query`/`role` 保留) + h1 (fm.title) + `> [!info]` intro (fm.role) + `<!-- DASH:BEGIN -->...<!-- DASH:END -->` 待填区 + `<!-- TEMPLATE_END -->`
+- 单一数据源: `cortex-dashboard` skill 注入 DASH:BEGIN/END 块; 体里不再有 inline 占位符
