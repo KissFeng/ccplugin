@@ -4,7 +4,7 @@ meta:
   display: 日本語
 
 dirs:
-  # canonical dual-namespace
+  # Top-level vault directories (dual namespace + system dirs)
   knowledge: ナレッジ
   memory: メモリ
   dashboard: ダッシュボード
@@ -12,14 +12,14 @@ dirs:
   meta: _meta
   templates: _templates
   assets: _assets
-  # knowledge sub-layers
+  # Knowledge sub-layers (used by lint i18n-path mapping)
   projects: プロジェクト
   sources: ソース
   domains: 領域
   journal: ジャーナル
   reflection: 振り返り
   inbox: 受信箱
-  # legacy flat layout
+  # Alternate flat layout names (recognized but not generated)
   concepts: 概念
   entities: エンティティ
   questions: 質問

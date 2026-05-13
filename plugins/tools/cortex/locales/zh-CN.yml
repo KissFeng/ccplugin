@@ -4,7 +4,7 @@ meta:
   display: 简体中文
 
 dirs:
-  # 当前规范结构 (双 namespace + 仪表盘/归档/_meta/_templates/_assets)
+  # Top-level vault directories (dual namespace + system dirs)
   knowledge: 知识库
   memory: 记忆
   dashboard: 仪表盘
@@ -12,14 +12,14 @@ dirs:
   meta: _meta
   templates: _templates
   assets: _assets
-  # 知识库子层 (lint i18n-path 检查映射)
+  # Knowledge sub-layers (used by lint i18n-path mapping)
   projects: 项目
   sources: 来源
   domains: 领域
   journal: 日记
   reflection: 反思
   inbox: 收件箱
-  # 兼容旧扁平结构 (供存量 vault 不报警, 不再推荐新建)
+  # Alternate flat layout names (recognized but not generated)
   concepts: 概念
   entities: 实体
   questions: 问题

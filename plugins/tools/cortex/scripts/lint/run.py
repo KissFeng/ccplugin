@@ -26,6 +26,20 @@ from typing import Any
 
 # ---- regex helpers ----
 WIKILINK_RE = re.compile(r"(?<!\!)\[\[([^\[\]\n|#^]+)(?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?\]\]")
+# Strip fenced code blocks (``` ... ```) and inline code (` ... `) so wikilink
+# scan ignores shell snippets like `[[ "$x" == "y" ]]` which are not real links.
+_FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
+_INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
+
+
+def strip_code_for_wikilinks(text: str) -> str:
+    """Return text with fenced + inline code replaced by blank-equivalent so
+    wikilink scanning skips code snippets while keeping line numbers stable."""
+    def _blank_keep_lines(m):
+        return "".join("\n" if c == "\n" else " " for c in m.group(0))
+    text = _FENCED_CODE_RE.sub(_blank_keep_lines, text)
+    text = _INLINE_CODE_RE.sub(_blank_keep_lines, text)
+    return text
 BLOCK_ID_RE = re.compile(r"\s\^(cortex-[a-f0-9]{8})\b")
 CALLOUT_RE = re.compile(r"^\s*>\s*\[!([a-zA-Z][\w-]*)\][+\-]?\s", re.MULTILINE)
 H1_RE = re.compile(r"^#\s+(.+)$", re.MULTILINE)
@@ -260,8 +274,8 @@ def index_wikilinks(vault: Path) -> tuple[dict[str, Path], dict[str, list[Path]]
             for a in aliases:
                 if isinstance(a, str) and a:
                     by_alias.setdefault(a.lower(), []).append(md)
-        # collect outgoing wikilinks for referrer map
-        body = text
+        # collect outgoing wikilinks for referrer map (strip code blocks first)
+        body = strip_code_for_wikilinks(text)
         for m in WIKILINK_RE.finditer(body):
             tgt = m.group(1).strip()
             if tgt.lower().endswith(".md"):
@@ -328,8 +342,9 @@ def check_file(
     if isinstance(title, str) and title and h1 and title.strip() != h1:
         findings.append(_f("title-h1-mismatch", "warn", rel, body_line, f"H1='{h1}' != title='{title}'", True))
 
-    # rule 3: dead-wikilink
-    for m in WIKILINK_RE.finditer(text):
+    # rule 3: dead-wikilink (skip code blocks — shell `[[ ... ]]` 不算 wikilink)
+    _wikilink_scan_text = strip_code_for_wikilinks(text)
+    for m in WIKILINK_RE.finditer(_wikilink_scan_text):
         tgt = m.group(1).strip()
         if tgt.lower().endswith(".md"):
             tgt = tgt[:-3]

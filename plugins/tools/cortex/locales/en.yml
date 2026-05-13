@@ -4,7 +4,7 @@ meta:
   display: English
 
 dirs:
-  # canonical dual-namespace structure
+  # Top-level vault directories (dual namespace + system dirs)
   knowledge: knowledge
   memory: memory
   dashboard: dashboard
@@ -12,14 +12,14 @@ dirs:
   meta: _meta
   templates: _templates
   assets: _assets
-  # knowledge sub-layers
+  # Knowledge sub-layers (used by lint i18n-path mapping)
   projects: projects
   sources: sources
   domains: domains
   journal: journal
   reflection: reflection
   inbox: inbox
-  # legacy flat layout (existing vaults; not recommended for new ones)
+  # Alternate flat layout names (recognized but not generated)
   concepts: concepts
   entities: entities
   questions: questions

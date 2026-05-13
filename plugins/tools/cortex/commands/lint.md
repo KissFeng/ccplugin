@@ -27,13 +27,15 @@ while True:
 | 规则 | autofix=true 时 | autofix=false 时 AI 必须执行 |
 |------|----------------|-------------------|
 | fm-missing-type / fm-missing-created / hot-too-long / index-missing-section / title-h1-mismatch / block-id-duplicate / vault-misaligned / template-outdated / frontmatter-schema-violation | run.py --fix 已落 | — |
-| dead-wikilink | — | Write 工具创建 stub: `vault/知识库/收件箱/<target>.md` 填最小 frontmatter (`type: concept`/`domain`/`log` 按目录推断, `title: <target>`, `created: today`); 再 re-lint 验证 |
+| dead-wikilink | — | 先 Read 校验: 若 `[[...]]` 在 fenced code block / inline backtick 内, 视为代码片段跳过 (lint 解析器已剥离, 残留即为正文); 否则 Write 工具创建 stub: `vault/知识库/收件箱/<target>.md` 填最小 frontmatter (`type: concept` 按目录推断, `title: <target>`, `created: <YYYY-MM-DD>`); 再 re-lint 验证 |
 | duplicate-alias | — | Edit 工具改其中一个 frontmatter 的 alias (加目录后缀去歧义); 或合并两文件 (Read → Write 合并 → 删源) |
-| orphan-page | — | Edit 给页加 `tags: [orphan-auto]` 或在最近相关 `_index.md` 插一行 `[[页名]]` 反链 (用 cortex_search 找最近邻) |
-| filename-illegal / path-naming-violation | — | Bash `git mv` 改名为合法 kebab-case; 再 grep+Edit 改所有 wikilink/路径引用 |
+| orphan-page | — | Read 文件正文行数: 若 ≤ 3 行 (空 stub), `git rm` 删除; 否则 Edit 给页加 `tags: [orphan]` 或在最近相关 `_index.md` 插一行 `[[页名]]` 反链 (用 cortex_search 找最近邻) |
+| filename-illegal / path-naming-violation | — | Bash `git mv` 改名: 长度 ≤ 50 字符, kebab-case, 仅 ASCII + 数字 + 连字符; 超长用 `<prefix>-<sha8>.md` 形式 (前 30 字符 + 内容 sha 8 位); 再 grep+Edit 改所有 wikilink/路径引用 |
 | callout-unknown-type | — | Edit 替成最近的已知 callout (note/tip/warning/info), 用 cortex_search 或字符串相似度自决 |
 | log-too-long | — | Read + Write 切尾部到 `folds/<YYYY-QN>.md`, 主文件留头部 |
-| i18n-path-not-in-locale | — | Bash `git mv` 移到正确 locale 目录 (`记忆/zh-CN/...`) |
+| i18n-path-not-in-locale | — | 先比对 `_meta/version.json:.lang` 与 `locales/<lang>.yml:.dirs` 顶层名; 若 vault 顶层名不在 locale dirs → `git mv` 改为 locale 标准名; 若 vault.lang 已切换 → 提示用户重选 locale (但 AUTO_MODE 不询问, 仅在最终报告标注) |
+| vault-misaligned | — | 先单步 `python3 <abs>/scripts/lint/run.py --vault <vault> --sync-templates` 同步 `_templates/` 与 plugin 源 (autofix 已实现, 但需独立 pass); 再跑主 lint 循环 |
+| frontmatter-schema-violation | run.py --fix 已落基础字段 (type/created); 新增 schema 字段 (desc/source_url/version/when_to_read/score/maturity) 由 AI 启发式补 | 字段推断规则: `desc` = H1 + 首段截 ≤ 100 字; `source_url` = git remote (代码仓库) / 原始 URL (来源) / "N/A" (概念); `version` = git sha / package version / fetch date; `when_to_read` = "当用户问 <topic> 时"; `score` = 上游 star/活跃度 1-5 (无信号默认 3); `maturity` = 按目录推断 (项目/收件箱=draft, 来源/=stable, 反思/=review) |
 | vault-structure-violation (`structure_purge`) | — | **BATCH_MV 默认**: `mkdir -p <vault>/<backup_root>` → 遍历 `mv_plan[]`: `mv <vault>/<from> <vault>/<to>`; **无 AskUserQuestion** |
 
 ## 工具优先级 (依次尝试, 直到修好)

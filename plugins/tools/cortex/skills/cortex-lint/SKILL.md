@@ -141,13 +141,15 @@ prompt 含 `[AUTO_MODE]` 时 (来自 `~/.cortex/scripts/lint.sh` wrapper), **严
 
 | 规则 (非 autofix) | AI 必须执行 |
 |-------------------|------------|
-| dead-wikilink | `Write` 创 stub 到 `知识库/收件箱/<target>.md`, 最小 frontmatter (type 按目录推断) |
+| dead-wikilink | lint 解析器已自动剥离 fenced/inline code 内的 `[[...]]`; 残留命中即正文 dead link → `Write` 创 stub 到 `知识库/收件箱/<target>.md`, 最小 frontmatter (type 按目录推断, `created` 用绝对日期 `YYYY-MM-DD`) |
 | duplicate-alias | `Edit` 改其中一 frontmatter alias 加目录后缀; 或 Read+Write 合并两文件后删源 |
-| orphan-page | `Edit` 加 `tags: [orphan-auto]` 或在最近邻 `_index.md` 插反链 (cortex_search 找邻) |
-| filename-illegal / path-naming-violation | `git mv` 改 kebab-case + grep+Edit 改所有引用 |
+| orphan-page | Read 正文行数: ≤ 3 行 (空 stub) `git rm` 删除; 否则 `Edit` 加 `tags: [orphan]` 或在最近邻 `_index.md` 插反链 (cortex_search 找邻) |
+| filename-illegal / path-naming-violation | `git mv` 改: 长度 ≤ 50 字符, kebab-case, ASCII + 数字 + 连字符; 超长用 `<prefix>-<sha8>.md` (前 30 字符 + content sha 8 位); grep+Edit 改所有引用 |
 | callout-unknown-type | `Edit` 替成最近已知 callout (note/tip/warning/info) |
 | log-too-long | Read+Write 切尾部到 `folds/<YYYY-QN>.md` |
-| i18n-path-not-in-locale | `git mv` 移到对应 locale 目录 |
+| i18n-path-not-in-locale | 比对 `_meta/version.json:.lang` 与 `locales/<lang>.yml:.dirs` 顶层名; 顶层名不在 locale dirs → `git mv` 改为标准名 |
+| vault-misaligned | 单步 `python3 <abs>/scripts/lint/run.py --vault <vault> --sync-templates` 同步 `_templates/`, 再回主循环 |
+| frontmatter-schema-violation | run.py --fix 补 type/created; 其余字段 AI 启发式补: `desc` = H1 + 首段 ≤ 100 字; `source_url` = git remote / 原始 URL / "N/A"; `version` = git sha / pkg version / fetch date; `when_to_read` = "当用户问 <topic> 时"; `score` = 1-5 (上游活跃度, 无信号 = 3); `maturity` = 按目录 (项目/收件箱=draft, 来源/=stable, 反思/=review) |
 | vault-structure-violation (`structure_purge`) | **BATCH_MV 默认**: `mkdir -p <backup_root>` → 遍历 `mv_plan[]` mv 到 backup_root, **无 AskUserQuestion** |
 
 ### 工具优先级 (依次尝试)
