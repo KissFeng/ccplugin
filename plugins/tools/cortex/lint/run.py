@@ -43,7 +43,7 @@ EXCLUDE_DIRS = {"_meta", ".obsidian", ".trash", ".git"}
 # Shared root dirs (i18n whitelist; never reported by i18n-* rules)
 SHARED_ROOT_DIRS = {
     "_meta", "_templates", "locales", "sessions",
-    "log", "folds", "MOC", ".obsidian", ".trash", ".git",
+    "log", "folds", ".obsidian", ".trash", ".git",
 }
 SHARED_ROOT_FILES = {"index.md", "hot.md"}
 TIME_DIR_RE = re.compile(r"^\d{4}-\d{2}$")

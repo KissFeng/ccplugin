@@ -91,7 +91,6 @@ class LoadLocaleTest(unittest.TestCase):
         loc = load_locale(PLUGIN_ROOT, None, "zh-CN")
         dirs = loc.get_dirs()
         self.assertEqual(dirs.get("concepts"), "概念")
-        self.assertEqual(dirs.get("moc"), "MOC")
 
     def test_load_en_dirs(self):
         loc = load_locale(PLUGIN_ROOT, None, "en")

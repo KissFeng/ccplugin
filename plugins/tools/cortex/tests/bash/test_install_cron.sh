@@ -183,12 +183,15 @@ run_test test_launchd_prints_plist               test_launchd_prints_plist
 run_test test_gha_prints_yaml                    test_gha_prints_yaml
 run_test test_unknown_kind_exits_2               test_unknown_kind_exits_2
 run_test test_includes_disclaimer                test_includes_disclaimer
-run_test test_help_lists_six_precedences         test_help_lists_six_precedences
-run_test test_plugin_root_flag_overrides         test_plugin_root_flag_overrides
-run_test test_config_install_path_overrides     test_config_install_path_overrides
-run_test test_default_marketplace_path_when_exists test_default_marketplace_path_when_exists
-run_test test_xdg_marketplace_fallback           test_xdg_marketplace_fallback
-run_test test_fallback_warns_when_marketplace_absent test_fallback_warns_when_marketplace_absent
-run_test test_snippet_contains_no_variable_placeholder test_snippet_contains_no_variable_placeholder
+# 以下 override / fallback 测试已废: 插件路径硬编码为
+# $HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex,
+# 不再支持 --plugin-root / install_path 覆盖 (env var 会出现解析 bug).
+# run_test test_help_lists_six_precedences         test_help_lists_six_precedences
+# run_test test_plugin_root_flag_overrides         test_plugin_root_flag_overrides
+# run_test test_config_install_path_overrides     test_config_install_path_overrides
+# run_test test_default_marketplace_path_when_exists test_default_marketplace_path_when_exists
+# run_test test_xdg_marketplace_fallback           test_xdg_marketplace_fallback
+# run_test test_fallback_warns_when_marketplace_absent test_fallback_warns_when_marketplace_absent
+# run_test test_snippet_contains_no_variable_placeholder test_snippet_contains_no_variable_placeholder
 
 print_summary

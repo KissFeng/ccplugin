@@ -13,7 +13,7 @@ allowed-tools: Bash Read Write Glob
 - weekly cron (与 memory-consolidate 串行, 不独立调度)
 - monthly 用户触发月度复盘
 - 用户显式 "reflect this week" / "本周反思" / "找跨域连接"
-- cortex-cartographer 生成 MOC 前的输入
+- cortex-cartographer 生成 canvas/dashboard 前的输入
 
 ## 输入
 - --window: 默认 `7d`; 可 `30d` / `90d`

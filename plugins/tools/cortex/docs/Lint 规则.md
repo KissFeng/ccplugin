@@ -49,7 +49,7 @@ wikilink `[[X]]` 找不到对应文件。
 
 无入链 (无任何文件链到它) 且无 tag 的页。可能是漂浮的 fleeting note。
 
-- **建议**：给加 tag, 或链入相关 MOC, 或归档到 `80_archive/` (LYT) / `4_archive/` (PARA)。
+- **建议**：给加 tag, 或链入相关概念页, 或归档到 `80_archive/` (LYT) / `4_archive/` (PARA)。
 
 ### 5. duplicate-alias (error, **手动**)
 

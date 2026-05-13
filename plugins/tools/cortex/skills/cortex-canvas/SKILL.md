@@ -12,7 +12,7 @@ allowed-tools: Bash Read Write Glob mcp__obsidian__obsidian_get_file_contents mc
 ## 触发场景
 
 - 用户说"做一个 canvas / 把这些 concept 可视化"
-- 用户给定一组 wikilink 或一个 MOC 想看图
+- 用户给定一组 wikilink 或主题页 想看图
 - `/cortex:canvas <topic>` 入口 (本插件无 commands, 由 skill 自决)
 
 ## 行为
