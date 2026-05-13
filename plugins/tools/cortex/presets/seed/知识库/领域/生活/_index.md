@@ -4,12 +4,18 @@ title: 生活
 role: 生活领域知识
 namespace: 知识库
 parent: 领域
-children: [美食, 旅游, 健康, 家居, 穿搭]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 领域, 生活]
-icon: "🌿"
+children:
+- 美食
+- 旅游
+- 健康
+- 家居
+- 穿搭
+last_updated: '{{UPDATED}}'
+tags:
+- 领域
+- 生活
+icon: 🌿
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

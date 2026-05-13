@@ -4,12 +4,16 @@ title: 工作
 role: 工作领域知识
 namespace: 知识库
 parent: 领域
-children: [管理, 沟通, 职业]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 领域, 工作]
-icon: "💼"
+children:
+- 管理
+- 沟通
+- 职业
+last_updated: '{{UPDATED}}'
+tags:
+- 领域
+- 工作
+icon: 💼
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

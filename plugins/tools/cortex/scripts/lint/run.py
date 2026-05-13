@@ -107,6 +107,9 @@ def _load_vault_preset(vault: Path) -> str:
 
 _DEPRECATED_WHITELIST = {"log/", "folds/", "sessions/"}
 
+# 结构标记 — 非内容相关 tag, lint 检测并 autofix 删除
+_BANNED_TAGS = {"index", "meta", "template", "_index", "stub"}
+
 
 def _load_lint_whitelist(vault: Path) -> set[str]:
     """Return whitelist set from `_meta/version.json:.lint_whitelist[]`.
@@ -256,12 +259,16 @@ def parse_frontmatter(text: str) -> tuple[dict[str, Any], int]:
     for line in fm_text.splitlines():
         if not line.strip():
             continue
+        # multi-line list item: "- item" or "  - item" (with/without indent)
+        stripped = line.lstrip()
+        if stripped.startswith("- ") and cur_key:
+            if fm.get(cur_key) is None:
+                fm[cur_key] = []
+            if isinstance(fm[cur_key], list):
+                fm[cur_key].append(stripped[2:].strip().strip("\"'"))
+            continue
+        # indented continuation (non-list)
         if line.startswith(" ") and cur_key:
-            v = line.strip()
-            if v.startswith("- "):
-                fm.setdefault(cur_key, [])
-                if isinstance(fm[cur_key], list):
-                    fm[cur_key].append(v[2:].strip().strip("\"'"))
             continue
         if ":" in line:
             k, _, v = line.partition(":")
@@ -355,21 +362,29 @@ def check_file(
     # rule 2: fm-missing-created
     if not fm.get("created"):
         findings.append(_f("fm-missing-created", "warn", rel, 1, "frontmatter 缺 created 字段", True))
-    # rule: fm-duplicate-tags
+    # rule: fm-duplicate-tags + fm-banned-tags
     _tags = fm.get("tags")
     if isinstance(_tags, list) and _tags:
         _seen: set[str] = set()
         _dups: list[str] = []
+        _banned: list[str] = []
         for _t in _tags:
             if not isinstance(_t, str):
                 continue
             if _t in _seen and _t not in _dups:
                 _dups.append(_t)
             _seen.add(_t)
+            if _t.lower() in _BANNED_TAGS and _t not in _banned:
+                _banned.append(_t)
         if _dups:
             findings.append(_f(
                 "fm-duplicate-tags", "warn", rel, 1,
                 f"frontmatter tags 重复: {', '.join(_dups)}", True,
+            ))
+        if _banned:
+            findings.append(_f(
+                "fm-banned-tags", "warn", rel, 1,
+                f"frontmatter tags 含结构标记 (非内容相关): {', '.join(_banned)}", True,
             ))
 
     # rule 14: i18n-frontmatter-lang-mismatch
@@ -1406,7 +1421,7 @@ def _fix_dead_wikilink(
             f"created: {now}\n"
             f"auto_created_by: lint-autofix\n"
             f"status: draft\n"
-            f"tags: [stub, inbox]\n"
+            f"tags: [inbox]\n"
             f"---\n\n"
             f"# {target_stem}\n\n"
             f"> [!warning] 由 lint autofix 自动创建 — 因被 ≥2 文件引用为 wikilink, 创建占位。"
@@ -1859,6 +1874,7 @@ def apply_fixes(
             continue
         if f["rule"] not in {
             "fm-missing-type", "fm-missing-created", "fm-duplicate-tags",
+            "fm-banned-tags",
             "hot-too-long",
             "index-missing-section", "title-h1-mismatch", "block-id-duplicate",
         }:
@@ -1923,6 +1939,35 @@ def apply_fixes(
                                     _fm, allow_unicode=True, sort_keys=False,
                                 )
                                 new_text = f"---\n{_new_fm}---\n{m_fm.group(2)}"
+                                fixed += 1
+            elif rule == "fm-banned-tags":
+                try:
+                    import yaml as _yaml2  # type: ignore
+                except ImportError:
+                    _yaml2 = None
+                m_fm2 = re.match(r"^---\n(.*?)\n---\n?(.*)", new_text, re.S)
+                if m_fm2 and _yaml2 is not None:
+                    try:
+                        _fm2 = _yaml2.safe_load(m_fm2.group(1)) or {}
+                    except Exception:
+                        _fm2 = None
+                    if isinstance(_fm2, dict):
+                        _tg2 = _fm2.get("tags")
+                        if isinstance(_tg2, list):
+                            _filt = [
+                                _t for _t in _tg2
+                                if not (isinstance(_t, str)
+                                        and _t.lower() in _BANNED_TAGS)
+                            ]
+                            if len(_filt) != len(_tg2):
+                                if _filt:
+                                    _fm2["tags"] = _filt
+                                else:
+                                    _fm2.pop("tags", None)
+                                _new_fm2 = _yaml2.safe_dump(
+                                    _fm2, allow_unicode=True, sort_keys=False,
+                                )
+                                new_text = f"---\n{_new_fm2}---\n{m_fm2.group(2)}"
                                 fixed += 1
             elif rule == "title-h1-mismatch":
                 fm, _bs = parse_frontmatter(new_text)

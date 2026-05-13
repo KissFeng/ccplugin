@@ -4,12 +4,16 @@ title: 日记
 role: 时间维度 — 日 / 周 / 月 / 年
 namespace: 知识库
 parent: 主页
-children: [日, 周, 月, 年]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 日记]
-icon: "📅"
+children:
+- 日
+- 周
+- 月
+- 年
+last_updated: '{{UPDATED}}'
+tags:
+- 日记
+icon: 📅
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

@@ -4,12 +4,16 @@ title: 来源
 role: 外部输入 — 代码仓库 / 网页 / 论文 / 书籍
 namespace: 知识库
 parent: 主页
-children: [代码仓库, 网页, 论文, 书籍]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 来源]
-icon: "🌐"
+children:
+- 代码仓库
+- 网页
+- 论文
+- 书籍
+last_updated: '{{UPDATED}}'
+tags:
+- 来源
+icon: 🌐
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

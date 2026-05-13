@@ -4,12 +4,16 @@ title: 学习
 role: 学习领域知识
 namespace: 知识库
 parent: 领域
-children: [语言, 读书, 课程]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 领域, 学习]
-icon: "📖"
+children:
+- 语言
+- 读书
+- 课程
+last_updated: '{{UPDATED}}'
+tags:
+- 领域
+- 学习
+icon: 📖
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

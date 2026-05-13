@@ -3,7 +3,7 @@
 type: dashboard
 title: {{TITLE}}
 aliases: []
-tags: [dashboard, meta]
+tags: [dashboard]
 created: {{CREATED}}
 updated: {{UPDATED}}
 preset: {{PRESET}}

@@ -4,12 +4,15 @@ title: 反思
 role: 跨域综合 — 洞察 / 连接 / 疑问
 namespace: 知识库
 parent: 主页
-children: [洞察, 连接, 疑问]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 反思]
-icon: "💭"
+children:
+- 洞察
+- 连接
+- 疑问
+last_updated: '{{UPDATED}}'
+tags:
+- 反思
+icon: 💭
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

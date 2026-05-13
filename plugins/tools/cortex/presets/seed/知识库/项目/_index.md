@@ -4,12 +4,14 @@ title: 项目
 role: 本地项目实践 (有期限的产出)
 namespace: 知识库
 parent: 主页
-children: [项目笔记, 决策记录]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 项目]
-icon: "📂"
+children:
+- 项目笔记
+- 决策记录
+last_updated: '{{UPDATED}}'
+tags:
+- 项目
+icon: 📂
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

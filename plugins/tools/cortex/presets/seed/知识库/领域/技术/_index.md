@@ -4,12 +4,22 @@ title: 技术
 role: 技术领域知识
 namespace: 知识库
 parent: 领域
-children: [编程语言, 数据库, 基础设施, 大数据, 人工智能, 前端, 后端, 移动端, 运维]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 领域, 技术]
-icon: "💻"
+children:
+- 编程语言
+- 数据库
+- 基础设施
+- 大数据
+- 人工智能
+- 前端
+- 后端
+- 移动端
+- 运维
+last_updated: '{{UPDATED}}'
+tags:
+- 领域
+- 技术
+icon: 💻
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

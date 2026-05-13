@@ -20,6 +20,12 @@
       "autofix": true
     },
     {
+      "id": "fm-banned-tags",
+      "severity": "warn",
+      "description": "frontmatter tags 含结构标记 (index/meta/template/_index/stub 等非内容相关)",
+      "autofix": true
+    },
+    {
       "id": "dead-wikilink",
       "severity": "error",
       "description": "wikilink 指向不存在的页",

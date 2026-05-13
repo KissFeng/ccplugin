@@ -4,12 +4,16 @@ title: 元学习
 role: 元学习领域知识
 namespace: 知识库
 parent: 领域
-children: [知识管理, 效率, 思维框架]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 领域, 元学习]
-icon: "🧭"
+children:
+- 知识管理
+- 效率
+- 思维框架
+last_updated: '{{UPDATED}}'
+tags:
+- 领域
+- 元学习
+icon: 🧭
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

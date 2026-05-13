@@ -5,11 +5,12 @@ role: 网页来源笔记
 namespace: 知识库
 parent: 来源
 children: []
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 网页, web]
-icon: "🔗"
+last_updated: '{{UPDATED}}'
+tags:
+- 网页
+- web
+icon: 🔗
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

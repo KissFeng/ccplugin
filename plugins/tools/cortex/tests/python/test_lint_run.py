@@ -79,6 +79,36 @@ class LintRulesTest(unittest.TestCase):
             rc, rep = run_lint(vault)
             self.assertIn("fm-duplicate-tags", rules_hit(rep))
 
+    def test_rule_fm_banned_tags(self):
+        with tempfile.TemporaryDirectory() as d:
+            vault = make_vault(Path(d))
+            write_md(
+                vault / "概念" / "x.md",
+                {"type": "concept", "title": "x", "created": "2026-05-11",
+                 "tags": ["go", "meta", "index"]},
+                "# x\n",
+            )
+            rc, rep = run_lint(vault)
+            self.assertIn("fm-banned-tags", rules_hit(rep))
+
+    def test_rule_fm_banned_tags_autofix(self):
+        with tempfile.TemporaryDirectory() as d:
+            vault = make_vault(Path(d))
+            p = vault / "概念" / "x.md"
+            write_md(
+                p,
+                {"type": "concept", "title": "x", "created": "2026-05-11",
+                 "tags": ["go", "meta", "index", "channel"]},
+                "# x\n",
+            )
+            run_lint(vault, "--fix")
+            text = p.read_text(encoding="utf-8")
+            import re as _re
+            import yaml as _yaml
+            m = _re.match(r"^---\n(.*?)\n---", text, _re.S)
+            fm = _yaml.safe_load(m.group(1))
+            self.assertEqual(fm["tags"], ["go", "channel"])
+
     def test_rule_fm_duplicate_tags_autofix(self):
         with tempfile.TemporaryDirectory() as d:
             vault = make_vault(Path(d))

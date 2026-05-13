@@ -5,11 +5,12 @@ role: 疑问反思笔记
 namespace: 知识库
 parent: 反思
 children: []
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 反思, 疑问]
-icon: "❓"
+last_updated: '{{UPDATED}}'
+tags:
+- 反思
+- 疑问
+icon: ❓
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

@@ -4,12 +4,17 @@ title: 金融
 role: 金融领域知识
 namespace: 知识库
 parent: 领域
-children: [投资, 经济, 会计, 税务]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 领域, 金融]
-icon: "💰"
+children:
+- 投资
+- 经济
+- 会计
+- 税务
+last_updated: '{{UPDATED}}'
+tags:
+- 领域
+- 金融
+icon: 💰
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

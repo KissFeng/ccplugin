@@ -452,7 +452,7 @@ def update_hot(vault: Path, rel_path: str, title: str) -> None:
             text = hot.read_text(encoding="utf-8", errors="replace")
         else:
             text = (
-                "---\ntype: meta\ntitle: hot\ntags: [meta]\n---\n\n# hot\n\n"
+                "---\ntype: meta\ntitle: hot\ntags: []\n---\n\n# hot\n\n"
                 + HOT_RECENT_HEADER
                 + "\n\n"
             )

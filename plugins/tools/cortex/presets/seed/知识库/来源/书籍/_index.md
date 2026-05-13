@@ -5,11 +5,12 @@ role: 书籍来源笔记
 namespace: 知识库
 parent: 来源
 children: []
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 书籍, book]
-icon: "📚"
+last_updated: '{{UPDATED}}'
+tags:
+- 书籍
+- book
+icon: 📚
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

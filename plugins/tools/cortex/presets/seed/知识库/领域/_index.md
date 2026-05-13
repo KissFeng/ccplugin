@@ -4,12 +4,19 @@ title: 领域
 role: 知识体系 (7 大领域, 按主题组织)
 namespace: 知识库
 parent: 主页
-children: [技术, 金融, 生活, 工作, 学习, 创作, 元学习]
-last_updated: "{{UPDATED}}"
-tags: [meta, index, 领域]
-icon: "🗺"
+children:
+- 技术
+- 金融
+- 生活
+- 工作
+- 学习
+- 创作
+- 元学习
+last_updated: '{{UPDATED}}'
+tags:
+- 领域
+icon: 🗺
 template_version: 1
-
 ---
 
 <section data-role="header" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">

@@ -4,7 +4,7 @@
 type: meta
 title: {{TITLE}}
 aliases: [templates]
-tags: [meta]
+tags: []
 created: {{CREATED}}
 updated: {{UPDATED}}
 preset: {{PRESET}}
