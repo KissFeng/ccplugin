@@ -270,15 +270,19 @@ EXPECTED=(
   save.sh search.sh deep_search.sh ingest_url.sh ingest_file.sh
   memory.sh ledger.sh session.sh html_render.sh
 )
-declare -A KEEP=()
-for w in "${EXPECTED[@]}"; do KEEP["$w"]=1; done
+# 兼容 bash 3.2 (macOS 默认) — 不用 declare -A, 走空格分隔串 + case 匹配
+KEEP_LIST=" "
+for w in "${EXPECTED[@]}"; do KEEP_LIST="${KEEP_LIST}${w} "; done
 shopt -s nullglob
 for f in "$TARGET_DIR"/*.sh; do
   base="$(basename "$f")"
-  if [[ -z "${KEEP[$base]:-}" ]]; then
-    rm -f "$f"
-    printf '%s[install_wrappers.sh]%s removed stale wrapper: %s\n' "$_C_YELLOW" "$_C_RESET" "$base" >&2
-  fi
+  case "$KEEP_LIST" in
+    *" $base "*) : ;;
+    *)
+      rm -f "$f"
+      printf '%s[install_wrappers.sh]%s removed stale wrapper: %s\n' "$_C_YELLOW" "$_C_RESET" "$base" >&2
+      ;;
+  esac
 done
 
 printf '%s[install_wrappers.sh]%s %s✓%s wrote %s22 wrappers%s to %s%s%s\n' \
