@@ -319,10 +319,19 @@ def _render_event(evt: dict) -> RenderableType | None:
                             padding=(0, 1),
                         )
                     )
-                elif name == "Write":
+                elif name == "Skill":
                     renderables.append(
                         Panel(
-                            Text(blk.get("input", {}).get("file_path", ""),  style="yellow"),
+                            Text(blk.get("input", {}).get("skill", ""),  style="yellow"),
+                            title=f"tool: {name}",
+                            border_style="yellow",
+                            padding=(0, 1),
+                        )
+                    )
+                elif name == "TodoWrite":
+                    renderables.append(
+                        Panel(
+                            Text([f"{todo.get('content', '')} - {todo.get('status', '')}" for todo in blk.get("input", {}).get("todos", [])].join("\n"),  style="yellow"),
                             title=f"tool: {name}",
                             border_style="yellow",
                             padding=(0, 1),
