@@ -369,3 +369,36 @@ cortex-lint SKILL AUTO_MODE 加严: bash 触发禁手动建议表/询问/AskUser
 ### Next Steps
 
 - None - task complete
+
+
+## Session 71: lint: log/folds/sessions 出 root_dirs + fm-duplicate-tags 规则
+
+**Date**: 2026-05-13
+**Task**: lint: log/folds/sessions 出 root_dirs + fm-duplicate-tags 规则
+**Branch**: `master`
+
+### Summary
+
+schemas.py 三 preset root_dirs 移除 log/folds/sessions; run.py SHARED_ROOT_DIRS 同步, 加 _prune_deprecated_whitelist (--fix 自动清 vault _meta/version.json:lint_whitelist 里的旧条目); 新规则 fm-duplicate-tags (warn, autofix 保序去重); 删 log-too-long 和 _check_naming 的 log/folds 命名格式; hot-too-long fix 归档目录 folds/ → 归档/; _infer_type 删 folds 分支; 测试 245 全绿; 实战验证 /Users/luoxin/persons/knowledge/obsidian 的 log/ 已 mv 到 lint-backup。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `19952bae` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

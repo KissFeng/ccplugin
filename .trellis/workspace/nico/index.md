@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 70
-- **Last Active**: 2026-05-12
+- **Total Sessions**: 71
+- **Last Active**: 2026-05-13
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~371 | Active |
+| `journal-2.md` | ~404 | Active |
 | `journal-1.md` | ~1974 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 71 | 2026-05-13 | lint: log/folds/sessions 出 root_dirs + fm-duplicate-tags 规则 | `19952bae` | `master` |
 | 70 | 2026-05-12 | cortex_stream subtype 扩展 | `79bfebbf` | `master` |
 | 69 | 2026-05-12 | cortex-lint AUTO_MODE 禁手动建议 | `e3cb6576` | `master` |
 | 68 | 2026-05-12 | cortex_stream default 显 raw json | `0c19aa61` | `master` |
