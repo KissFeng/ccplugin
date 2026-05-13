@@ -16,7 +16,7 @@ type: project
 |----|------|
 | Vault 顶层目录 | `知识库/{项目,来源/{代码仓库,网页,论文,书籍},领域/{...},日记/{日,周,月,年},反思,收件箱,实体,概念}` + `记忆/{L0-核心,L1-长期,L2-中期,L3-短期,L4-流水账,working,views}` + `_meta` `_templates` `_assets` `仪表盘` `归档`; **root 上 知识库 子层名 (项目/来源/领域/日记/反思/收件箱/概念/实体/...) lint 强制 mv 入 知识库/<name>/** |
 | 配置 | `~/.cortex/config.json` (keys: vault / lang / settings / install_path / timeout_default) |
-| Env var 政策 | 禁配置类 (`OBSIDIAN_VAULT`/`CORTEX_VAULT`/`CORTEX_LANG`/`CORTEX_INSTALL_PATH`/`CORTEX_SETTINGS`); 仅 install.sh bootstrap 期允许; 平台契约保留 (`CLAUDE_PLUGIN_ROOT`, `CORTEX_VAULT_PATH` for MCP, `CORTEX_JOB_LABEL`, `CORTEX_STREAM_TEE_FILE`) |
+| Env var 政策 | 禁配置类 (`OBSIDIAN_VAULT`/`CORTEX_VAULT`/`CORTEX_LANG`/`CORTEX_INSTALL_PATH`/`CORTEX_SETTINGS`); 仅 install.sh bootstrap 期允许; 平台契约保留 (`CLAUDE_PLUGIN_ROOT`, `CORTEX_JOB_LABEL`, `CORTEX_STREAM_TEE_FILE`); 官方 mcp-obsidian 用户自行 `claude mcp add` 传 `OBSIDIAN_API_KEY`/`OBSIDIAN_HOST`/`OBSIDIAN_PORT` |
 | Slash 形式 | `/cortex:<name>` (冒号),dash `/cortex-<name>` claude 无法解析 |
 | AUTO_MODE 行为 | persistent — 禁询问 ≠ 中止; AI 自决循环执行直至 lint clean 或工具客观失败 |
 | 插件路径硬编码 | `$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex` (env var 会有解析 bug) |
@@ -30,10 +30,12 @@ type: project
 | Agent | 8 (`agents/*.md`) |
 | Skill | 21 (`skills/<name>/SKILL.md`) |
 | Slash command | 20 (`commands/<name>.md`) |
-| Bash wrapper | 17 (`~/.cortex/scripts/<name>.sh`) |
+| Bash wrapper | 21 (`~/.cortex/scripts/<name>.sh` = 9 slash + 3 shell + 9 CLI) |
 | Lint 规则 | 20 (`scripts/lint/rules.json`) |
 | Hook | 5 (SessionStart / PostCompact / Stop / SubagentStop / UserPromptSubmit) |
-| MCP 工具 | 15 |
+| 自研 MCP | **已移除** (2026-05-13 晚批): scripts/mcp/ → scripts/cli/, plugin.json 删 mcpServers |
+| 官方 MCP (可选) | `mcp-obsidian` (用户走 install.sh 引导自行注册, 不 bundle) |
+| CLI 模块 (`scripts/cli/*.py`) | 10 (save/search/deep_search/ingest_url/ingest_file/memory/ledger/session/html_render/cortex_stream) |
 
 ## 目录布局 (python/bash 集中到 scripts/)
 
@@ -45,7 +47,11 @@ plugins/tools/cortex/
 │   ├── install_cron.sh
 │   ├── install_wrappers.sh
 │   ├── regen_template_manifest.py
-│   ├── cron/  hooks/  lint/  mcp/  refactor/  lib/
+│   ├── cli/                  ← python CLI + lib (替 scripts/mcp/, 2026-05-13 晚批)
+│   │   ├── {save,search,deep_search,ingest_url,ingest_file}.py
+│   │   ├── {memory,ledger,session,html_render,cortex_stream}.py
+│   │   └── lib/  (frontmatter/lock/vault_path/wikilinks/extractors/cortex_common)
+│   ├── cron/  hooks/  lint/  refactor/  lib/
 ├── tests/
 ├── agents/ commands/ skills/ docs/ presets/ templates/ locales/ styles/
 └── .claude-plugin/plugin.json
@@ -162,3 +168,38 @@ plugins/tools/cortex/
 - 12 个仪表盘 seed (`presets/seed/仪表盘/*.md`) 体清空所有 runtime 占位符 (~100 个 `{{KB_TOTAL}}` / `{{CHART_*}}` / `{{L*_TOTAL}}` 等)
 - 新结构: frontmatter (`view_query`/`role` 保留) + h1 (fm.title) + `> [!info]` intro (fm.role) + `<!-- DASH:BEGIN -->...<!-- DASH:END -->` 待填区 + `<!-- TEMPLATE_END -->`
 - 单一数据源: `cortex-dashboard` skill 注入 DASH:BEGIN/END 块; 体里不再有 inline 占位符
+
+## 自研 MCP 移除 (2026-05-13 晚批 v2)
+
+**动机**: 用户决策 — plugin bundle MCP server 与官方 `mcp-obsidian` 重复;插件应只暴露 bash/CLI 接口,REST 操作走可选官方 MCP。
+
+### Phase 1 (`015a4a30`)
+
+- `.claude-plugin/plugin.json:mcpServers.cortex` 整块删除
+- `install.sh` 末尾加 "MCP (可选)" 章节, 引导 `claude mcp add obsidian uvx mcp-obsidian -e OBSIDIAN_API_KEY=... -e OBSIDIAN_HOST=127.0.0.1 -e OBSIDIAN_PORT=27123`
+
+### Phase 2a (`7945f42d`) — 协议层剥离
+
+- `scripts/mcp/` → `scripts/cli/` (git mv)
+- `scripts/mcp/tools/*.py` → `scripts/cli/{save,search,deep_search,ingest_url,ingest_file}.py`, 每个加 argparse main()
+- 拆 `cortex_mcp.py` 函数到 `scripts/cli/{memory,ledger,session,html_render}.py`, 共享 helper 进 `cli/lib/cortex_common.py`
+- 删 `scripts/mcp/server.py` + `scripts/mcp/cortex_mcp.py` + `scripts/mcp/tests/` (113 MCP 协议测试)
+- 算法 100% 保留 (masking / frontmatter / BM25 / 子图扩展 不变)
+
+### Phase 2b-f (`214ebefc`) — 接入 + 文本替换
+
+- `scripts/install_wrappers.sh` 加 `emit_cli` helper + 9 CLI wrappers (`save/search/deep_search/ingest_url/ingest_file/memory/ledger/session/html_render`)
+- bash wrapper 模板: `exec python3 $PLUGIN_ROOT/scripts/cli/<mod>.py "$@"`
+- wrapper 总数 17 → 21 (9 slash + 3 shell + 9 CLI)
+- 16 个 agent/skill/command/hook 文件中 `mcp__cortex__*` 调用改为 `bash ~/.cortex/scripts/<name>.sh ...`
+- `allowed-tools:` frontmatter 删 `mcp__cortex__*`, 加 `Bash`
+- `cortex_stream.py` 从 `scripts/mcp/` 搬到 `scripts/cli/` (非 MCP 协议代码, 只是 stream-json 渲染器)
+- 新 `tests/python/test_cli_smoke.py`: 9 CLI 模块 `--help` 烟雾测试
+- 删 `tests/python/test_mcp_3_tools.py`
+- `scripts/mcp/` 目录彻底删除
+
+### 验收
+
+- `grep "mcp__cortex__"` in `agents/ commands/ skills/ scripts/hooks/` = 0
+- python tests 286 pass + 9 subtests, 0 fail
+- 用户角度: 装 plugin 不再自动启 cortex MCP server;`mcp-obsidian` 为可选,走 install.sh 文末引导手动注册

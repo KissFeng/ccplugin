@@ -39,14 +39,15 @@
   - **方法论**：三路并行 Agent 审查（代码复用/质量/效率）
 - `cortex-plugin-2026-05-13.md` — **@cortex 整体重构基线**（2026-05-13）
   - **单一真相清单**：vault 结构 / 配置 / env var 政策 / slash 形式 / AUTO_MODE persistent / 插件路径硬编码 / MOC 已删
-  - **实际计数**：8 agent · 21 skill · 20 command · 17 wrapper · 20 lint · 5 hook · 15 MCP
-  - **目录布局**：所有 python/bash 集中 `scripts/`,install.sh 例外
+  - **实际计数**：8 agent · 21 skill · 20 command · 21 wrapper (9 slash + 3 shell + 9 CLI) · 20 lint · 5 hook · 10 CLI 模块
+  - **目录布局**：所有 python/bash 集中 `scripts/`,install.sh 例外;`scripts/cli/` (替 `scripts/mcp/`)
   - **ingest 全局规则**：folder-first + 嵌套 git 独立 + L1-L6 深度 + 评分制度
   - **Digest SKILL.md 单一真相**：L4 单向漏斗 0 残留 + 既有 L0-L3 交叉学习 (update/enrich/conflict)
   - **Lint 4 新规则**：fm-{duplicate,banned,missing}-tags + fm-banned-fields;parse_frontmatter 多行 list bug 修
   - **Vault root 强制 merge**：实体/概念/领域/来源 等子层名 mv 入 知识库/
   - **Dashboard seed 12 页重构**：清 100 个 `{{X}}` runtime 占位符,DASH:BEGIN/END 单一数据源
-  - **测试基线**：python 243 / bash 8 files / mcp 113 全绿
+  - **自研 MCP 移除** (晚批 v2): `plugin.json:mcpServers` 删 + `scripts/mcp/` → `scripts/cli/` + 9 bash wrapper + 16 文件改文本 + install.sh 引导官方 `mcp-obsidian`
+  - **测试基线**：python 286 pass + 9 subtests, 0 fail; bash 8 files
 
 ## Rules文件索引
 
@@ -126,6 +127,15 @@ uv run scripts/update_version.py
 - `.claude/skills/gitnexus/` — 代码智能工具（exploring/impact-analysis/debugging/refactoring/cli）
 
 ## 更新日志
+
+**2026-05-13** (晚批 v2)：Cortex 插件**自研 MCP server 完全移除**, 改用官方 mcp-obsidian (可选)
+
+- `015a4a30` Phase 1: `plugin.json:mcpServers.cortex` 删 + `install.sh` 加 `claude mcp add obsidian uvx mcp-obsidian` 引导
+- `7945f42d` Phase 2a: `scripts/mcp/` → `scripts/cli/`, 删 server.py + cortex_mcp.py 协议层 (-1686 行), 113 MCP 测试删, python 算法 100% 保留 (拆 10 CLI 模块 + cli/lib/cortex_common)
+- `214ebefc` Phase 2b-f: install_wrappers.sh 加 9 CLI wrapper (`save/search/deep_search/ingest_url/ingest_file/memory/ledger/session/html_render`), 16 个 agent/skill/command/hook 文件 `mcp__cortex__*` 全改 `bash ~/.cortex/scripts/<name>.sh`, allowed-tools 改 Bash, cortex_stream.py 搬到 cli/, 新加 test_cli_smoke.py
+- wrapper 总数: 17 → 21 (9 slash + 3 shell + 9 CLI)
+- 测试: 286 pass + 9 subtests, 0 fail
+- 用户角度: 装 plugin 不再自动启 MCP server;mcp-obsidian 走 install.sh 末尾引导自行注册
 
 **2026-05-13** (晚批)：Cortex 插件 lint/digest/dashboard 三轨升级
 
