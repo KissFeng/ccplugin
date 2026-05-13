@@ -1,20 +1,64 @@
 ---
-description: 跑 ledger → views 周报巩固 + 反思生成 (无入参, 默认上周)
+description: log/session 数据日处理 — 读+析+处+更新+清理 (无入参, 默认 24h, 每日 cron)
 ---
 
 # /cortex:consolidate
 
 [AUTO_MODE persistent: 禁询问, 自决执行, 禁中止]
 
-按 cortex-consolidate SKILL 流程跑周报巩固 (默认上周, ISO 周号):
+每日运行一次完整的 log/session 数据生命周期 (读+析+处+更新+清理, 不归档):
 
-1. 从 `~/.cortex/config.json` 读 vault, cd 进入
-2. 扫 `L4/ledger/<week>/*.md` 抽取事件
-3. 模式聚合 (同事件类型 ≥ 5 → 抽象为 L2 候选)
-4. 生成 `views/consolidated/<week>.md` 周报 (主题分布 / 高频实体 / 反思洞察)
-5. 触发 cortex-promote 子流程: 写晋级候选到 `views/candidates.md`
+## 强制流程 (五阶段, 一次跑完)
 
-输出: 生成的 views 文件路径 + 主题统计 + 候选数。
+### 1. 读 (Read)
+
+- `记忆/L4-流水账/ledger/` 近 24h 事件
+- `记忆/L4-流水账/sessions/<cli>/<YYYY-MM>/*.jsonl` 近 24h transcript
+- `知识库/日记/日/<YYYY-MM>/` 近 24h log 落档
+
+### 2. 析 (Analyze)
+
+- 模式聚合: 同事件类型 ≥ 5 → 抽象为 L2 语义候选
+- 实体频度: 抽取近 24h 高频 wikilink / tag
+- 决策提炼: 含 "决定/决策/选择/采纳" 段落 → 决策候选
+- 疑问识别: 含 "?" / "怎么/为何" 段落 → 反思候选
+
+### 3. 处 (Process)
+
+- 生成 `记忆/views/consolidated/<YYYY-MM-DD>.md` 当日摘要 (主题/高频实体/决策清单)
+- 反思候选 → `知识库/反思/疑问/<date>-<topic>.md`
+- 连接候选 → `知识库/反思/连接/<date>-<a-b>.md`
+- 概念候选 → `记忆/views/candidates.md` (待 cortex-promote 审批)
+
+### 4. 更新 (Update)
+
+- `MCP cortex_uri_index_rebuild`: 重建 `_meta/uri-index.json`
+- `MCP cortex_memory_write`: L4 高频事件升 L3 (frequency ≥ 5 自动)
+- 更新 `index.md` / `hot.md` 引用
+
+### 5. 清理 (Cleanup, 不归档)
+
+- 删 `记忆/L4-流水账/ledger/` 超 30 天且未升 L3 的事件
+- 删 `记忆/L3-短期/` 超 90 天且 weight < 0.3 的条目
+- 删 `知识库/反思/疑问/` 已被概念化 (反向链接 ≥ 3) 的疑问页
+- **不动** `知识库/日记/日/` (归档由 fold.sh 周日处理)
+- **不动** `记忆/L1-长期/` / `L0-核心/` (高级记忆不自动清)
+
+## 输出
+
+```
+date: <YYYY-MM-DD>
+read: ledger=<N> sessions=<N> logs=<N>
+analyzed: patterns=<N> entities=<N> decisions=<N> questions=<N>
+written: consolidated=<path> candidates=<N> reflection=<N> connection=<N>
+updated: uri_index=<N> L4→L3=<N>
+cleaned: ledger_purged=<N> L3_purged=<N> questions_purged=<N>
+```
+
+## 调度
+
+每日 **03:00** cron 自动跑 `~/.cortex/scripts/consolidate.sh`。
+用户手动: `bash ~/.cortex/scripts/consolidate.sh` 或会话内 `/cortex:consolidate`。
 
 ## AUTO_MODE (shell wrapper 触发, persistent)
 
