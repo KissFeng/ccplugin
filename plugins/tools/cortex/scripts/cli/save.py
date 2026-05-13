@@ -17,6 +17,7 @@ Returns `{path, block_ids, hits}` JSON-serialized into `TextContent`.
 
 from __future__ import annotations
 
+import argparse
 import datetime as _dt
 import importlib.util
 import json
@@ -24,36 +25,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from mcp.types import TextContent, Tool
+# Allow `python3 save.py` invocation: add this dir to sys.path so `from lib...` works.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib.frontmatter import dump as fm_dump
-from lib.lock import file_lock
-from lib.vault_path import resolve_vault
-from lib.wikilinks import add_block_ids, slugify
-
-SAVE_TOOL = Tool(
-    name="cortex_save",
-    description=(
-        "落档发现到 cortex vault: frontmatter + masking + block-id + "
-        "index/hot 同步"
-    ),
-    inputSchema={
-        "type": "object",
-        "properties": {
-            "kind": {
-                "type": "string",
-                "enum": ["concept", "domain", "log"],
-            },
-            "title": {"type": "string"},
-            "body": {"type": "string", "description": "markdown 正文"},
-            "tags": {"type": "array", "items": {"type": "string"}},
-            "host": {"type": "string", "description": "kind=domain 时必填"},
-            "org": {"type": "string"},
-            "repo": {"type": "string"},
-        },
-        "required": ["kind", "title", "body"],
-    },
-)
+from lib.frontmatter import dump as fm_dump  # noqa: E402
+from lib.lock import file_lock  # noqa: E402
+from lib.vault_path import resolve_vault  # noqa: E402
+from lib.wikilinks import add_block_ids, slugify  # noqa: E402
 
 
 def _load_masking() -> Any:
@@ -64,7 +42,8 @@ def _load_masking() -> Any:
     → `mcp/` → `plugins/tools/cortex/scripts/hooks/_lib/masking.py`.
     """
     here = Path(__file__).resolve()
-    candidate = here.parent.parent.parent / "hooks" / "_lib" / "masking.py"
+    # cli/save.py → cli/ → scripts/ → scripts/hooks/_lib/masking.py
+    candidate = here.parent.parent / "hooks" / "_lib" / "masking.py"
     if not candidate.is_file():
         # via abs path: hooks 与 source 同 checkout, 直接
         # ~/.cortex/config.json (install_path) so cortex-doctor can wire it
@@ -259,9 +238,10 @@ def _save_internal(
     }
 
 
-async def handle_save(args: dict) -> list[TextContent]:
+def cli_save(args: dict) -> dict:
+    """CLI entry: same shape as the old MCP handler, returns dict directly."""
     args = args or {}
-    result = _save_internal(
+    return _save_internal(
         kind=args.get("kind", ""),
         title=args.get("title", ""),
         body=args.get("body", ""),
@@ -270,4 +250,36 @@ async def handle_save(args: dict) -> list[TextContent]:
         org=args.get("org"),
         repo=args.get("repo"),
     )
-    return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False))]
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="cortex_save CLI: write a typed note into the vault.")
+    parser.add_argument("--kind", required=True, choices=["concept", "domain", "log"])
+    parser.add_argument("--title", required=True)
+    parser.add_argument(
+        "--body",
+        help="Markdown body. If omitted, read from stdin.",
+    )
+    parser.add_argument("--tags", default="", help="Comma-separated tags")
+    parser.add_argument("--host")
+    parser.add_argument("--org")
+    parser.add_argument("--repo")
+    ns = parser.parse_args()
+    body = ns.body if ns.body is not None else sys.stdin.read()
+    tags = [t.strip() for t in ns.tags.split(",") if t.strip()] if ns.tags else []
+    result = cli_save(
+        {
+            "kind": ns.kind,
+            "title": ns.title,
+            "body": body,
+            "tags": tags,
+            "host": ns.host,
+            "org": ns.org,
+            "repo": ns.repo,
+        }
+    )
+    print(json.dumps(result, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

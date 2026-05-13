@@ -2,42 +2,24 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
+import sys
 from pathlib import Path
 
-from mcp.types import TextContent, Tool
+# Allow direct CLI invocation.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib.extractors import docx as docx_extractor
-from lib.extractors import epub as epub_extractor
-from lib.extractors import pdf as pdf_extractor
-from tools.save import _save_internal
-
-INGEST_FILE_TOOL = Tool(
-    name="cortex_ingest_file",
-    description=(
-        "读本地文件抽正文落档 cortex vault: pdf/epub/docx/md/txt → "
-        "extract → masking → save"
-    ),
-    inputSchema={
-        "type": "object",
-        "properties": {
-            "path": {"type": "string", "description": "本地文件路径"},
-            "kind": {"type": "string", "enum": ["concept", "domain", "log"]},
-            "title": {"type": "string"},
-            "host": {"type": "string"},
-            "org": {"type": "string"},
-            "repo": {"type": "string"},
-            "tags": {"type": "array", "items": {"type": "string"}},
-        },
-        "required": ["path", "kind"],
-    },
-)
+from lib.extractors import docx as docx_extractor  # noqa: E402
+from lib.extractors import epub as epub_extractor  # noqa: E402
+from lib.extractors import pdf as pdf_extractor  # noqa: E402
+from save import _save_internal  # noqa: E402
 
 _SUPPORTED_EXTS = {".pdf", ".epub", ".docx", ".md", ".txt", ".markdown"}
 
 
-async def handle_ingest_file(args: dict) -> list[TextContent]:
+def cli_ingest_file(args: dict) -> dict:
     args = args or {}
     raw_path = args.get("path")
     kind = args.get("kind")
@@ -109,4 +91,33 @@ async def handle_ingest_file(args: dict) -> list[TextContent]:
         "hits": save_res["hits"],
         "warnings": warnings,
     }
-    return [TextContent(type="text", text=json.dumps(result_obj, ensure_ascii=False))]
+    return result_obj
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="cortex_ingest_file CLI.")
+    parser.add_argument("--path", required=True)
+    parser.add_argument("--kind", required=True, choices=["concept", "domain", "log"])
+    parser.add_argument("--title")
+    parser.add_argument("--host")
+    parser.add_argument("--org")
+    parser.add_argument("--repo")
+    parser.add_argument("--tags", default="", help="Comma-separated tags")
+    ns = parser.parse_args()
+    tags = [t.strip() for t in ns.tags.split(",") if t.strip()] if ns.tags else []
+    result = cli_ingest_file(
+        {
+            "path": ns.path,
+            "kind": ns.kind,
+            "title": ns.title,
+            "host": ns.host,
+            "org": ns.org,
+            "repo": ns.repo,
+            "tags": tags,
+        }
+    )
+    print(json.dumps(result, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

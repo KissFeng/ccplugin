@@ -13,6 +13,7 @@ Pipeline (order hard-locked):
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import sys
@@ -22,32 +23,12 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from mcp.types import TextContent, Tool
+# Allow direct CLI invocation.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib.extractors import html as html_extractor
-from lib.extractors import pdf as pdf_extractor
-from tools.save import _save_internal
-
-INGEST_URL_TOOL = Tool(
-    name="cortex_ingest_url",
-    description=(
-        "抓 URL 抽正文落档 cortex vault: url_security→fetch→"
-        "html_sanitize→masking→save"
-    ),
-    inputSchema={
-        "type": "object",
-        "properties": {
-            "url": {"type": "string", "format": "uri"},
-            "kind": {"type": "string", "enum": ["concept", "domain", "log"]},
-            "title": {"type": "string", "description": "可选, 缺则用 HTML <title>"},
-            "host": {"type": "string"},
-            "org": {"type": "string"},
-            "repo": {"type": "string"},
-            "tags": {"type": "array", "items": {"type": "string"}},
-        },
-        "required": ["url", "kind"],
-    },
-)
+from lib.extractors import html as html_extractor  # noqa: E402
+from lib.extractors import pdf as pdf_extractor  # noqa: E402
+from save import _save_internal  # noqa: E402
 
 _TIMEOUT = 10.0
 _MAX_BYTES = 10 * 1024 * 1024  # 10 MiB cap
@@ -55,8 +36,8 @@ _MAX_BYTES = 10 * 1024 * 1024  # 10 MiB cap
 
 def _load_module(filename: str, mod_name: str) -> Any:
     here = Path(__file__).resolve()
-    # mcp/tools/ingest_url.py -> mcp/ -> plugins/tools/cortex/
-    candidate = here.parent.parent.parent / "hooks" / "_lib" / filename
+    # cli/ingest_url.py -> cli/ -> scripts/ -> scripts/hooks/_lib/<filename>
+    candidate = here.parent.parent / "hooks" / "_lib" / filename
     if not candidate.is_file():
         # Consult ~/.cortex/config.json (install_path) — env-free fallback.
         import json as _json
@@ -99,7 +80,7 @@ def _is_html(content_type: str) -> bool:
     return ct in ("text/html", "application/xhtml+xml", "")
 
 
-async def handle_ingest_url(args: dict) -> list[TextContent]:
+def cli_ingest_url(args: dict) -> dict:
     args = args or {}
     url = args.get("url")
     kind = args.get("kind")
@@ -191,4 +172,33 @@ async def handle_ingest_url(args: dict) -> list[TextContent]:
         "hits": save_res["hits"],
         "warnings": warnings,
     }
-    return [TextContent(type="text", text=json.dumps(result_obj, ensure_ascii=False))]
+    return result_obj
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="cortex_ingest_url CLI.")
+    parser.add_argument("--url", required=True)
+    parser.add_argument("--kind", required=True, choices=["concept", "domain", "log"])
+    parser.add_argument("--title")
+    parser.add_argument("--host")
+    parser.add_argument("--org")
+    parser.add_argument("--repo")
+    parser.add_argument("--tags", default="", help="Comma-separated tags")
+    ns = parser.parse_args()
+    tags = [t.strip() for t in ns.tags.split(",") if t.strip()] if ns.tags else []
+    result = cli_ingest_url(
+        {
+            "url": ns.url,
+            "kind": ns.kind,
+            "title": ns.title,
+            "host": ns.host,
+            "org": ns.org,
+            "repo": ns.repo,
+            "tags": tags,
+        }
+    )
+    print(json.dumps(result, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

@@ -18,60 +18,25 @@ Returns a single TextContent whose ``.text`` is JSON:
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from mcp.types import TextContent, Tool
+# Allow direct CLI invocation.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib.vault_path import resolve_vault
-from tools.search import (
+from lib.vault_path import resolve_vault  # noqa: E402
+from search import (  # noqa: E402
     _dedup,
     _grep_file,
     _ripgrep,
     _smart_connections,
     _title_from,
-)
-
-DEEP_SEARCH_TOOL = Tool(
-    name="cortex_deep_search",
-    description=(
-        "深度检索 vault: iterative(多轮RAG) | subgraph(图邻扩展) | "
-        "hybrid(语义+关键词+BM25重排)"
-    ),
-    inputSchema={
-        "type": "object",
-        "properties": {
-            "query": {"type": "string"},
-            "mode": {
-                "type": "string",
-                "enum": ["iterative", "subgraph", "hybrid"],
-                "default": "hybrid",
-            },
-            "max_hops": {
-                "type": "integer",
-                "default": 2,
-                "minimum": 1,
-                "maximum": 3,
-            },
-            "iter_max": {
-                "type": "integer",
-                "default": 3,
-                "minimum": 1,
-                "maximum": 3,
-            },
-            "limit": {"type": "integer", "default": 15, "minimum": 1},
-            "scope": {
-                "type": "string",
-                "enum": ["all", "concepts", "domains", "log"],
-                "default": "all",
-            },
-        },
-        "required": ["query"],
-    },
 )
 
 
@@ -352,7 +317,8 @@ def _run_hybrid(
     }
 
 
-async def handle_deep_search(args: dict) -> list[TextContent]:
+def cli_deep_search(args: dict) -> dict:
+    """CLI entry: returns the result dict directly."""
     query = (args or {}).get("query")
     if not isinstance(query, str) or not query.strip():
         raise ValueError(
@@ -380,14 +346,30 @@ async def handle_deep_search(args: dict) -> list[TextContent]:
     else:
         out = _run_hybrid(vault, query, limit, scope, sc_base)
 
-    result = {
-        "query": query,
-        "mode": mode,
-        **out,
-    }
-    return [
-        TextContent(
-            type="text",
-            text=json.dumps(result, ensure_ascii=False),
-        )
-    ]
+    return {"query": query, "mode": mode, **out}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="cortex_deep_search CLI.")
+    parser.add_argument("--query", required=True)
+    parser.add_argument("--mode", default="hybrid", choices=["iterative", "subgraph", "hybrid"])
+    parser.add_argument("--max-hops", dest="max_hops", type=int, default=2)
+    parser.add_argument("--iter-max", dest="iter_max", type=int, default=3)
+    parser.add_argument("--limit", type=int, default=15)
+    parser.add_argument("--scope", default="all", choices=list(_SCOPE_GLOB.keys()))
+    ns = parser.parse_args()
+    result = cli_deep_search(
+        {
+            "query": ns.query,
+            "mode": ns.mode,
+            "max_hops": ns.max_hops,
+            "iter_max": ns.iter_max,
+            "limit": ns.limit,
+            "scope": ns.scope,
+        }
+    )
+    print(json.dumps(result, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

@@ -15,36 +15,21 @@ deterministically.
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
 import subprocess
+import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
 
-from mcp.types import TextContent, Tool
+# Allow direct `python3 search.py`: add this dir to sys.path so `from lib...` works.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib.vault_path import resolve_vault
-
-SEARCH_TOOL = Tool(
-    name="cortex_search",
-    description="搜索 cortex vault: 多级回退 (hot → index → SC → rg)",
-    inputSchema={
-        "type": "object",
-        "properties": {
-            "query": {"type": "string", "description": "搜索词"},
-            "limit": {"type": "integer", "default": 10, "minimum": 1},
-            "scope": {
-                "type": "string",
-                "enum": ["all", "concepts", "domains", "log"],
-                "default": "all",
-            },
-        },
-        "required": ["query"],
-    },
-)
+from lib.vault_path import resolve_vault  # noqa: E402
 
 
 _SCOPE_GLOB = {
@@ -204,7 +189,8 @@ def _dedup(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
-async def handle_search(args: dict) -> list[TextContent]:
+def cli_search(args: dict) -> list[dict[str, Any]]:
+    """CLI entry: returns hits list directly."""
     query = (args or {}).get("query")
     if not isinstance(query, str) or not query.strip():
         raise ValueError("cortex_search: 'query' required (non-empty string)")
@@ -230,5 +216,18 @@ async def handle_search(args: dict) -> list[TextContent]:
     if len(hits) < limit:
         hits.extend(_ripgrep(vault, _SCOPE_GLOB[scope], query))
 
-    hits = _dedup(hits)[:limit]
-    return [TextContent(type="text", text=json.dumps(hits, ensure_ascii=False))]
+    return _dedup(hits)[:limit]
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="cortex_search CLI: multi-level fallback search over vault.")
+    parser.add_argument("--query", required=True)
+    parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--scope", default="all", choices=list(_SCOPE_GLOB.keys()))
+    ns = parser.parse_args()
+    hits = cli_search({"query": ns.query, "limit": ns.limit, "scope": ns.scope})
+    print(json.dumps(hits, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()
