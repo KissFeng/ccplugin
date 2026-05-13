@@ -32,13 +32,10 @@ if [[ -z "$VAULT" ]]; then
   echo "[cortex/dashboard] no vault: pass --vault or set vault in ~/.cortex/config.json" >&2
   exit 3
 fi
+LANG_CODE="$(cx_config_get lang "" 2>/dev/null || echo "")"
 TIMEOUT_FLAG=(--timeout 600)
 
-PROMPT="Run cortex-dashboard refresh on the vault at $VAULT.
-Pick Bases if available, fall back to Dataview otherwise.
-Refresh only existing dashboard pages; do not invent new ones.
-Tool budget: Bash Read Write Edit Glob.
-Output one-line JSON summary: { refreshed: <list of dashboard paths>, skipped: M }."
+PROMPT="[AUTO_MODE persistent] Invoke Skill cortex-dashboard on vault=$VAULT lang=${LANG_CODE:-zh-CN}. The skill SKILL.md is the single source of truth for query (8 kinds) / render (7 charts incl mermaid fallbacks) / inject (DASH:BEGIN/END with KPI + chart + table + legend). Follow it strictly, no skip, no ask, 严禁 N/A 占位. Emit the compact JSON described in the skill '## 输出' section."
 
 exec "$DIR/run.sh" dashboard \
   ${VAULT_FLAG[@]+"${VAULT_FLAG[@]}"} ${LANG_FLAG[@]+"${LANG_FLAG[@]}"} ${SETTINGS_FLAG[@]+"${SETTINGS_FLAG[@]}"} ${TIMEOUT_FLAG[@]+"${TIMEOUT_FLAG[@]}"} ${DRY_FLAG[@]+"${DRY_FLAG[@]}"} \

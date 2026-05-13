@@ -1,102 +1,320 @@
 ---
 name: cortex-dashboard
-description: 渲染仪表盘 — Bases query 查记忆/知识库 + HTML grid 拼装注入 callout 区, 不破坏正文。触发: "build dashboard" / "刷新仪表盘" / "仪表盘" / weekly cron。
+description: 渲染仪表盘 — 按 frontmatter view_query (dict) 查记忆/知识库/cron, 渲染 KPI + 图表 + Top-N + Legend, 注入 DASH:BEGIN/END 区, 不破坏正文。触发: "build dashboard" / "刷新仪表盘" / "仪表盘" / daily cron。
 disable-model-invocation: true
-allowed-tools: Read Write Glob mcp__obsidian__obsidian_simple_search mcp__obsidian__obsidian_get_file_contents
+allowed-tools: Bash Read Write Edit Glob
 ---
 
 # cortex-dashboard
 
-读 `仪表盘/<page>.md` frontmatter 内 `view_query` → 执行查询 (Bases/Dataview/Obsidian search) → 渲染 HTML grid/table → 注入页内 `<!-- DASH:BEGIN -->...<!-- DASH:END -->` callout 区。不动正文/frontmatter 其余字段。
+读 `仪表盘/<page>.md` frontmatter 内 `view_query` (dict) → 按 `kind` 走对应 Bash 数据查询 → 按 `view_chart` 渲染 (KPI callout + chart + Top-N table + Legend) → 注入 `<!-- DASH:BEGIN -->...<!-- DASH:END -->` 区。不动正文与 frontmatter 其余字段。
+
+**单一真相**: 本 SKILL.md 是 cron + slash command 的唯一执行规范。`scripts/cron/dashboard.sh` 与 `commands/dashboard.md` 只做 thin 委托。
 
 ## 触发场景
 - daily cron `dashboard.sh` (02:30)
-- 用户显式 "build dashboard" / "刷新 L2 仪表盘" / "仪表盘"
+- 用户显式 "build dashboard" / "刷新仪表盘" / "/cortex:dashboard"
 - cortex-cartographer agent 调用
 
-## 输入
-- path: 仪表盘 md 路径, 默认全扫 `仪表盘/*.md`; 可单一 `仪表盘/记忆-L2-中期.md`
-- --dry-run: 仅打印渲染结果, 不写盘
-- --force: 即使 callout 区已存在也重新渲染 (默认仅 stale > 1d 才渲)
+## 输入 (frontmatter 解析)
+
+每页 `仪表盘/<page>.md` frontmatter 必含:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `view_query` | dict | `{kind: <enum>, level?: <L0-L4>, limit?: <int>, window?: <30d/7d/all>}` |
+| `view_chart` | enum | `pie / sankey / heatmap / timeline / mindmap / table / grid` |
+| `view_kpi` | list | `[{name: <str>, source: <bash-expr>}]`, ≥1 ≤6 |
+| `view_legend` | str | 图表说明 + 触发刷新命令 |
+| `view_stale_after` | int | 小时 (默认 24); now - rendered_at < stale → skip |
+
+`view_query.kind` 8 个枚举: `memory / knowledge / ledger / cron / bridge / distribution / promotion / warden`。
+
+CLI 参数:
+- `path`: 仪表盘 md 路径; 默认全扫 `仪表盘/*.md`
+- `--dry-run`: 仅打印, 不写盘
+- `--force`: 忽略 stale_after, 强制重渲
 
 ## 流程
 
-1. **扫目标**:
-   - path 指定 → 单页
-   - 默认 → Glob `仪表盘/*.md` 全部
-2. **读 frontmatter**: 每页必须含:
-   - `view_query`: dict (e.g. `{kind: "memory", level: "L2", limit: 50}`)
-   - `view_template`: html 片段名 (e.g. `grid` / `table` / `mermaid-sankey`)
-   - `view_stale_after`: hours, 默认 24
-3. **跳过判定**:
-   - 读 callout 区 `<!-- DASH:rendered_at=<ISO> -->` 注释
-   - now - rendered_at < view_stale_after → 跳过 (--force 强制重渲)
-4. **执行查询**:
-   - kind=memory: Glob `记忆/<level>-*/**/*.md` + 读 frontmatter, 过滤 + 排序 (weight / recall_count)
-   - kind=knowledge: `mcp__obsidian__obsidian_simple_search` query
-   - kind=ledger: Glob `记忆/L4-流水账/ledger/*.jsonl` aggregation (count by day)
-   - kind=cron: 读 `~/.cache/cortex/cron/*.{log,json}` 拼最近状态
-5. **渲染**:
-   - 调 cortex-html 转模板 + data → HTML 字符串
-6. **注入**:
-   - 定位 `<!-- DASH:BEGIN -->` ... `<!-- DASH:END -->` 区
-   - 不存在 → 文件末尾追加新区
-   - 存在 → 整段替换
-   - 区头加注释 `<!-- DASH:rendered_at=<ISO>, query_hash=<sha256-8> -->`
-7. **正文保留**: callout 区之外的内容一字不改
+1. **扫目标**: path 指定→单页; 默认 → `Glob "仪表盘/*.md"` (cap 20)
+2. **读 frontmatter**: Read offset=1 limit=60, 解 yaml → 提取 view_query/view_chart/view_kpi/view_legend/view_stale_after
+3. **stale 判定**: 找 DASH:BEGIN 行 `rendered_at=<ISO>`, now - rendered_at < view_stale_after → skip (--force 跳过此判定)
+4. **数据查询**: 按 view_query.kind 走下文 "## 数据源查询" 章节对应 Bash
+5. **数据源不存在判定**:
+   - 路径不存在 (e.g. `记忆/views/warden.jsonl` 缺) → 该 dashboard 报 error 加入汇总 JSON `errors[]`, **不写 DASH 区**, 保留上次渲染, continue
+   - 路径存在但内容空 → 计数为 `0` (真实数据), **正常渲染**
+   - **严禁** `N/A` / `—` / "暂无数据" 占位
+6. **渲染**: 按 view_chart 拼 chart 块 (见 "## 图表渲染规则") + KPI callout + Top-N 表 + Legend, 整体封闭在 DASH:BEGIN/END
+7. **注入**: 找 DASH:BEGIN..DASH:END 区整段替换; 不存在→文件末追加。区头注释 `<!-- DASH:BEGIN rendered_at=<ISO> query_hash=<sha-8> -->`
+8. **输出**: 单行 JSON `{refreshed: [...], skipped: M, errors: [{path, reason}]}`
+
+## 数据源查询
+
+每 kind 用真实 Bash 查, 严禁占位。VAULT 为 vault 根绝对路径。
+
+### kind=memory
+
+`view_query.level` 必须 (L0-L4)。
+
+```bash
+# 总数
+total=$(find "$VAULT/记忆/<level>-"* -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+# 本周新增 (mtime<7d)
+weekly=$(find "$VAULT/记忆/<level>-"* -name "*.md" -type f -mtime -7 2>/dev/null | wc -l | tr -d ' ')
+# 过期 (mtime>30d)
+stale=$(find "$VAULT/记忆/<level>-"* -name "*.md" -type f -mtime +30 2>/dev/null | wc -l | tr -d ' ')
+# Top-N by weight: 复用现有 memory.sh recall
+bash ~/.cortex/scripts/memory.sh recall --query "" --levels <level> --top-k 10 --format json
+```
+
+路径 `$VAULT/记忆/<level>-*` 不存在 → error, 跳过该 dashboard。
+
+### kind=knowledge
+
+```bash
+total=$(find "$VAULT/知识库" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+# Top-N 复用 search.sh:
+bash ~/.cortex/scripts/search.sh --query "" --scope knowledge --top-k 10 --format json
+```
+
+### kind=ledger
+
+`view_query.level` 通常 L4。
+
+```bash
+# L4 sessions 总数 (jsonl 行数和)
+total=$(find "$VAULT/记忆/L4-流水账/sessions" -name "*.jsonl" 2>/dev/null -exec wc -l {} + | tail -1 | awk '{print $1}')
+# 30d 内 sessions:
+recent=$(find "$VAULT/记忆/L4-流水账/sessions" -name "*.jsonl" -mtime -30 2>/dev/null | wc -l | tr -d ' ')
+# 按日聚合 (heatmap 数据):
+find "$VAULT/记忆/L4-流水账/sessions" -name "*.jsonl" -mtime -30 2>/dev/null -printf "%TY-%Tm-%Td\n" | sort | uniq -c
+```
+
+### kind=cron
+
+```bash
+# 9 job 状态:
+for f in ~/.cache/cortex/cron/*.json; do
+  [ -f "$f" ] && jq -r '"\(.job)|\(.last_run)|\(.duration_sec)|\(.exit_code)"' "$f"
+done
+# 成功 24h 内:
+ok=$(for f in ~/.cache/cortex/cron/*.json; do
+  jq -r 'select(.exit_code==0) | .last_run' "$f" 2>/dev/null
+done | wc -l | tr -d ' ')
+```
+
+`~/.cache/cortex/cron/` 不存在 → error。
+
+### kind=bridge
+
+```bash
+# 记忆→知识库 ref:
+m2k=$(rg "^ref:" "$VAULT/记忆" --no-heading -c 2>/dev/null | wc -l | tr -d ' ')
+# 知识库→记忆 ref:
+k2m=$(rg "^ref:" "$VAULT/知识库" --no-heading -c 2>/dev/null | wc -l | tr -d ' ')
+# 双向 (启用 jq aggregate):
+rg "^ref:" "$VAULT/记忆" "$VAULT/知识库" --json 2>/dev/null | \
+  jq -s 'group_by(.data.path.text) | map({path:.[0].data.path.text, refs:length})'
+```
+
+### kind=distribution
+
+```bash
+# 各领域计数:
+for d in "$VAULT"/知识库/领域/*/; do
+  name=$(basename "$d")
+  cnt=$(find "$d" -name "*.md" -type f | wc -l | tr -d ' ')
+  echo "$name:$cnt"
+done
+# 月增量:
+for d in "$VAULT"/知识库/领域/*/; do
+  name=$(basename "$d")
+  cnt=$(find "$d" -name "*.md" -type f -mtime -30 | wc -l | tr -d ' ')
+  echo "$name:$cnt"
+done
+```
+
+### kind=promotion
+
+```bash
+PROM="$VAULT/记忆/views/promotion.jsonl"
+[ -f "$PROM" ] || exit_error  # 该 dashboard 报 error, 不写 DASH
+# 流量聚合 (from_level → to_level):
+jq -s 'group_by(.from_level + "→" + .to_level) | map({pair:.[0].from_level+"→"+.[0].to_level, n:length})' "$PROM"
+# 候选总数 (candidates.md):
+[ -f "$VAULT/记忆/views/candidates.md" ] && grep -c "^|" "$VAULT/记忆/views/candidates.md"
+```
+
+### kind=warden
+
+```bash
+WARDEN="$VAULT/记忆/views/warden.jsonl"
+[ -f "$WARDEN" ] || exit_error  # 该 dashboard 报 error, 不写 DASH
+# 待审条目:
+pending=$(jq -s '[.[] | select(.status=="pending")] | length' "$WARDEN")
+# kind 分布 (hallucination / drift):
+jq -s 'group_by(.kind) | map({kind:.[0].kind, n:length})' "$WARDEN"
+```
+
+## 图表渲染规则
+
+每 chart 一段 mermaid 模板; 不支持原生 mermaid 类型时退到固定 fallback。
+
+### view_chart=pie
+
+```mermaid
+pie title 各领域分布
+  "技术" : 42
+  "管理" : 18
+  "产品" : 12
+```
+
+### view_chart=sankey
+
+Obsidian 原生 mermaid 不支持 sankey, 固定 fallback 为 `flowchart LR`, edge label 写流量:
+
+```mermaid
+flowchart LR
+  L4 -->|45| L3
+  L3 -->|12| L2
+  L2 -->|3| L1
+  L1 -->|1| L0
+```
+
+### view_chart=heatmap
+
+mermaid 无原生 heatmap, 固定 fallback 为 markdown table + emoji 色块:
+
+```markdown
+| 周\日 | 一 | 二 | 三 | 四 | 五 | 六 | 日 |
+|------|----|----|----|----|----|----|----|
+| W18 | 🟩 1 | 🟨 4 | 🟧 7 | 🟥 12 | 🟨 5 | 🟩 2 | 🟩 0 |
+| W19 | 🟩 0 | 🟩 2 | 🟨 3 | 🟨 4 | 🟧 8 | 🟩 1 | 🟩 0 |
+```
+
+emoji 阈值: 🟩 0-2 / 🟨 3-5 / 🟧 6-10 / 🟥 >10。
+
+### view_chart=timeline
+
+```mermaid
+timeline
+  title L3 近 7 天事件
+  2026-05-07 : 3 事件 : 主题 A
+  2026-05-08 : 7 事件 : 主题 B / C
+  2026-05-09 : 5 事件 : 主题 A
+```
+
+### view_chart=mindmap
+
+```mermaid
+mindmap
+  root((L2 中期))
+    主题_A
+      条目_1
+      条目_2
+    主题_B
+      条目_3
+```
+
+### view_chart=table
+
+纯 markdown table:
+
+```markdown
+| 标题 | 路径 | weight | 更新 |
+|------|------|--------|------|
+| 示例 | [[记忆/L1-长期/示例]] | 0.85 | 2026-05-12 |
+```
+
+### view_chart=grid
+
+HTML 4 列网格 (KPI 卡片密集展示):
+
+```html
+<table>
+  <tr>
+    <td><b>知识库总数</b><br/>234</td>
+    <td><b>记忆总数</b><br/>89</td>
+    <td><b>本周新增</b><br/>12</td>
+    <td><b>cron 健康</b><br/>9/9</td>
+  </tr>
+</table>
+```
+
+## DASH 区注入结构
+
+完整 DASH:BEGIN/END 内容:
+
+```markdown
+<!-- DASH:BEGIN rendered_at=2026-05-13T03:00:00Z query_hash=abc12345 -->
+
+> [!stats] 概览
+> **<kpi[0].name>** <val> · **<kpi[1].name>** <val> · **<kpi[2].name>** <val> · **<kpi[3].name>** <val>
+
+### 趋势
+
+<chart-block (mermaid / markdown table / HTML grid)>
+
+### Top 条目
+
+| 标题 | 路径 | weight | 更新 |
+|------|------|--------|------|
+| ... | [[...]] | 0.85 | 2026-05-12 |
+
+<!-- DASH:LEGEND -->
+> [!note] 怎么读
+> <view_legend 内容>
+>
+> 刷新: `bash ~/.cortex/scripts/dashboard.sh` 或 `/cortex:dashboard`
+
+<!-- DASH:END -->
+```
+
+**结构强约束**: KPI callout → chart → Top-N table → LEGEND callout 四段, 顺序固定。
+
+`query_hash`: 对 `view_query` dict yaml 化后取 sha256 前 8 位, 用于跳过判定。
+
+## AUTO_MODE 流程 (cron 入口)
+
+`[AUTO_MODE persistent]` 无交互:
+
+1. `Glob "仪表盘/*.md"` (cap 20)
+2. 逐页处理:
+   a. Read offset=1 limit=60, 解 frontmatter
+   b. 缺 view_query / 不是 dict → errors[], skip
+   c. 检 DASH:BEGIN rendered_at, < stale_after 且非 --force → skipped++
+   d. 按 view_query.kind 跑数据源 Bash (上文 8 段)
+   e. 数据源路径不存在 → errors[], 不写盘, continue
+   f. 渲染 KPI callout + chart + Top-N table + LEGEND → 拼 DASH 区字符串
+   g. Edit 替换 DASH:BEGIN..DASH:END 整段 (含区头 rendered_at + query_hash 注释更新)
+3. 输出汇总 JSON
+
+**禁**:
+- 读 vault 外文件 (~/.cache/cortex/ 例外, 仅 cron kind)
+- 读 vault 内任何 .jsonl / .md 全文 (除 frontmatter 前 60 行)
+- AskUserQuestion / 中止任何 dashboard 处理
+- `N/A` / `—` / "暂无数据" / 占位符
 
 ## 输出
+
 ```
 [dashboard] scan 12 pages
-  ✅ 仪表盘/总览.md (rendered, 1.2 KB HTML)
-  ⏭️  仪表盘/知识库分布.md (fresh, skipped; --force to rerender)
-  ✅ 仪表盘/记忆-L2-中期.md (rendered, 48 nodes in mindmap)
-  ✅ 仪表盘/记忆-cron 状态.md (rendered, 9 jobs)
+  ✅ 仪表盘/总览.md (rendered, 1.4 KB)
+  ⏭️  仪表盘/知识库分布.md (fresh, skipped)
+  ❌ 仪表盘/记忆-腐化监控.md (error: 记忆/views/warden.jsonl 不存在)
   ...
-总结: 9 rendered, 3 skipped, 0 failed
+{"refreshed": 9, "skipped": 2, "errors": [{"path": "仪表盘/记忆-腐化监控.md", "reason": "记忆/views/warden.jsonl 不存在"}]}
 ```
 
+JSON 字段:
+- `refreshed`: 成功渲染并写盘的路径列表
+- `skipped`: 因 stale 跳过的数量 (int)
+- `errors`: `[{path, reason}]` 列表
+
 ## 错误处理
-- frontmatter 缺 view_query → 跳过 + warning
-- query 执行失败 (Obsidian MCP 不可用) → 输出 fallback "Bases unavailable, retry later", 不破坏现有 callout
-- 模板渲染失败 (cortex-html 报错) → 跳过该页, 末尾汇总
-- 写盘并发 (多个 cron 同时跑) → 配合 cron run.sh 提供的 flock
-
-## AUTO_MODE 行为 (cron 调用, 强约束)
-
-[AUTO_MODE: ...] (cron 默认) 全自动执行, 无交互。避免漫游和 token 爆炸:
-
-1. **Glob 一次**: `仪表盘/*.md` (cap 20 页, 多了取前 20)
-2. **仅读 frontmatter**: 每页前 30 行 (Read offset=1 limit=30), 不读全文
-3. **query.kind 行为限制**:
-   - memory: Glob `记忆/<level>/_index.md` 取计数, **不读** 子文件
-   - ledger: `wc -l 记忆/L4-流水账/ledger/*.jsonl` 取行数, **不读** jsonl 内容
-   - knowledge: `mcp__obsidian__obsidian_simple_search` query 限 top 10
-   - cron: 读 `~/.cache/cortex/cron/*.log` 仅最后 5 行
-4. **渲染**: 调 cortex-html 取模板拼 HTML, 注入 `<!-- DASH:BEGIN -->...<!-- DASH:END -->`
-5. **stale_after 检查**: 24h 内不重渲, persistent 退 退
-6. **输出**: 单行 JSON `{refreshed: [...], skipped: M, errors: K}`
-7. **禁**: 读 vault 外文件 / 读 vault 内任何 .jsonl/.md 全文 (除非 frontmatter < 30 行)
-8. **失败处理**: 单页失败 → errors++, 继续下一页, 不 hang
-
-stale 判定照常生效, 不无脑全渲。
-
-## Grok Live Artifacts 风格契约 (仪表盘 HTML 输出强制)
-
-仪表盘所有 HTML 输出 (含 callout 区注入内容) 必走 [Grok Live Artifacts](https://linux.do/t/topic/2163779) 风格契约, 详细约束见 `cortex-html` SKILL 的 `## Grok Live Artifacts 风格契约` 段。
-
-### 关键约束 (摘要)
-1. **首字符 `<div`**: callout 区内首个非注释字符必为 `<div`, 严禁前导文字 / Emoji / 换行
-2. **全 inline style**: 严禁 `<style>` 块, 所有样式写在标签 `style="..."` 内
-3. **禁裸文本**: 文本必 wrap `<span>` / `<p>` / `<h2>` / `<div>`
-4. **禁 Markdown 符号** (`#` / `**` / `- `): 仪表盘渲染的是 HTML, 非 markdown
-5. **视觉 token 统一**:
-   - 主容器 `border-radius:16px` + `box-shadow` + `border:1px solid #eef0f2` + `padding:24px`
-   - 卡片 `border-radius:12px` + `border:1px solid #edf2f7` + `padding:16px`
-   - 标题 `border-left:4px solid #3182ce; padding-left:12px`
-   - grid `display:grid; grid-template-columns:repeat(N,1fr); gap:12px`
-   - 主色 蓝`#3182ce` / 绿`#16a34a` / 红`#dc2626` / 橙`#ea580c` / 黄`#ca8a04` / 灰`#6b7280`
-   - 字体 `-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`; 文字色 `#1a202c`
-
-> 渲染前调 `cortex-html` 处理模板; 所有 模板 (`templates/html/*`) 已内置 Grok 风 token, 直接复用即可。
-
+- frontmatter 缺 view_query → errors[], continue
+- view_query.kind 不在 8 枚举 → errors[], continue
+- 数据源路径不存在 → errors[], **不写 DASH 区** (保留上次渲染), continue
+- 数据源存在但内容空 → 计数 0, 正常渲染 (0 是真实数据)
+- 单页渲染异常 → errors[], 不影响后续页

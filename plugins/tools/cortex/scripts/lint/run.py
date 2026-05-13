@@ -466,7 +466,7 @@ def check_file(
     findings: list[dict[str, Any]] = []
     fm, body_line = parse_frontmatter(text)
 
-    # lint-skip: 模板/示例文件可通过 `lint-skip: true` 跳过全部检查 (但 _meta/仪表盘/_assets/归档 已在 EXCLUDE_DIRS / whitelist 处理)
+    # lint-skip: 模板/示例文件可通过 `lint-skip: true` 跳过全部检查 (仪表盘**不**豁免, 必须满足 tags ≥10 等强约束)
     _ls = fm.get("lint-skip") if fm else None
     if _ls in (True, "true", "True", "yes", 1, "1"):
         return findings
