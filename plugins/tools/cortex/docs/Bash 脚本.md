@@ -10,25 +10,27 @@ cortex 把 20 个 slash command 中常用的 17 个包装成独立 bash 脚本, 
 
 ## 脚本清单
 
-| 脚本 | 对应 slash command | 用途 |
-|------|---------------------|------|
-| `init.sh` | `/cortex:init` | 初始化 vault (首次安装时跑) |
-| `install_cron.sh` | `/cortex:install_cron` | 部署定时任务 |
-| `config.sh` | `/cortex:config` | 交互式编辑 `~/.cortex/config.json` |
-| `update.sh` | `/cortex:update` | 更新插件 |
-| `doctor.sh` | `/cortex:doctor` | 体检 |
-| `lint.sh` | `/cortex:lint` | 全自动修复 lint |
-| `refactor.sh` | `/cortex:refactor` | 重构 vault |
-| `search.sh` | `/cortex:search` | 搜索 |
-| `save.sh` | `/cortex:save` | 落档 |
-| `ingest.sh` | `/cortex:ingest` | 深度摄取当前目录 |
-| `recall.sh` | `/cortex:recall` | 召回记忆 |
-| `memory.sh` | `/cortex:memory` | 记忆管理 |
-| `promote.sh` | `/cortex:promote` | 提升记忆等级 |
-| `forget.sh` | `/cortex:forget` | 遗忘 |
-| `consolidate.sh` | `/cortex:consolidate` | 整合 ledger |
-| `dashboard.sh` | `/cortex:dashboard` | 刷新仪表盘 |
-| `fold.sh` | `/cortex:fold` | 折叠长 log |
+**范围标记**: 🌐 全局 (用户/系统级) · 📁 当前目录 (PWD) · 📚 知识库 (vault)
+
+| 脚本 | 范围 | 对应 slash | 用途 |
+|------|-----|-----------|------|
+| `init.sh` | 🌐 + 📚 | `/cortex:init` | 初始化 vault (首次安装时跑) |
+| `install_cron.sh` | 🌐 | `/cortex:install_cron` | 部署定时任务到 launchd/cron/GHA |
+| `config.sh` | 🌐 | `/cortex:config` | 交互式编辑 `~/.cortex/config.json` |
+| `update.sh` | 🌐 | `/cortex:update` | 更新插件 (marketplace + wrappers) |
+| `doctor.sh` | 🌐 + 📚 | `/cortex:doctor` | 体检 vault + 依赖 + 配置 |
+| `lint.sh` | 📚 | `/cortex:lint` | 全自动 lint 修复至 clean |
+| `refactor.sh` | 📚 | `/cortex:refactor` | 改名 / 合并 / 拆分 |
+| `search.sh` | 📚 | `/cortex:search` | 搜索 vault |
+| `save.sh` | 📚 | `/cortex:save` | 落档新笔记 |
+| `ingest.sh` | 📁 + 📚 | `/cortex:ingest` | 深度分析当前目录 → 落档到知识库 |
+| `recall.sh` | 📚 | `/cortex:recall` | 召回记忆 |
+| `memory.sh` | 📚 | `/cortex:memory` | 记忆管理 |
+| `promote.sh` | 📚 | `/cortex:promote` | 提升记忆等级 |
+| `forget.sh` | 📚 | `/cortex:forget` | 遗忘 |
+| `consolidate.sh` | 📚 | `/cortex:consolidate` | 整合 ledger |
+| `dashboard.sh` | 📚 | `/cortex:dashboard` | 刷新仪表盘 |
+| `fold.sh` | 📚 | `/cortex:fold` | 折叠长 log |
 
 ## 使用
 
