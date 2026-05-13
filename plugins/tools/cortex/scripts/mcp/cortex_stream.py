@@ -319,6 +319,15 @@ def _render_event(evt: dict) -> RenderableType | None:
                             padding=(0, 1),
                         )
                     )
+                elif name == "Write":
+                    renderables.append(
+                        Panel(
+                            Text(f'{blk.get("input", {}).get("file_path", "")}\n----------\n{blk.get("input", {}).get("content", "")}',  style="yellow"),
+                            title=f"tool: {name}",
+                            border_style="yellow",
+                            padding=(0, 1),
+                        )
+                    )
                 elif name == "Skill":
                     renderables.append(
                         Panel(
