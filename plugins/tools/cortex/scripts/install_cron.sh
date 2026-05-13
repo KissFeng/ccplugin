@@ -377,13 +377,3 @@ case "$KIND" in
     ;;
 esac
 
-cat <<EOF
-
-# ----------------------------------------------------------------------
-# 1. cron/launchd: 自动 idempotent (读 → 比对 → 一致 no-op, 不一致写); 表格始终输出
-# 2. gha: 仍 print snippet (需用户提交到 vault .github/workflows/)
-# 3. 用户级路径: ~/.cortex/scripts/ (无 sudo, 写入用户 crontab / ~/Library/LaunchAgents)
-# 4. vault = ${VAULT} (from ~/.cortex/config.json)
-# 5. 验证: 'crontab -l' 或 'launchctl list | grep cortex'
-# ----------------------------------------------------------------------
-EOF

@@ -67,9 +67,10 @@ test_unknown_kind_exits_2() {
   rm -rf "$home"
 }
 
-test_includes_disclaimer() {
-  out=$(run_install)
-  assert_contains "vault" "$out"
+test_outputs_table() {
+  out=$(run_install 2>&1)
+  assert_contains "lint.sh" "$out"
+  assert_contains "digest.sh" "$out"
 }
 
 # ---- 新增: PLUGIN_ROOT 解析优先级 ----
@@ -182,7 +183,7 @@ run_test test_default_prints_cron                test_default_prints_cron
 run_test test_launchd_prints_plist               test_launchd_prints_plist
 run_test test_gha_prints_yaml                    test_gha_prints_yaml
 run_test test_unknown_kind_exits_2               test_unknown_kind_exits_2
-run_test test_includes_disclaimer                test_includes_disclaimer
+run_test test_outputs_table                      test_outputs_table
 # 以下 override / fallback 测试已废: 插件路径硬编码为
 # $HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex,
 # 不再支持 --plugin-root / install_path 覆盖 (env var 会出现解析 bug).
