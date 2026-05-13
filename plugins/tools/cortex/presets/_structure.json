@@ -163,8 +163,7 @@
     {"src": "seed/知识库/反思/_index.md", "dst_key": "知识库/反思", "name": "_index.md", "desc": "知识库/反思 — 洞察/连接/疑问 三类反思笔记入口。"},
     {"src": "seed/知识库/收件箱/_index.md", "dst_key": "知识库/收件箱", "name": "_index.md", "desc": "知识库/收件箱 — 按日组织的瞬时输入暂存区。"},
 
-    {"src": "seed/知识库/来源/代码仓库/_index.md", "dst_key": "知识库/来源/代码仓库", "name": "_index.md", "desc": "知识库/来源/代码仓库 — <host>/<org>/<repo> 三层结构, host 含 GitHub/GitLab/Gitee。"},
-    {"src": "seed/知识库/来源/网页/_index.md", "dst_key": "知识库/来源/网页", "name": "_index.md", "desc": "知识库/来源/网页 — <domain>/<slug> 二层结构, 通用外站抓取。"},
+    {"src": "seed/知识库/来源/网页/_index.md", "dst_key": "知识库/来源/网页", "name": "_index.md", "desc": "知识库/来源/网页 — <domain>/<slug> 二层结构, 通用外站抓取 (非 repo)。"},
     {"src": "seed/知识库/来源/论文/_index.md", "dst_key": "知识库/来源/论文", "name": "_index.md", "desc": "知识库/来源/论文 — 按年份组织 (YYYY/) 的学术文献。"},
     {"src": "seed/知识库/来源/书籍/_index.md", "dst_key": "知识库/来源/书籍", "name": "_index.md", "desc": "知识库/来源/书籍 — 读书笔记 + 摘录卡片。"},
 

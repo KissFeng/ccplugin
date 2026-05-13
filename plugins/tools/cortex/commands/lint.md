@@ -35,7 +35,7 @@ while True:
 | log-too-long | — | Read + Write 切尾部到 `folds/<YYYY-QN>.md`, 主文件留头部 |
 | i18n-path-not-in-locale | — | 先比对 `_meta/version.json:.lang` 与 `locales/<lang>.yml:.dirs` 顶层名; 若 vault 顶层名不在 locale dirs → `git mv` 改为 locale 标准名; 若 vault.lang 已切换 → 提示用户重选 locale (但 AUTO_MODE 不询问, 仅在最终报告标注) |
 | vault-misaligned | — | 先单步 `python3 <abs>/scripts/lint/run.py --vault <vault> --sync-templates` 同步 `_templates/` 与 plugin 源 (autofix 已实现, 但需独立 pass); 再跑主 lint 循环 |
-| frontmatter-schema-violation | run.py --fix 已落基础字段 (type/created); 新增 schema 字段 (desc/source_url/version/when_to_read/score/maturity) 由 AI 启发式补 | 字段推断规则: `desc` = H1 + 首段截 ≤ 100 字; `source_url` = git remote (代码仓库) / 原始 URL (来源) / "N/A" (概念); `version` = git sha / package version / fetch date; `when_to_read` = "当用户问 <topic> 时"; `score` = 上游 star/活跃度 1-5 (无信号默认 3); `maturity` = 按目录推断 (项目/收件箱=draft, 来源/=stable, 反思/=review) |
+| frontmatter-schema-violation | run.py --fix 已落基础字段 (type/created); 新增 schema 字段 (desc/source_url/version/when_to_read/score/maturity) 由 AI 启发式补 | 字段推断规则: `desc` = H1 + 首段截 ≤ 100 字; `source_url` = git remote (项目) / 原始 URL (来源) / "N/A" (概念); `version` = git sha / package version / fetch date; `when_to_read` = "当用户问 <topic> 时"; `score` = 上游 star/活跃度 1-5 (无信号默认 3); `maturity` = 按目录推断 (项目/收件箱=draft, 来源/=stable, 反思/=review) |
 | vault-structure-violation (`structure_purge`) | — | **BATCH_MV 默认**: `mkdir -p <vault>/<backup_root>` → 遍历 `mv_plan[]`: `mv <vault>/<from> <vault>/<to>`; **无 AskUserQuestion** |
 
 ## 工具优先级 (依次尝试, 直到修好)

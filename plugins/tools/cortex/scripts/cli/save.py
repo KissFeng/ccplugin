@@ -5,7 +5,9 @@ Pipeline (P1):
 1. `masking.mask(body)` (reuse P0 module from `hooks/_lib/masking.py`).
 2. Compute path by kind:
    - `concept` → `知识库/领域/<slug>.md`
-   - `domain`  → `知识库/来源/代码仓库/<host>/<org>/<repo>/<slug>.md`
+   - `project` → `知识库/项目/<host>/<org>/<repo>/<slug>.md` (host=local 时取 `知识库/项目/local/<basename>/<slug>.md`, basename 取 org 字段, repo 字段可空)
+   - `domain`  → alias of `project` (backward compat): routes to `知识库/项目/<host>/<org>/<repo>/<slug>.md`
+   - `source`  → `知识库/来源/<sub>/<host>/<slug>.md` (sub=网页/论文/书籍, repo host 严禁走此路由)
    - `log`     → `知识库/日记/日/YYYY-MM/<HH-MM-slug>.md`
 3. Prepend frontmatter (`type/title/created/tags/aliases`).
 4. `wikilinks.add_block_ids` — append `^cortex-<sha8>` to each paragraph.
@@ -167,16 +169,36 @@ def _resolve_path(vault: Path, args: dict, now: _dt.datetime) -> Path:
     slug = slugify(title)
     if kind == "concept":
         target = vault / "知识库" / "领域" / f"{slug}.md"
-    elif kind == "domain":
+    elif kind in ("project", "domain"):
+        # kind=domain is retained as backward-compatible alias; both route to 知识库/项目/.
         host = args.get("host")
         if not host:
-            raise ValueError("cortex_save: 'host' required when kind='domain'")
+            raise ValueError(f"cortex_save: 'host' required when kind={kind!r}")
         host = _safe_segment(host, "host")
-        org = _safe_segment(args.get("org") or "_", "org")
-        repo = _safe_segment(args.get("repo") or "_", "repo")
-        target = (
-            vault / "知识库" / "来源" / "代码仓库" / host / org / repo / f"{slug}.md"
-        )
+        if host == "local":
+            # local: 取 org 字段当 basename;repo 可空
+            basename = _safe_segment(args.get("org") or "_", "org")
+            target = vault / "知识库" / "项目" / "local" / basename / f"{slug}.md"
+        else:
+            org = _safe_segment(args.get("org") or "_", "org")
+            repo = _safe_segment(args.get("repo") or "_", "repo")
+            target = (
+                vault / "知识库" / "项目" / host / org / repo / f"{slug}.md"
+            )
+    elif kind == "source":
+        host = args.get("host")
+        if not host:
+            raise ValueError("cortex_save: 'host' required when kind='source'")
+        # repo host 严禁走 source 路由, 引导改 kind=project
+        if host in ("github.com", "gitlab.com") or "gitlab" in host:
+            raise ValueError(
+                f"cortex_save: repo host {host!r} should use kind='project', not 'source'"
+            )
+        host = _safe_segment(host, "host")
+        # sub 子目录 (网页/论文/书籍), 由 source_meta 或默认 网页 决定
+        sub = args.get("source_sub") or "网页"
+        sub = _safe_segment(sub, "source_sub")
+        target = vault / "知识库" / "来源" / sub / host / f"{slug}.md"
     elif kind == "log":
         ym = now.strftime("%Y-%m")
         hm = now.strftime("%H-%M")
@@ -247,6 +269,7 @@ def _save_internal(
     host: str | None = None,
     org: str | None = None,
     repo: str | None = None,
+    source_sub: str | None = None,
     source_meta: dict | None = None,
     extra_fm: dict | None = None,
 ) -> dict:
@@ -277,6 +300,8 @@ def _save_internal(
         args["org"] = org
     if repo is not None:
         args["repo"] = repo
+    if source_sub is not None:
+        args["source_sub"] = source_sub
     target = _resolve_path(vault, args, now)
     target.parent.mkdir(parents=True, exist_ok=True)
 
@@ -332,12 +357,18 @@ def cli_save(args: dict) -> dict:
         host=args.get("host"),
         org=args.get("org"),
         repo=args.get("repo"),
+        source_sub=args.get("source_sub"),
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="cortex_save CLI: write a typed note into the vault.")
-    parser.add_argument("--kind", required=True, choices=["concept", "domain", "log"])
+    parser.add_argument(
+        "--kind",
+        required=True,
+        choices=["concept", "project", "domain", "source", "log"],
+        help="domain = backward-compat alias of project",
+    )
     parser.add_argument("--title", required=True)
     parser.add_argument(
         "--body",
@@ -347,6 +378,12 @@ def main() -> None:
     parser.add_argument("--host")
     parser.add_argument("--org")
     parser.add_argument("--repo")
+    parser.add_argument(
+        "--source-sub",
+        dest="source_sub",
+        default=None,
+        help="source subdir (网页/论文/书籍), only used with kind=source",
+    )
     ns = parser.parse_args()
     body = ns.body if ns.body is not None else sys.stdin.read()
     tags = [t.strip() for t in ns.tags.split(",") if t.strip()] if ns.tags else []
@@ -359,6 +396,7 @@ def main() -> None:
             "host": ns.host,
             "org": ns.org,
             "repo": ns.repo,
+            "source_sub": ns.source_sub,
         }
     )
     print(json.dumps(result, ensure_ascii=False))

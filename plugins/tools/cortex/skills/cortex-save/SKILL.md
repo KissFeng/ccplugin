@@ -53,9 +53,10 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
    | type       | 路径模板                                                                         |
    | ---------- | -------------------------------------------------------------------------------- |
    | concept    | `知识库/领域/<kebab-title>.md` (LYT) / `zettels/YYYYMMDDHHMM-<slug>.md` (Zettel) |
-   | entity     | `知识库/项目/<kebab>.md`                                                         |
-   | domain     | `知识库/来源/代码仓库/<host>/<org>/<repo>/<sub>.md`                                        |
-   | source     | `知识库/来源/网页/<kebab>.md`                                                          |
+   | entity     | 若属 repo → `知识库/项目/<host>/<org>/<repo>/<entity-kebab>.md`; 独立 → `知识库/概念/<kebab>.md` |
+   | project    | `知识库/项目/<host>/<org>/<repo>/<slug>.md` (local 时 → `知识库/项目/local/<basename>/<slug>.md`) |
+   | domain     | (向后兼容 alias of project) `知识库/项目/<host>/<org>/<repo>/<slug>.md`            |
+   | source     | `知识库/来源/{网页,论文,书籍}/<host>/<slug>.md` (repo host 严禁走此, 必须 kind=project) |
    | question   | `知识库/反思/疑问/<kebab>.md`                                                        |
    | dashboard  | `_assets/dashboards/<topic>-dashboard.md`                                             |
    | log (默认) | `log/YYYY-MM/DD-HHMM-<slug>.md` (UTC)                                            |
@@ -155,7 +156,7 @@ backlinks 回填: 2 处 ([[obsidian-hooks]] / [[claude-code-plugin]])
 
 落档前调 cortex-schema `read <target-path>` 取该目录 schema, 按 required + defaults 自动填 frontmatter 和 tags_required (含 placeholder, 由 lint --fix 后续完善)。例:
 
-- 落 知识库/来源/代码仓库/<host>/<org>/<repo>.md → 自动加 type:source / source_kind:repo / host:<host> / tags:[source/repo, host/<host>]
+- 落 知识库/项目/<host>/<org>/<repo>/_index.md → 自动加 type:project / host:<host> / org:<org> / repo:<repo> / tags:[type/project, host/<host>, org/<org>, repo/<repo>]
 - 落 记忆/L1-长期/procedural/<skill>.md → 自动加 level:L1 / tags:[memory/L1, memory/procedural]
 
 schema 源: `<vault>/_meta/frontmatter-schema.yaml` (fallback plugin `templates/frontmatter-schema.yaml`)。缺 tags_required prefix 时由 lint rule `frontmatter-schema-violation` 报警 + autofix。

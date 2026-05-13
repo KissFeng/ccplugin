@@ -135,10 +135,10 @@ bash ~/.cortex/scripts/deep_search.sh --query "<q>" --mode hybrid --iter-max 3 -
 支持 `tag:<prefix>/<value>` 语法过滤, 利用 schema tags_required 命名约定 (`_meta/frontmatter-schema.yaml`):
 
 - `tag:domain/技术/Go` → 仅返 Go 领域笔记
-- `tag:source/repo` → 仅返代码仓库
+- `tag:type/project` → 仅返项目 (git repo + 本地项目)
 - `tag:memory/L1` → 仅返 L1 长期记忆
 - `tag:project/<slug>` → 项目相关
-- 多 tag AND 组合: `tag:source/repo tag:host/github.com`
+- 多 tag AND 组合: `tag:type/project tag:host/github.com`
 
 实现走 frontmatter.tags 数组 prefix match, 与 query 文本检索并行交集后返回。
 

@@ -120,6 +120,12 @@
       "severity": "warn",
       "description": "vault 内 plugin-managed 文件 (seed/_meta/_templates) 内容偏离 plugin 源, 强制覆盖头部, TEMPLATE_END 后用户内容保留",
       "autofix": true
+    },
+    {
+      "id": "repo-path-deprecated",
+      "severity": "warn",
+      "description": "知识库/来源/代码仓库/<host>/<org>/<repo>/ 路径已废弃, autofix mv 到 知识库/项目/<host>/<org>/<repo>/",
+      "autofix": true
     }
   ]
 }

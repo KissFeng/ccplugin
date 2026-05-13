@@ -6,7 +6,7 @@ title: {{TITLE}}
 aliases: []
 tags:
   - type/source
-  - source/<article|book|video|paper|talk|docs|repo>
+  - source/<article|book|video|paper|talk|docs>
   - topic/<主题>
   - stack/<技术栈>
   - lang/<语言>
@@ -20,7 +20,7 @@ updated: {{UPDATED}}
 lang: {{LANG}}
 cli: {{CLI}}
 cli_session: {{CLI_SESSION}}
-source_kind: ""   # article | book | video | paper | talk | docs | repo
+source_kind: ""   # 仅承载非 repo 来源: article | book | video | paper | talk | docs (repo 走 _templates/project.md, 落 知识库/项目/<host>/<org>/<repo>/)
 url: ""
 author: ""
 publish_date: ""

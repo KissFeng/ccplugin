@@ -8,7 +8,7 @@ hot cache: {{HOT_CACHE_PREVIEW}}
 
 1. **先搜后问** — 非通用问题先调 `cortex-query` skill 或 `obsidian search:context query=<q> vault=<name>` 搜库 (CLI 不可用时回退 `mcp__obsidian__obsidian_simple_search`), 确认无既有经验再开工。
 2. **落档** — 非平凡发现 (架构决策、疑难 bug、配置技巧、工具经验) 完成后用 `cortex-save` skill 归档:
-   - 项目特定 → `知识库/来源/代码仓库/<host>/<org>/<repo>/`
+   - 项目特定 → `知识库/项目/<host>/<org>/<repo>/` (local 项目 → `知识库/项目/local/<basename>/`)
    - 通用概念 → `知识库/领域/`
    - 同步 `index.md` 与 `hot.md`
 3. **不直接文件操作** — vault 操作回退顺序:

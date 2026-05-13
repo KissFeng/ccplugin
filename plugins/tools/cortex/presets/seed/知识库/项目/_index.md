@@ -9,7 +9,16 @@ children:
 - 决策记录
 last_updated: '{{UPDATED}}'
 tags:
-- 项目
+- type/index
+- topic/项目
+- lang/zh-CN
+- domain/knowledge-base
+- source/seed
+- score/3
+- maturity/stable
+- scope/host-org-repo
+- kind/navigation
+- refresh/on-demand
 icon: 📂
 template_version: 1
 ---
@@ -20,7 +29,24 @@ template_version: 1
 </section>
 
 > [!tip] 项目
-> 本地项目笔记 — 每项目一个 `<name>/` 子目录, 含 `_index.md` / `笔记/` / `决策/`
+> git repo 与本地项目统一归档 — 三级嵌套 `<host>/<org>/<repo>/` 承载所有 GitHub/GitLab/local 项目。
+
+> [!info]+ 📂 目录结构
+>
+> ```
+> 知识库/项目/
+> ├── _index.md
+> ├── <host>/                  # github.com / gitlab.com / gitlab.<your>.com / local
+> │   └── <org>/               # 组织 / 用户 / 团队 (local 时取项目 basename)
+> │       └── <repo>/          # 仓库名 (local 且单层时可空)
+> │           ├── _index.md    # 项目概览
+> │           ├── 架构.md
+> │           ├── 决策.md
+> │           ├── 陷阱.md
+> │           ├── 依赖.md
+> │           ├── 笔记/
+> │           └── 决策/
+> ```
 
 <section data-role="kpi" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0">
   <div data-type="stat" style="padding:12px;background:#f8fafc;border-radius:8px">

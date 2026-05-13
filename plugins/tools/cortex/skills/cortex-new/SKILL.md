@@ -35,8 +35,8 @@ cortex-new source "Building a Second Brain"
    - `{{PRESET}}` → vault 当前 preset
 5. 按 §3.2.7 命名规则计算目标路径:
    - `concept` → `知识库/领域/<kebab-title>.md` (LYT) / `zettels/<UID>-<slug>.md` (Zettel) / `3_resources/<kebab>.md` (PARA)
-   - `entity` → `知识库/项目/<kebab>.md` (LYT) / 其他 preset 对应位置
-   - `domain` → `知识库/来源/代码仓库/<host>/<org>/<repo>/_domain.md` (从 title 解析 git remote)
+   - `entity` → 若属 repo → `知识库/项目/<host>/<org>/<repo>/<entity-kebab>.md`; 否则 `知识库/概念/<kebab>.md` (LYT)
+   - `project` / `domain` (alias) → `知识库/项目/<host>/<org>/<repo>/_index.md` (从 title 解析 git remote; local 时 host=local, org=basename)
    - `dashboard` → `_assets/dashboards/<topic>-dashboard.md` (后缀强制)
    - `question` → `知识库/反思/疑问/<kebab>.md`
    - `source` → `知识库/来源/网页/<kebab>.md`

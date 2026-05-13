@@ -1,11 +1,10 @@
 ---
 type: index
 title: 来源
-role: 外部输入 — 代码仓库 / 网页 / 论文 / 书籍
+role: 外部输入 — 网页 / 论文 / 书籍 / 视频 / PDF (非 repo; repo 见 知识库/项目/)
 namespace: 知识库
 parent: 主页
 children:
-- 代码仓库
 - 网页
 - 论文
 - 书籍

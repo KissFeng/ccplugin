@@ -152,5 +152,53 @@ class VaultStructureViolationAutofixTest(unittest.TestCase):
             self.assertFalse(bad.exists())
 
 
+class RepoPathDeprecatedAutofixTest(unittest.TestCase):
+    def test_rule_repo_path_deprecated_autofix_moves_to_项目(self):
+        with tempfile.TemporaryDirectory() as d:
+            vault = make_vault(Path(d))
+            old_dir = vault / "知识库" / "来源" / "代码仓库" / "x" / "y" / "z"
+            old_dir.mkdir(parents=True)
+            old_file = old_dir / "foo.md"
+            old_file.write_text(
+                "---\ntype: domain\ntitle: foo\n---\n\nbody\n",
+                encoding="utf-8",
+            )
+            backup = vault / "_meta" / ".cortex-backup" / "r"
+            backup.mkdir(parents=True, exist_ok=True)
+
+            finding = {
+                "rule": "repo-path-deprecated",
+                "file": "知识库/来源/代码仓库/x/y/z/foo.md",
+                "fixable": True,
+                "line": 1,
+            }
+            ok = lint_run._fix_repo_path_deprecated(
+                finding, vault, None, backup,
+            )
+            self.assertTrue(ok)
+            new_file = vault / "知识库" / "项目" / "x" / "y" / "z" / "foo.md"
+            self.assertTrue(new_file.exists())
+            self.assertFalse(old_file.exists())
+            text = new_file.read_text(encoding="utf-8")
+            self.assertIn("type: project", text)
+            self.assertIn("host: x", text)
+            self.assertIn("org: y", text)
+            self.assertIn("repo: z", text)
+
+    def test_finding_emitted_for_deprecated_path(self):
+        with tempfile.TemporaryDirectory() as d:
+            vault = make_vault(Path(d))
+            old_dir = vault / "知识库" / "来源" / "代码仓库" / "github.com" / "foo" / "bar"
+            old_dir.mkdir(parents=True)
+            (old_dir / "_index.md").write_text(
+                "---\ntype: project\ntitle: bar\n---\n\nbody\n",
+                encoding="utf-8",
+            )
+            files = list(vault.rglob("*.md"))
+            findings = lint_run.check_global(vault, files, {}, locale_dirs=None)
+            rules = [f["rule"] for f in findings]
+            self.assertIn("repo-path-deprecated", rules)
+
+
 if __name__ == "__main__":
     unittest.main()

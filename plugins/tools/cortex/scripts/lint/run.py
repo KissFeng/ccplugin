@@ -653,6 +653,17 @@ def check_global(
         if violation:
             findings.append(_f("path-naming-violation", "warn", rel, 1, violation, True))
 
+    # rule: repo-path-deprecated — `知识库/来源/代码仓库/...` should move to `知识库/项目/...`
+    _DEPRECATED_PREFIX = "知识库/来源/代码仓库/"
+    for p in files:
+        rel = str(p.relative_to(vault))
+        if rel.startswith(_DEPRECATED_PREFIX):
+            findings.append(_f(
+                "repo-path-deprecated", "warn", rel, 1,
+                f"path under {_DEPRECATED_PREFIX} is deprecated; should move to 知识库/项目/",
+                True,
+            ))
+
     # rule 15: i18n-path-not-in-locale (top-level business dirs not in vault.lang dirs map)
     if locale_dirs is not None:
         seen: set[str] = set()
@@ -1198,6 +1209,7 @@ RULE_PRIORITY = {
     "orphan-page": 8,
     "path-naming-violation": 9,
     "i18n-path-not-in-locale": 9,
+    "repo-path-deprecated": 10,
 }
 
 
@@ -1910,6 +1922,73 @@ def _fix_path_violation(
         return False
 
 
+def _fix_repo_path_deprecated(
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path | None,
+    backup_dir: Path,
+) -> bool:
+    """Move `知识库/来源/代码仓库/<rest>` → `知识库/项目/<rest>`.
+
+    Preserves <host>/<org>/<repo>/... structure (rest unchanged, prefix swapped).
+    Updates frontmatter type=project if it was `domain` and fills host/org/repo
+    from path segments when missing.
+    """
+    rel = finding["file"]
+    deprecated_prefix = "知识库/来源/代码仓库/"
+    new_prefix = "知识库/项目/"
+    if not rel.startswith(deprecated_prefix):
+        return False
+    rest = rel[len(deprecated_prefix):]
+    src = vault / rel
+    dst = vault / (new_prefix + rest)
+    if not src.exists():
+        return False
+    if dst.exists():
+        # Conflict: skip to avoid clobber.
+        return False
+    try:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        src.rename(dst)
+    except Exception:
+        return False
+
+    # Best-effort: update frontmatter type/host/org/repo from path segments.
+    try:
+        text = dst.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return True
+    parts = rest.split("/")
+    host = parts[0] if len(parts) >= 1 else None
+    org = parts[1] if len(parts) >= 2 else None
+    repo = parts[2] if len(parts) >= 3 else None
+    if not text.startswith("---\n"):
+        return True
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return True
+    fm_block = text[4:end]
+    rest_text = text[end + len("\n---\n"):]
+    # Rewrite type if `type: domain`
+    fm_block = re.sub(r"(?m)^type:\s*domain\s*$", "type: project", fm_block)
+    # Add missing host/org/repo lines
+    def _ensure_field(block: str, key: str, value: str | None) -> str:
+        if value is None:
+            return block
+        if re.search(rf"(?m)^{re.escape(key)}\s*:", block):
+            return block
+        return block.rstrip() + f"\n{key}: {value}\n"
+    fm_block = _ensure_field(fm_block, "host", host)
+    fm_block = _ensure_field(fm_block, "org", org)
+    fm_block = _ensure_field(fm_block, "repo", repo)
+    new_text = f"---\n{fm_block.rstrip()}\n---\n{rest_text}"
+    try:
+        dst.write_text(new_text, encoding="utf-8")
+    except Exception:
+        pass
+    return True
+
+
 # ---- autofix ----
 
 def apply_fixes(
@@ -2028,6 +2107,7 @@ def apply_fixes(
         "orphan-page": _fix_orphan_page,
         "path-naming-violation": _fix_path_violation,
         "i18n-path-not-in-locale": _fix_path_violation,
+        "repo-path-deprecated": _fix_repo_path_deprecated,
     }
     extra_findings = [
         f for f in findings

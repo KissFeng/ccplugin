@@ -43,7 +43,7 @@ from search import (  # noqa: E402
 _SCOPE_GLOB = {
     "all": "知识库",
     "concepts": "知识库/领域",
-    "domains": "知识库/来源/代码仓库",
+    "domains": "知识库/项目",
     "log": "知识库/日记",
 }
 

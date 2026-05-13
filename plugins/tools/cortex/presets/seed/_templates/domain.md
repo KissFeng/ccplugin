@@ -1,4 +1,5 @@
 <!-- cortex template: domain -->
+<!-- DEPRECATED: domain 类型曾用于代码仓库归档, 现已统一改为 type=project, 落 知识库/项目/<host>/<org>/<repo>/. 新仓库请用 _templates/project.md. 本模板保留作向后兼容 alias. -->
 ---
 lint-skip: true
 type: domain

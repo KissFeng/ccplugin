@@ -16,9 +16,11 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import sys
 import tempfile
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -65,6 +67,36 @@ def _load_module(filename: str, mod_name: str) -> Any:
     return mod
 
 
+_REPO_PATH_RE = re.compile(r"^/+(?P<org>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$")
+
+
+def _route_url(url: str) -> dict:
+    """Decide kind + host/org/repo from URL.
+
+    GitHub/GitLab/含 gitlab 子串 host → kind=project, 抽 org/repo from path.
+    arxiv.org → kind=source, source_sub=论文.
+    其他 → kind=source, source_sub=网页.
+    """
+    parsed = urllib.parse.urlparse(url)
+    host = (parsed.hostname or "").lower()
+    if not host:
+        return {"kind": "source", "host": "unknown", "source_sub": "网页"}
+    if host in ("github.com", "gitlab.com") or "gitlab" in host:
+        m = _REPO_PATH_RE.match(parsed.path or "")
+        if m:
+            return {
+                "kind": "project",
+                "host": host,
+                "org": m.group("org"),
+                "repo": m.group("repo"),
+            }
+        # fall through to source if path is not <org>/<repo>
+        return {"kind": "source", "host": host, "source_sub": "网页"}
+    if host == "arxiv.org":
+        return {"kind": "source", "host": host, "source_sub": "论文"}
+    return {"kind": "source", "host": host, "source_sub": "网页"}
+
+
 def _is_pdf(content_type: str, url: str) -> bool:
     ct = (content_type or "").lower().split(";", 1)[0].strip()
     if ct == "application/pdf":
@@ -86,9 +118,16 @@ def cli_ingest_url(args: dict) -> dict:
     kind = args.get("kind")
     if not isinstance(url, str) or not url.strip():
         raise ValueError("cortex_ingest_url: 'url' required (non-empty string)")
-    if kind not in ("concept", "domain", "log"):
+    if kind is None:
+        # Auto-route by URL host.
+        routed = _route_url(url)
+        kind = routed["kind"]
+        for k in ("host", "org", "repo", "source_sub"):
+            if routed.get(k) and not args.get(k):
+                args[k] = routed[k]
+    if kind not in ("concept", "project", "domain", "source", "log"):
         raise ValueError(
-            "cortex_ingest_url: 'kind' must be one of concept/domain/log"
+            "cortex_ingest_url: 'kind' must be one of concept/project/domain/source/log"
         )
 
     # 1. SSRF gate -- fail closed before any fetch.
@@ -162,6 +201,7 @@ def cli_ingest_url(args: dict) -> dict:
         host=args.get("host"),
         org=args.get("org"),
         repo=args.get("repo"),
+        source_sub=args.get("source_sub"),
         source_meta={"url": url, "content_type": content_type},
     )
 
@@ -178,11 +218,22 @@ def cli_ingest_url(args: dict) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="cortex_ingest_url CLI.")
     parser.add_argument("--url", required=True)
-    parser.add_argument("--kind", required=True, choices=["concept", "domain", "log"])
+    parser.add_argument(
+        "--kind",
+        choices=["concept", "project", "domain", "source", "log"],
+        default=None,
+        help="If omitted, auto-route by URL host (github/gitlab → project, arxiv → source/论文, else source/网页)",
+    )
     parser.add_argument("--title")
     parser.add_argument("--host")
     parser.add_argument("--org")
     parser.add_argument("--repo")
+    parser.add_argument(
+        "--source-sub",
+        dest="source_sub",
+        default=None,
+        help="source subdir (网页/论文/书籍)",
+    )
     parser.add_argument("--tags", default="", help="Comma-separated tags")
     ns = parser.parse_args()
     tags = [t.strip() for t in ns.tags.split(",") if t.strip()] if ns.tags else []
@@ -194,6 +245,7 @@ def main() -> None:
             "host": ns.host,
             "org": ns.org,
             "repo": ns.repo,
+            "source_sub": ns.source_sub,
             "tags": tags,
         }
     )

@@ -104,10 +104,14 @@ frontmatter `title: A` 但正文 H1 是 `# B`。
 文件路径违反命名规则：
 
 - 文件名只用 `[\w一-鿿\-\.]`
-- domain 必须 `知识库/来源/代码仓库/<host>/<org>/<repo>/` 三层
+- project/domain 必须 `知识库/项目/<host>/<org>/<repo>/` 三层 (local 时 host=local, org=basename)
 - log 必须 `DD-HHMM-<slug>.md`
 
 详见 `知识库结构.md#路径与命名规则`。
+
+### 14. repo-path-deprecated (warn, **自动**)
+
+`知识库/来源/代码仓库/<host>/<org>/<repo>/` 路径已废弃, autofix 自动 mv 到 `知识库/项目/<host>/<org>/<repo>/`, 并补全/修正 frontmatter (`type: domain` → `type: project`, 补 `host/org/repo` 字段)。
 
 ## --fix 行为
 

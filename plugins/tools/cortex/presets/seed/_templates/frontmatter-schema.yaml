@@ -3,23 +3,16 @@ description: cortex vault 每目录 frontmatter + tag 规范
 namespaces:
   知识库:
     项目:
-      required: [type, title, created, status]
-      optional: [tags, updated, owner, started, ended, links]
+      required: [type, title, host, org, created]
+      optional: [tags, updated, repo, source_url, status, owner, started, ended, links, score, maturity]
       defaults:
         type: project
         status: active
-      tags_required: ["project/<slug>"]
-      tags_optional: ["domain/<area>", "stack/<tech>"]
+      tags_required: ["type/project", "host/<host>", "org/<org>", "repo/<repo>"]
+      tags_optional: ["lang/<language>", "topic/<area>", "stack/<tech>"]
       filename_pattern: "<slug>.md"
+      note: "GitHub/GitLab/local git repo 与本地项目统一落 知识库/项目/<host>/<org>/<repo>/, host=local 时 org=basename"
     来源:
-      代码仓库:
-        required: [type, title, source_kind, host, org, repo, url, created]
-        optional: [tags, stars, language, last_synced, license]
-        defaults:
-          type: source
-          source_kind: repo
-        tags_required: ["source/repo", "host/<host>"]
-        tags_optional: ["lang/<language>", "topic/<area>"]
       网页:
         required: [type, title, source_kind, domain, url, created]
         optional: [tags, author, published, archive_url]
