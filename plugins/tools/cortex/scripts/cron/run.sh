@@ -192,7 +192,7 @@ case "$JOB" in
   dashboard)           SLASH_CMD="dashboard" ;;
   memory-promote)      SLASH_CMD="promote" ;;
   memory-forget)       SLASH_CMD="forget" ;;
-  memory-consolidate)  SLASH_CMD="consolidate" ;;
+  digest)  SLASH_CMD="consolidate" ;;
   memory-compact)      SLASH_CMD="compact" ;;
   memory-warden)       SLASH_CMD="warden" ;;
   memory-archive)      SLASH_CMD="archive" ;;

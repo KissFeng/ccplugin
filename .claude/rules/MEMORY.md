@@ -123,13 +123,24 @@ uv run scripts/update_version.py
 
 ## 更新日志
 
-**2026-05-13**：Cortex 插件整体重构 (15 commits, 多轮迭代收尾)
+**2026-05-13**：Cortex 插件整体重构 (25+ commits, 多轮迭代收尾)
 
-- 后续追加 (32ac08ea 之后):
+- 后续追加 (c8554ef1 之后):
+  - `e5b6e85e` Stop/PostCompact 纯 jsonl copy 到 `记忆/L4-流水账/sessions/<cli>/<YYYY>/<MM>/<DD>/<id>.jsonl`
+  - `ab675e58` install_cron 删尾部 disclaimer
+  - `dce1c41f` install_cron read+compare+conditional-write, 表格始终输出
+  - `2f7ee914` digest 收件箱 ≥30 天强制 classify/archive/delete
+  - `7d90da23` save_session 路径迁移 + digest 加 inbox
+  - `a1fce7ef` install_cron 自动 idempotent (读+去重+写入 crontab/launchd)
+  - `bc13dee2` consolidate → digest, fold 完全移除 (digest 含归档)
+  - `b88a2510` consolidate 升级日处理五阶段单脚本
+  - `a7f87600` install --non-interactive 默认装 cron + 表格输出
+  - `4ba4f2b5` cron dashboard 改 daily 02:30 (was weekly Sun 02:30)
+
+- 前期追加 (32ac08ea 之后):
   - `192d050b` templates/ → presets/seed/_templates/ (preset 统一提供)
   - `66dc8d2c` 文档清单加范围列 (全局/当前目录/知识库/记忆层)
   - `f1fe02a8` 范围标记改文字描述 (禁 emoji)
-  - `4ba4f2b5` cron dashboard 改 daily 02:30 (was weekly Sun 02:30)
 
 **2026-05-13**：Cortex 插件首轮重构 (10 commits, 一次性收尾)
 

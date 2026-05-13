@@ -75,6 +75,16 @@ plugins/tools/cortex/
 
 | Hash | 主题 |
 |------|------|
+| `e5b6e85e` | Stop/PostCompact 简化为纯 jsonl copy → 记忆/L4-流水账/sessions/<cli>/<YYYY>/<MM>/<DD>/<id>.jsonl |
+| `ab675e58` | install_cron 删尾部 disclaimer |
+| `dce1c41f` | install_cron read+compare+conditional-write, 表格始终输出 |
+| `c3fdd4ca` | cortex_stream 工具调用渲染优化 |
+| `2f7ee914` | digest 收件箱 ≥30天强制 classify/archive/delete |
+| `7d90da23` | save_session 路径迁移 + digest 加 inbox |
+| `a1fce7ef` | install_cron 自动 idempotent (读+去重+写入) |
+| `bc13dee2` | consolidate → digest, fold 完全移除 |
+| `b88a2510` | consolidate 升级日处理五阶段 |
+| `a7f87600` | install --non-interactive 默认装 cron + 表格输出 |
 | `4ba4f2b5` | cron dashboard 改 daily (was weekly) |
 | `f1fe02a8` | 范围标记改文字 (去 emoji) |
 | `66dc8d2c` | 文档清单加范围列 (全局/当前目录/知识库/记忆) |
@@ -97,7 +107,7 @@ plugins/tools/cortex/
 |-----|------|------|
 | `lint.sh` | daily | 01:00 |
 | `dashboard.sh` | daily | 02:30 |
-| `fold.sh` | weekly Sun | 02:00 |
+| `digest.sh` | daily | 03:00 |
 
 系统注册方式: install_cron.sh 仅**打印 snippet**, 用户手工 `crontab -e` / `launchctl load` / GHA workflow 三选一启用。当前系统未注册任何 cortex 定时任务。
 

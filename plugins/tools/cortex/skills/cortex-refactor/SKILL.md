@@ -49,7 +49,6 @@ python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scri
 ### fold — log/ 滚动归档至 folds/
 
 ```bash
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/fold.py \
   --vault <path> [--days N] [--apply]
 ```
 

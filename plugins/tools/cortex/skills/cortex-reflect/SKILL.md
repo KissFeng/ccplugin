@@ -10,7 +10,7 @@ allowed-tools: Bash Read Write Glob
 模拟大脑 default mode network (DMN) — 在空闲/周末扫近期记忆, 找跨 domain 的洞察连接和未解决疑问, 写入 `知识库/反思/{洞察,连接,疑问}/<YYYY-Wnn>.md`。
 
 ## 触发场景
-- weekly cron (与 memory-consolidate 串行, 不独立调度)
+- weekly cron (与 digest 串行, 不独立调度)
 - monthly 用户触发月度复盘
 - 用户显式 "reflect this week" / "本周反思" / "找跨域连接"
 - cortex-cartographer 生成 canvas/dashboard 前的输入

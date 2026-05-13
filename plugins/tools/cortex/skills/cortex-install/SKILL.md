@@ -174,7 +174,7 @@ vault 不是 git repo → 跳过, 不写两字段。
 - `daily 02:00 memory-promote` (L4→L3 提炼 + 候选写 candidates.md)
 - `daily 03:00 memory-forget` (扫过期标 archive_pending)
 - `weekly Sun 04:00 memory-compact` (L4 流水账 gzip)
-- `weekly Sun 04:30 memory-consolidate` (ledger → views 周报)
+- `weekly Sun 04:30 digest` (ledger → views 周报)
 - `biweekly 1,15 05:00 memory-warden` (腐化检测)
 - `monthly 1 06:00 memory-archive` (执行归档)
 
@@ -190,7 +190,7 @@ Q2 ∈ {launchd, cron, gha} → 走内联注册流程 (下文)。
 **解析 PLUGIN_ROOT** (cron daemon 不继承 shell env, snippet 必须绝对路径):
 优先级: `$CORTEX_INSTALL_PATH` env > `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex` > `$CLAUDE_PLUGIN_ROOT`。**避免**本地开发源码路径 (cron 上下文不可达)。
 
-**每 job 的 wrapper**: `<PLUGIN_ROOT>/scripts/cron/{lint,fold,dashboard,memory-promote,memory-forget,memory-compact,memory-consolidate,memory-warden,memory-archive}.sh`, 内部走 `claude --bare --no-session-persistence --settings ~/.claude/settings.glm-4.7-flash.json -p "..." --allowed-tools "Bash Read Glob Write Edit"` (memory-* 需写, 不允许删除)。
+**每 job 的 wrapper**: `<PLUGIN_ROOT>/scripts/cron/{lint,dashboard,memory-promote,memory-forget,memory-compact,digest,memory-warden,memory-archive}.sh`, 内部走 `claude --bare --no-session-persistence --settings ~/.claude/settings.glm-4.7-flash.json -p "..." --allowed-tools "Bash Read Glob Write Edit"` (memory-* 需写, 不允许删除)。
 
 **Cron 调度表**:
 
@@ -201,11 +201,7 @@ Q2 ∈ {launchd, cron, gha} → 走内联注册流程 (下文)。
 | dashboard | `30 2 * * 0` |
 | memory-promote | `0 2 * * *` |
 | memory-forget | `0 3 * * *` |
-| memory-compact | `0 4 * * 0` |
-| memory-consolidate | `30 4 * * 0` |
-| memory-warden | `0 5 1,15 * *` |
-| memory-archive | `0 6 1 * *` |
-
+| digest | `30 4 * * 0` |
 **后端 1: launchd (macOS)** — 为每选中 job 写 plist:
 - 路径: `~/Library/LaunchAgents/dev.lazygophers.cortex.<job>.plist`
 - 内容: `<ProgramArguments>` = `["bash", "<PLUGIN_ROOT>/scripts/cron/<job>.sh"]`, `<StartCalendarInterval>` 按上表
@@ -234,7 +230,7 @@ Q2 ∈ {launchd, cron, gha} → 走内联注册流程 (下文)。
 | 组 | wrapper | 用途 |
 |----|---------|------|
 | 基础 | `doctor.sh` / `config.sh` / `update.sh` / `init.sh` | 健康检查 / 配置 / 升级 / vault 初始化 |
-| cron 代理 | `lint.sh` / `fold.sh` / `dashboard.sh` / `install_cron.sh` | cron job 手动触发 |
+| cron 代理 | `lint.sh` / `dashboard.sh` / `digest.sh` / `install_cron.sh` | cron job 手动触发 |
 | 内容 | `ingest.sh` / `search.sh` / `save.sh` / `refactor.sh` | 摄取 / 检索 / 落档 / 重构 |
 | 记忆 | `memory.sh` / `recall.sh` / `promote.sh` / `digest.sh` | CRUD / 渐进召回 / 晋级 / 周报巩固 |
 
@@ -296,12 +292,12 @@ lang: zh-CN
 
 [cron 注册]
 ✅ 已注册 launchd: lint / memory-promote / memory-forget (3 项)
-⏭️  未选: fold / dashboard / memory-compact / memory-consolidate / memory-warden / memory-archive
+⏭️  未选: dashboard / memory-compact / digest / memory-warden / memory-archive
 
 [wrapper]
 ✅ 已生成 16 个 wrapper 到 ~/.cortex/scripts/ (4 组):
    - 基础: doctor.sh / config.sh / update.sh / init.sh
-   - cron 代理: lint.sh / fold.sh / dashboard.sh / install_cron.sh
+   - cron 代理: lint.sh / dashboard.sh / digest.sh / install_cron.sh
    - 内容: ingest.sh / search.sh / save.sh / refactor.sh
    - 记忆: memory.sh / recall.sh / promote.sh / digest.sh
 
