@@ -4,17 +4,16 @@
 Sequential stderr rendering (no Live region, no height cap, no refresh
 throttling) — each parsed event is printed in order as it streams in.
 
-CLI:
-    cortex-stream --label <label> -- <claude cmd...>
+CLI (run via absolute path, no package install / no console-script):
+    python3 <PLUGIN_ROOT>/scripts/mcp/cortex_stream.py --label <label> -- <claude cmd...>
 
 The script appends `--output-format stream-json --verbose` to the inner
-command, spawns it line-buffered, and renders each NDJSON event into a
-rolling history of rich renderables under a spinner heartbeat. Raw NDJSON
-is teed to stdout (so callers like run.sh can still grep the result line),
-and optionally mirrored to ``$CORTEX_STREAM_TEE_FILE``.
+command, spawns it line-buffered, and renders each parsed event in order
+to stderr. Stdout receives only the final result.text (plain) line — raw
+NDJSON never hits stdout (use ``$CORTEX_STREAM_TEE_FILE`` for capture).
 
 Non-tty stderr (cron / pipe) auto-degrades thanks to rich.Console's
-force_terminal detection — heartbeat updates collapse into plain lines.
+force_terminal detection.
 """
 
 from __future__ import annotations
@@ -42,7 +41,7 @@ _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="cortex-stream",
+        prog="cortex_stream.py",
         description="rich-rendered wrapper for claude stream-json output",
     )
     parser.add_argument("--label", default="cortex", help="prefix label for status lines")
@@ -458,7 +457,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     cmd = _strip_separator(list(args.cmd or []))
     if not cmd:
-        print("cortex-stream: missing command (use `-- <cmd...>`)", file=sys.stderr)
+        print("cortex_stream.py: missing command (use `-- <cmd...>`)", file=sys.stderr)
         return 4
 
     tee_path = os.environ.get("CORTEX_STREAM_TEE_FILE") or None

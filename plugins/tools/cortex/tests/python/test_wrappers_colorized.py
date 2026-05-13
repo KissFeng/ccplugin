@@ -1,4 +1,4 @@
-"""验证所有 wrapper 含 colorized helper, 5 新 wrapper 走 cortex_stream_runner."""
+"""验证所有 wrapper 含 colorized helper, 5 新 wrapper 走 python3 <abs>/cortex_stream.py."""
 from __future__ import annotations
 
 import re
@@ -40,15 +40,18 @@ def test_all_wrappers_have_color_helper(tmp_path: Path) -> None:
         assert pat.search(txt), f"{f.name} 缺 colorized helper"
 
 
-def test_new_wrappers_use_stream_runner(tmp_path: Path) -> None:
-    """init/memory/recall/promote/consolidate 必须走 cortex_stream_runner."""
+def test_new_wrappers_use_python_stream(tmp_path: Path) -> None:
+    """init/memory/recall/promote/consolidate 必须直接调 python3 <abs>/cortex_stream.py."""
     _run_install(tmp_path)
     for name in ["init", "memory", "recall", "promote", "consolidate"]:
         f = tmp_path / f"{name}.sh"
         assert f.exists(), f"{name}.sh 未生成"
         txt = f.read_text(encoding="utf-8")
-        assert "cortex_stream_runner" in txt, f"{name}.sh 未走 cortex_stream_runner"
-        assert "stream_progress.sh" in txt, f"{name}.sh 未 source stream_progress.sh"
+        assert "python3" in txt and "cortex_stream.py" in txt, \
+            f"{name}.sh 未走 python3 <abs>/cortex_stream.py"
+        # 禁包安装 / 禁 source stream_progress.sh
+        assert "cortex_stream_runner" not in txt, f"{name}.sh 残留废弃函数指代"
+        assert "stream_progress.sh" not in txt, f"{name}.sh 残留废弃 lib source"
 
 
 def test_all_wrappers_syntax_ok(tmp_path: Path) -> None:

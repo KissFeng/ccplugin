@@ -35,11 +35,11 @@ cortex 对 ingest/save 流加 3 层过滤:
 
 ## Skills 设计原则
 
-cortex 全部能力以 **13 个 skill** 暴露, **0 个 command** (与本仓库 `plugins/tools/task/` 全 skill 模式对齐, 决策见 `.trellis/tasks/archive/2026-05/05-10-obsidian-kb-plugin/research/05-skills-vs-commands.md` §6.3 建议 B)。
+cortex 全部能力以 **21 个 skill** 暴露, **20 个 slash command** (`/cortex:<name>` 触发 commands/<name>.md, 后者调用对应 skill)。
 
-cortex 共 13 个 skill, **6 自动 / 7 显式** (P4 加 ingest-bulk; P6 删 cortex-fold + cortex-cron)。显式 skill frontmatter 标 `disable-model-invocation: true`, 不进 description 池, 主线模型不会自动激活, 必须用户明确请求 (中文短语 / 英文触发词 / 用户直接调用)。
+cortex 共 21 个 skill, **~10 自动 / ~11 显式**。显式 skill frontmatter 标 `disable-model-invocation: true`, 不进 description 池, 主线模型不会自动激活, 必须用户明确请求 (中文短语 / 英文触发词 / slash 命令 / wrapper bash)。
 
-**6 个自动 skill** (description 池总长 ~628 字符, 远低于 1500 软上限):
+**自动 skill** (description 池语义匹配自动触发):
 
 | skill                | 触发方式                                                 |
 | -------------------- | -------------------------------------------------------- |
@@ -72,7 +72,7 @@ cortex 共 13 个 skill, **6 自动 / 7 显式** (P4 加 ingest-bulk; P6 删 cor
 
 ## Agents 设计原则
 
-cortex 提供 **8 个专用 agent** (sub-agent), 在 13 个 skill 之上提供"接任务后多轮自主推进"能力。agent 与 skill 互补, 不替代。
+cortex 提供 **8 个专用 agent** (sub-agent), 在 21 个 skill 之上提供"接任务后多轮自主推进"能力。agent 与 skill 互补, 不替代。
 
 | agent                 | 角色                        | 主调度                                                           |
 | --------------------- | --------------------------- | ---------------------------------------------------------------- |
