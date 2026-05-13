@@ -6,7 +6,6 @@ aliases: []
 tags: [dashboard]
 created: {{CREATED}}
 updated: {{UPDATED}}
-preset: {{PRESET}}
 lang: {{LANG}}
 cli: {{CLI}}
 cli_session: {{CLI_SESSION}}

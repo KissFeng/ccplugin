@@ -26,6 +26,18 @@
       "autofix": true
     },
     {
+      "id": "fm-banned-fields",
+      "severity": "warn",
+      "description": "frontmatter 含禁止字段 (preset 等不属 page, autofix: pop)",
+      "autofix": true
+    },
+    {
+      "id": "fm-missing-tags",
+      "severity": "warn",
+      "description": "frontmatter 缺 tags 字段 (必须存在, 空 list 可; autofix: 补 tags: [])",
+      "autofix": true
+    },
+    {
       "id": "dead-wikilink",
       "severity": "error",
       "description": "wikilink 指向不存在的页",

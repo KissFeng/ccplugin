@@ -7,7 +7,6 @@ aliases: [templates]
 tags: []
 created: {{CREATED}}
 updated: {{UPDATED}}
-preset: {{PRESET}}
 lang: {{LANG}}
 template_version: 1
 ---

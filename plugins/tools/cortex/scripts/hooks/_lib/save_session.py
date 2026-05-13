@@ -363,7 +363,6 @@ def build_body(
         "tags: [log, cortex-auto]",
         f"created: {today}",
         f"updated: {today}",
-        "preset: {{PRESET}}",
         f"lang: {lang}",
         f"cli: {cli}",
         f"cli_session: {cli_session}",

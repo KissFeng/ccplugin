@@ -6,7 +6,6 @@ aliases: []
 tags: [question, "#cortex"]
 created: {{CREATED}}
 updated: {{UPDATED}}
-preset: {{PRESET}}
 lang: {{LANG}}
 cli: {{CLI}}
 cli_session: {{CLI_SESSION}}

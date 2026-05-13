@@ -110,6 +110,9 @@ _DEPRECATED_WHITELIST = {"log/", "folds/", "sessions/"}
 # 结构标记 — 非内容相关 tag, lint 检测并 autofix 删除
 _BANNED_TAGS = {"index", "meta", "template", "_index", "stub"}
 
+# frontmatter 禁止字段 (preset 不应在 page fm 中, 它属 vault meta)
+_BANNED_FM_FIELDS = {"preset"}
+
 
 def _load_lint_whitelist(vault: Path) -> set[str]:
     """Return whitelist set from `_meta/version.json:.lint_whitelist[]`.
@@ -362,6 +365,19 @@ def check_file(
     # rule 2: fm-missing-created
     if not fm.get("created"):
         findings.append(_f("fm-missing-created", "warn", rel, 1, "frontmatter 缺 created 字段", True))
+    # rule: fm-banned-fields (preset 等不应出现在 page fm)
+    _banned_fields = [k for k in _BANNED_FM_FIELDS if k in fm]
+    if _banned_fields:
+        findings.append(_f(
+            "fm-banned-fields", "warn", rel, 1,
+            f"frontmatter 含禁止字段: {', '.join(_banned_fields)}", True,
+        ))
+    # rule: fm-missing-tags (tags 字段必须存在, 可为空 list)
+    if "tags" not in fm:
+        findings.append(_f(
+            "fm-missing-tags", "warn", rel, 1,
+            "frontmatter 缺 tags 字段 (必须存在, 空 list 可)", True,
+        ))
     # rule: fm-duplicate-tags + fm-banned-tags
     _tags = fm.get("tags")
     if isinstance(_tags, list) and _tags:
@@ -1874,7 +1890,7 @@ def apply_fixes(
             continue
         if f["rule"] not in {
             "fm-missing-type", "fm-missing-created", "fm-duplicate-tags",
-            "fm-banned-tags",
+            "fm-banned-tags", "fm-banned-fields", "fm-missing-tags",
             "hot-too-long",
             "index-missing-section", "title-h1-mismatch", "block-id-duplicate",
         }:
@@ -1940,6 +1956,47 @@ def apply_fixes(
                                 )
                                 new_text = f"---\n{_new_fm}---\n{m_fm.group(2)}"
                                 fixed += 1
+            elif rule == "fm-banned-fields":
+                try:
+                    import yaml as _yaml3  # type: ignore
+                except ImportError:
+                    _yaml3 = None
+                m_fm3 = re.match(r"^---\n(.*?)\n---\n?(.*)", new_text, re.S)
+                if m_fm3 and _yaml3 is not None:
+                    try:
+                        _fm3 = _yaml3.safe_load(m_fm3.group(1)) or {}
+                    except Exception:
+                        _fm3 = None
+                    if isinstance(_fm3, dict):
+                        removed = False
+                        for _k in list(_fm3.keys()):
+                            if _k in _BANNED_FM_FIELDS:
+                                _fm3.pop(_k, None)
+                                removed = True
+                        if removed:
+                            _new_fm3 = _yaml3.safe_dump(
+                                _fm3, allow_unicode=True, sort_keys=False,
+                            )
+                            new_text = f"---\n{_new_fm3}---\n{m_fm3.group(2)}"
+                            fixed += 1
+            elif rule == "fm-missing-tags":
+                try:
+                    import yaml as _yaml4  # type: ignore
+                except ImportError:
+                    _yaml4 = None
+                m_fm4 = re.match(r"^---\n(.*?)\n---\n?(.*)", new_text, re.S)
+                if m_fm4 and _yaml4 is not None:
+                    try:
+                        _fm4 = _yaml4.safe_load(m_fm4.group(1)) or {}
+                    except Exception:
+                        _fm4 = None
+                    if isinstance(_fm4, dict) and "tags" not in _fm4:
+                        _fm4["tags"] = []
+                        _new_fm4 = _yaml4.safe_dump(
+                            _fm4, allow_unicode=True, sort_keys=False,
+                        )
+                        new_text = f"---\n{_new_fm4}---\n{m_fm4.group(2)}"
+                        fixed += 1
             elif rule == "fm-banned-tags":
                 try:
                     import yaml as _yaml2  # type: ignore
