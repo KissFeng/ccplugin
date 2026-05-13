@@ -28,9 +28,8 @@ cortex 把 20 个 slash command 中常用的 17 个包装成独立 bash 脚本, 
 | `memory.sh` | 知识库 | `/cortex:memory` | 记忆管理 |
 | `promote.sh` | 知识库 | `/cortex:promote` | 提升记忆等级 |
 | `forget.sh` | 知识库 | `/cortex:forget` | 遗忘 |
-| `consolidate.sh` | 知识库 | `/cortex:consolidate` | 整合 ledger |
+| `digest.sh` | 知识库 | `/cortex:digest` | 整合 ledger |
 | `dashboard.sh` | 知识库 | `/cortex:dashboard` | 刷新仪表盘 |
-| `fold.sh` | 知识库 | `/cortex:fold` | 折叠长 log |
 
 ## 使用
 

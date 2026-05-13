@@ -59,7 +59,7 @@ test_non_interactive_full_run_writes_config_and_wrappers() {
   assert_contains "\"install_path\": \"$PLUGIN_ROOT\"" "$(cat "$home/.cortex/config.json")"
 
   # 七件套全部生成可执行
-  local wrappers=(lint.sh fold.sh dashboard.sh doctor.sh install_cron.sh config.sh update.sh)
+  local wrappers=(lint.sh dashboard.sh doctor.sh install_cron.sh config.sh update.sh)
   local w
   for w in "${wrappers[@]}"; do
     if [[ ! -x "$home/.cortex/scripts/$w" ]]; then

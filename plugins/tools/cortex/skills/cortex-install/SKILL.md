@@ -236,7 +236,7 @@ Q2 ∈ {launchd, cron, gha} → 走内联注册流程 (下文)。
 | 基础 | `doctor.sh` / `config.sh` / `update.sh` / `init.sh` | 健康检查 / 配置 / 升级 / vault 初始化 |
 | cron 代理 | `lint.sh` / `fold.sh` / `dashboard.sh` / `install_cron.sh` | cron job 手动触发 |
 | 内容 | `ingest.sh` / `search.sh` / `save.sh` / `refactor.sh` | 摄取 / 检索 / 落档 / 重构 |
-| 记忆 | `memory.sh` / `recall.sh` / `promote.sh` / `consolidate.sh` | CRUD / 渐进召回 / 晋级 / 周报巩固 |
+| 记忆 | `memory.sh` / `recall.sh` / `promote.sh` / `digest.sh` | CRUD / 渐进召回 / 晋级 / 周报巩固 |
 
 每个 wrapper 内部走 `claude --bare --no-session-persistence --max-budget-usd 0.30 -p "..."` 调对应 SKILL, `AUTO_MODE` 前缀关闭交互询问。
 - 不写 `~/.claude/settings.json`, 只写 LaunchAgents / crontab 区域
@@ -303,7 +303,7 @@ lang: zh-CN
    - 基础: doctor.sh / config.sh / update.sh / init.sh
    - cron 代理: lint.sh / fold.sh / dashboard.sh / install_cron.sh
    - 内容: ingest.sh / search.sh / save.sh / refactor.sh
-   - 记忆: memory.sh / recall.sh / promote.sh / consolidate.sh
+   - 记忆: memory.sh / recall.sh / promote.sh / digest.sh
 
 总结: 68 项写入, 5 项跳过, 0 项失败
 下一步:
@@ -311,7 +311,7 @@ lang: zh-CN
   - 记忆 CRUD: ~/.cortex/scripts/memory.sh read|write|update|forget <uri>
   - 渐进召回: ~/.cortex/scripts/recall.sh <query>
   - 晋级检测: ~/.cortex/scripts/promote.sh [--dry-run]
-  - 周报巩固: ~/.cortex/scripts/consolidate.sh [--week N]
+  - 周报巩固: ~/.cortex/scripts/digest.sh [--week N]
 ```
 
 ## 错误处理

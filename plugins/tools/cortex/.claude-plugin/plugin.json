@@ -22,12 +22,11 @@
   "commands": [
     "./commands/lint.md",
     "./commands/dashboard.md",
-    "./commands/fold.md",
     "./commands/doctor.md",
     "./commands/init.md",
     "./commands/promote.md",
     "./commands/forget.md",
-    "./commands/consolidate.md",
+    "./commands/digest.md",
     "./commands/compact.md",
     "./commands/warden.md",
     "./commands/archive.md",

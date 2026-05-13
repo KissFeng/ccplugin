@@ -1,16 +1,16 @@
 ---
-name: cortex-consolidate
+name: cortex-digest
 description: 记忆固化 — ledger/sessions → views, L4→L3 episodic / L3→L2 semantic 巩固提炼。触发: "consolidate" / "巩固记忆" / weekly cron 自动触发。
 disable-model-invocation: true
 allowed-tools: Bash Read Write Glob
 ---
 
-# cortex-consolidate
+# cortex-digest
 
 读 L4 流水账 + L3 短期记忆, 提炼高频模式 → views/consolidated/, 推升候选到 views/candidates.md (待 cortex-promote 处理)。
 
 ## 触发场景
-- weekly cron `memory-consolidate.sh` (Sun 04:30)
+- weekly cron `memory-digest.sh` (Sun 04:30)
 - 用户显式 "consolidate memory" / "巩固记忆" / "周报"
 - cortex-reflect 内部调用做预处理
 
@@ -84,7 +84,7 @@ allowed-tools: Bash Read Write Glob
 
 ## AUTO_MODE 行为 (wrapper 调用)
 
-当 prompt 含 `[AUTO_MODE]` (来自 `~/.cortex/scripts/consolidate.sh`, cron 默认场景):
+当 prompt 含 `[AUTO_MODE]` (来自 `~/.cortex/scripts/digest.sh`, cron 默认场景):
 
 1. **不调** AskUserQuestion (wrapper allowed-tools 已禁此工具, 强行调用必失败)
 2. 任何需用户决策处 → 走默认值跳过

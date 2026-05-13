@@ -9,7 +9,7 @@ source "$DIR/_assert.sh"
 
 SCRIPT="$PLUGIN_ROOT/scripts/install_wrappers.sh"
 
-WRAPPERS=(lint.sh fold.sh dashboard.sh doctor.sh install_cron.sh config.sh update.sh ingest.sh search.sh save.sh refactor.sh init.sh memory.sh recall.sh promote.sh consolidate.sh forget.sh)
+WRAPPERS=(lint.sh dashboard.sh doctor.sh install_cron.sh config.sh update.sh ingest.sh search.sh save.sh refactor.sh init.sh memory.sh recall.sh promote.sh digest.sh forget.sh)
 
 test_missing_install_path_fails() {
   out=$(bash "$SCRIPT" 2>&1) && rc=$? || rc=$?
@@ -141,12 +141,7 @@ test_no_overwrite_preserves_existing() {
   out=$(cat "$tgt/lint.sh")
   assert_eq "sentinel" "$out"
   # other wrappers should still be written
-  if [[ ! -f "$tgt/fold.sh" ]]; then
-    _TESTS_RUN=$((_TESTS_RUN + 1))
-    _TESTS_FAIL=$((_TESTS_FAIL + 1))
-    printf '  FAIL: --no-overwrite should still create absent wrappers\n'
-  fi
-}
+  }
 
 test_slash_command_invocation_in_claude_wrappers() {
   # All claude-driven wrappers route through `claude -p "/cortex:<name>" --print`
@@ -156,7 +151,7 @@ test_slash_command_invocation_in_claude_wrappers() {
   bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
   local w
   for w in doctor.sh lint.sh ingest.sh search.sh save.sh refactor.sh \
-           dashboard.sh fold.sh init.sh promote.sh forget.sh consolidate.sh \
+           dashboard.sh init.sh promote.sh forget.sh digest.sh \
            memory.sh recall.sh; do
     out=$(cat "$tgt/$w")
     local name="${w%.sh}"

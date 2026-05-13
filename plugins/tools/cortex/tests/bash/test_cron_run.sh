@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tests for scripts/cron/run.sh, lint.sh, fold.sh, dashboard.sh.
+# Tests for scripts/cron/run.sh, lint.sh,, dashboard.sh.
 # Strategy: inject a fake `claude` (and `timeout` if missing) into PATH
 # so we can verify run.sh's flow, jq pipeline, exit codes.
 set -u
@@ -11,7 +11,6 @@ source "$DIR/_assert.sh"
 
 RUN_SH="$PLUGIN_ROOT/scripts/cron/run.sh"
 LINT_SH="$PLUGIN_ROOT/scripts/cron/lint.sh"
-FOLD_SH="$PLUGIN_ROOT/scripts/cron/fold.sh"
 DASHBOARD_SH="$PLUGIN_ROOT/scripts/cron/dashboard.sh"
 
 # Build a fake-bin dir prepended to PATH; fake `claude` outputs success stream-json,
@@ -144,16 +143,6 @@ test_lint_sh_dry_run() {
   assert_contains "/cortex:lint" "$out"
 }
 
-test_fold_sh_dry_run() {
-  # 新设计: cron fold.sh 走 /cortex:fold slash command.
-  local sandbox; sandbox=$(make_tmpdir); trap "rm -rf '$sandbox'" RETURN
-  make_fakebin "$sandbox/bin"
-  out=$(PATH="$sandbox/bin:$PATH" \
-    HOME="$(mktemp -d)" \
-    bash "$FOLD_SH" --dry-run --vault "$sandbox/v")
-  assert_contains "dry-run" "$out"
-  assert_contains "/cortex:fold" "$out"
-}
 
 test_dashboard_sh_dry_run() {
   local sandbox; sandbox=$(make_tmpdir); trap "rm -rf '$sandbox'" RETURN
@@ -312,7 +301,6 @@ run_test test_error_result_returns_1       test_error_result_returns_1
 run_test test_empty_output_returns_1       test_empty_output_returns_1
 run_test test_lock_busy_returns_2          test_lock_busy_returns_2
 run_test test_lint_sh_dry_run              test_lint_sh_dry_run
-run_test test_fold_sh_dry_run              test_fold_sh_dry_run
 run_test test_dashboard_sh_dry_run         test_dashboard_sh_dry_run
 run_test test_lint_sh_unknown_flag_exits_4 test_lint_sh_unknown_flag_exits_4
 run_test test_missing_vault_exits_3        test_missing_vault_exits_3

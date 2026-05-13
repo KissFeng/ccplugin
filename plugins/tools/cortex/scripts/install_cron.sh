@@ -12,7 +12,6 @@
 #   daily   01:00       cortex lint
 #   daily   02:30       cortex dashboard refresh
 #   daily   03:00       cortex consolidate (log/session 读+析+处+更新+清理)
-#   weekly  Sun 02:00   cortex fold (log 滚动归档到 folds/)
 #
 # 所有命令以 `claude --bare -p` 触发对应 skill, 用户需先安装 claude CLI。
 
@@ -156,8 +155,7 @@ print_task_table() {
 ├──────────────────┼───────────────┼───────────────────────────────────────┤
 │ lint.sh          │ 每日 01:00    │ 17 规则 autofix 循环至 clean          │
 │ dashboard.sh     │ 每日 02:30    │ 重渲 index/hot/canvas 仪表盘          │
-│ consolidate.sh   │ 每日 03:00    │ log/session 读+析+处+更新+清理 (24h)  │
-│ fold.sh          │ 每周日 02:00  │ 长 log 滚动到 folds/<YYYY-QN> (归档)  │
+│ digest.sh        │ 每日 03:00    │ log/session 读+析+处+更新+清理+归档   │
 └──────────────────┴───────────────┴───────────────────────────────────────┘
 EOF
 }
@@ -170,8 +168,7 @@ print_cron() {
 
 0 1 * * * bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/lint.sh" --vault "${VAULT}"
 30 2 * * * bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/dashboard.sh" --vault "${VAULT}"
-0 3 * * * bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/consolidate.sh" --vault "${VAULT}"
-0 2 * * 0 bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/fold.sh" --vault "${VAULT}"
+0 3 * * * bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/digest.sh" --vault "${VAULT}"
 EOF
 }
 
@@ -210,8 +207,7 @@ print_launchd() {
 
 # 同样模板可派生:
 #   - dev.lazygophers.cortex.daily-dashboard (Hour=2, Minute=30, dashboard.sh)
-#   - dev.lazygophers.cortex.daily-consolidate (Hour=3, Minute=0, consolidate.sh)
-#   - dev.lazygophers.cortex.weekly-fold (Hour=2, Minute=0, Weekday=0, fold.sh)
+#   - dev.lazygophers.cortex.daily-digest (Hour=3, Minute=0, digest.sh)
 EOF
 }
 
@@ -233,7 +229,6 @@ on:
     - cron: '0 1 * * *'    # daily lint
     - cron: '30 2 * * *'   # daily dashboard refresh
     - cron: '0 3 * * *'    # daily consolidate (read/analyze/process/update/cleanup)
-    - cron: '0 2 * * 0'    # weekly fold
   workflow_dispatch:
 
 jobs:
@@ -274,7 +269,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
       - name: cortex consolidate
-        run: bash ${GITHUB_WORKSPACE}/plugins/tools/cortex/scripts/cron/consolidate.sh
+        run: bash ${GITHUB_WORKSPACE}/plugins/tools/cortex/scripts/cron/digest.sh
       - name: commit
         run: |
           git config user.name "cortex-bot"
@@ -283,22 +278,6 @@ jobs:
           git diff --quiet --staged || git commit -m "cortex: daily consolidate"
           git push
 
-  fold:
-    if: github.event.schedule == '0 2 * * 0'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - name: cortex fold
-        run: bash ${GITHUB_WORKSPACE}/plugins/tools/cortex/scripts/cron/fold.sh
-      - name: commit
-        run: |
-          git config user.name "cortex-bot"
-          git config user.email "cortex@noreply.local"
-          git add -A
-          git diff --quiet --staged || git commit -m "cortex: weekly fold"
-          git push
 EOF
 }
 

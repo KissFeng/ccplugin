@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cortex/scripts/cron/memory-consolidate.sh — weekly ledger→views consolidation via claude --bare.
+# cortex/scripts/cron/memory-digest.sh — weekly ledger→views consolidation via claude --bare.
 #
 # Trigger: 30 04 * * 0   (weekly Sun 04:30)
 # Frequency: weekly
@@ -7,7 +7,7 @@
 #       识别重复模式 → candidates.md 追加 L3 提议; 跨领域连接 → 知识库/反思/连接/。
 #
 # Usage:
-#   memory-consolidate.sh [--dry-run] [--vault <path>] [--lang <code>] [--settings <path>]
+#   memory-digest.sh [--dry-run] [--vault <path>] [--lang <code>] [--settings <path>]
 
 set -uo pipefail
 

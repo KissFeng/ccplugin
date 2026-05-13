@@ -399,7 +399,7 @@ async def handle_memory_forget(args: dict[str, Any]) -> list[TextContent]:
 
 MEMORY_CONSOLIDATE_TOOL = Tool(
     name="cortex_memory_consolidate",
-    description="触发 ledger → views 巩固 (cortex-consolidate skill 等价)",
+    description="触发 ledger → views 巩固 (cortex-digest skill 等价)",
     inputSchema={"type": "object", "properties": {}},
 )
 

@@ -104,7 +104,7 @@
 
 ## D7: 默认 dry-run
 
-**决策**：`cortex-lint` / `cortex-refactor` / `cortex-fold` 默认 dry-run, `--fix` / `--apply` 才改盘。
+**决策**：`cortex-lint` / `cortex-refactor` / `` 默认 dry-run, `--fix` / `--apply` 才改盘。
 
 **理由**：
 

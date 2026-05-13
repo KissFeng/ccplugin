@@ -472,7 +472,7 @@ detect_existing_cron() {
     fi
   fi
   if command -v crontab >/dev/null 2>&1; then
-    if crontab -l 2>/dev/null | grep -E 'cortex/scripts/(cron/)?(lint|fold|dashboard|consolidate)\.sh' >/dev/null 2>&1; then
+    if crontab -l 2>/dev/null | grep -E 'cortex/scripts/(cron/)?(lint|dashboard|digest)\.sh' >/dev/null 2>&1; then
       log_info "检测到 crontab 已含 cortex job, 跳过 cron 装"
       return 0
     fi
@@ -480,7 +480,7 @@ detect_existing_cron() {
   return 1
 }
 
-# 删 crontab 中引用不存在脚本的 cortex 行 (路径锚 cortex/scripts/cron/(lint|fold|dashboard|consolidate).sh)
+# 删 crontab 中引用不存在脚本的 cortex 行 (路径锚 cortex/scripts/cron/(lint|dashboard|digest).sh)
 # 不动 launchd plist (重启风险大, 留用户手动)
 prune_stale_cron() {
   command -v crontab >/dev/null 2>&1 || return 0
@@ -490,7 +490,7 @@ prune_stale_cron() {
   new=$(printf '%s\n' "$current" | awk -v home="$HOME" '
     {
       keep = 1
-      if (match($0, /[^ ]*cortex\/scripts\/cron\/(lint|fold|dashboard|consolidate)\.sh/)) {
+      if (match($0, /[^ ]*cortex\/scripts\/cron\/(lint|dashboard|digest)\.sh/)) {
         path = substr($0, RSTART, RLENGTH)
         gsub("~", home, path)
         sub(/^\$HOME/, home, path)

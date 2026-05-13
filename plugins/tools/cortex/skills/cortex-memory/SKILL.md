@@ -11,7 +11,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 
 ## 触发场景
 - 用户/AI 显式要求写入/读取/更新/删除一条记忆 (含 URI 或描述)
-- 其他 skill (cortex-recall, cortex-consolidate, cortex-promote) 内部调用做读写
+- 其他 skill (cortex-recall, cortex-digest, cortex-promote) 内部调用做读写
 
 ## 输入
 - verb: `read` / `write` / `update` / `delete`

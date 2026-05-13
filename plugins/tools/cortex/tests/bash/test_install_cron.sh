@@ -37,8 +37,7 @@ test_default_prints_cron() {
   out=$(run_install)
   assert_contains "cortex cron snippet" "$out"
   assert_contains "lint.sh" "$out"
-  assert_contains "fold.sh" "$out"
-  assert_contains "dashboard.sh" "$out"
+    assert_contains "dashboard.sh" "$out"
 }
 
 test_launchd_prints_plist() {
@@ -158,7 +157,7 @@ test_snippet_contains_no_variable_placeholder() {
   # cron snippet 中 PLUGIN_ROOT 应已被替换为绝对路径字符串, 不含 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex 占位
   out=$(run_install)
   # cron 段的 lint.sh 行不应该带 '~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex' 字面量
-  cron_lines=$(printf '%s\n' "$out" | grep -E 'cron/(lint|fold|dashboard)\.sh' || true)
+  cron_lines=$(printf '%s\n' "$out" | grep -E 'cron/(lint|dashboard|digest)\.sh' || true)
   if [[ -n "$cron_lines" ]] && [[ "$cron_lines" == *'~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex'* ]]; then
     _TESTS_RUN=$((_TESTS_RUN + 1))
     _TESTS_FAIL=$((_TESTS_FAIL + 1))
@@ -168,7 +167,7 @@ test_snippet_contains_no_variable_placeholder() {
   fi
   # launchd 同样
   out2=$(run_install launchd)
-  launchd_lines=$(printf '%s\n' "$out2" | grep -E 'cron/(lint|fold|dashboard)\.sh' || true)
+  launchd_lines=$(printf '%s\n' "$out2" | grep -E 'cron/(lint|dashboard|digest)\.sh' || true)
   if [[ -n "$launchd_lines" ]] && [[ "$launchd_lines" == *'~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex'* ]]; then
     _TESTS_RUN=$((_TESTS_RUN + 1))
     _TESTS_FAIL=$((_TESTS_FAIL + 1))

@@ -28,9 +28,9 @@ cortex 提供 20 个 plugin slash command, 在 Claude Code 任何会话中可直
 | `/cortex:memory` | 知识库 | 记忆管理 | 列出 / 查看 / 修改 L0-L4 记忆条目 |
 | `/cortex:promote` | 知识库 | 提升记忆等级 | L2 → L1 / L1 → L0 (经用户审批) |
 | `/cortex:forget` | 知识库 | 遗忘 | 删除指定记忆条目 |
-| `/cortex:consolidate` | 知识库 | 整合 | 7 天 ledger → 候选概念页 + 反思 / 连接 |
+| `/cortex:digest` | 知识库 | 整合 | 7 天 ledger → 候选概念页 + 反思 / 连接 |
 | `/cortex:dashboard` | 知识库 | 刷新仪表盘 | 重渲 `index.md` / `hot.md` / canvas |
-| `/cortex:fold` | 知识库 | 折叠 | 长 log/ledger 切尾到 `folds/<YYYY-QN>.md` |
+| `` | 知识库 | 折叠 | 长 log/ledger 切尾到 `folds/<YYYY-QN>.md` |
 | `/cortex:compact` | 知识库 | 紧凑 | 整理 vault, 删空目录, 合并碎片 |
 | `/cortex:warden` | 知识库 | 守卫巡检 | 周期扫孤儿 / 死链 / 老 fleeting, 自动处理 |
 

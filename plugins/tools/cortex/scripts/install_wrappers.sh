@@ -10,8 +10,8 @@
 #
 # Wrappers (16 total):
 #   - skill entrypoints (no args, hardcoded behavior in command.md):
-#       lint / dashboard / fold / doctor / init / promote / forget /
-#       consolidate / search / save / ingest / memory / recall / refactor
+#       lint / dashboard / doctor / init / promote / forget /
+#       digest / search / save / ingest / memory / recall / refactor
 #   - shell-only (do NOT go through claude):
 #       install_cron / config / update
 #
@@ -199,12 +199,11 @@ EOB
 # ─────────────────────────────────────────────────────────────────────────────
 emit_slash lint
 emit_slash dashboard
-emit_slash fold
 emit_slash doctor
 emit_slash init
 emit_slash promote
 emit_slash forget
-emit_slash consolidate
+emit_slash digest
 emit_slash search
 emit_slash save
 emit_slash ingest

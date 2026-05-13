@@ -123,7 +123,6 @@ bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts
 
 - daily 01:00 — `cortex-lint` (autofix 循环修复 17 类规则)
 - daily 02:30 — `cortex-dashboard` 刷新 index.md / hot.md / canvas
-- weekly Sun 02:00 — `cortex-fold` log → folds 滚动
 
 ## 故障排查
 

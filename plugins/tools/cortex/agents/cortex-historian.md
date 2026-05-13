@@ -19,7 +19,6 @@ model: sonnet
 ## 角色定位
 
 - 读 `sessions/<cli>/<YYYY-MM>/*.jsonl` (原始) + `log/<YYYY-MM>/*.md` (提炼) 双源
-- 输出: `folds/<YYYY-MM>-fold-NNN.md` 或主题型 fold (`folds/<topic>-history.md`)
 - **不**改 sessions/ log/ (历史不可改)
 
 ## 接受输入
@@ -43,13 +42,10 @@ model: sonnet
 
 - **列 sessions / log 范围**: cortex-session skill + `obsidian files vault=<name> path=<sessions/log dir>` (回退 MCP `list_files_in_dir`)
 - **读 transcript / log 笔记**: `obsidian read vault=<name> path=<path>` 批量循环 (回退 MCP `get_file_contents`); jsonl 非 md 走本地 `Read`
-- **写 fold**: `obsidian create overwrite=true vault=<name> path=<folds/...>` (回退 MCP `put_content`); 不涉及锚点 patch
 
 ## 边界
 
-- 单次 fold body ≤ 8KB (超出分多页)
 - 不改原始 sessions / log
-- 不删既有 fold (新写一个 NNN+1)
 - 不调 cortex-archivist (老化由档案员)
 - 跳过损坏的 jsonl (容错记录)
 
@@ -64,7 +60,6 @@ model: sonnet
 - 输入: 47 sessions, 23 log
 
 ### 已写
-- [[folds/2026-Q2-fold-003]] (5.2KB)
 
 ### 时间线摘要
 - 2026-03: 启动 cortex v1
@@ -75,17 +70,16 @@ model: sonnet
 - sessions/codex/2026-04/03-*.jsonl: 解析失败 (3 个)
 ```
 
-## Fold 工作流 (P6 并入, 原 cortex-fold skill)
+## Fold 工作流 (P6 并入, 原  skill)
 
-P6 起 cortex-fold skill 删除, 其能力并入 historian agent。本 agent 可主动 fold `log/` 老条目, 控制 log 目录大小。
+P6 起  skill 删除, 其能力并入 historian agent。本 agent 可主动 fold `log/` 老条目, 控制 log 目录大小。
 
 ### 调用场景
 
-- 用户说 "整理一下 log / fold logs / 归档日志"
 - 周期任务自动触发 (weekly Sun 02:00, cortex-install 注册的 cron job)
 - `cortex-lint` 命中 `log-too-long` 规则后建议触发
 
-### 算法 (从 cortex-fold 完整迁入)
+### 算法 (从  完整迁入)
 
 1. 扫描 `<vault>/log/YYYY-MM/*.md`, 排除 `<vault>/log/_index.md`
 2. 取 cutoff = 今日 - `--days N` (默认 7); 早于 cutoff 的进 fold 候选
@@ -118,13 +112,9 @@ P6 起 cortex-fold skill 删除, 其能力并入 historian agent。本 agent 可
 
 ### 命名规则 (与 spec 一致)
 
-- 路径: `folds/YYYY-MM-fold-NNN.md`
 - NNN: 三位数字, 从 001 起递增, 同月可有多个 fold (不同次操作累积)
-- fold 完成后, `cortex-search` 检索时 wikilink `[[<原 stem>]]` 仍可解析到 fold 内段落 (依赖 block-id `## from [[<stem>]]`)
 
 ### 边界与安全
 
-- 已经在 folds/ 的文件不再二次折叠
 - 单次 fold body 软上限 8KB, 超出按文件数二分到 fold-NNN+1
-- backup 永不自动清理, 用户可手工 `rm -rf _meta/.cortex-backup/refactor-fold/<ts>`
 - 失败回滚: 写 fold 失败时不删原 log; 删 log 失败时不动 fold (允许 fold 与原 log 并存, 下次 cortex-lint 提示重跑)

@@ -30,7 +30,7 @@ cortex 提供 21 个 skill。skill 由 description 池语义匹配自动触发, 
 | `cortex-memory` | 记忆层 | "查我的记忆" | 列出 / 查看 / 修改 L0-L4 记忆条目 | 自动 |
 | `cortex-promote` | 记忆层 | "升级记忆" | L2 → L1 / L1 → L0 (经用户审批) | 自动 |
 | `cortex-forget` | 记忆层 | "忘了 X" | 删除指定记忆条目 | 自动 |
-| `cortex-consolidate` | 记忆层 | "整合 ledger" / "consolidate 7 天" | 7 天 ledger → 候选概念页 + 反思 / 连接 | 自动 |
+| `cortex-digest` | 记忆层 | "整合 ledger" / "consolidate 7 天" | 7 天 ledger → 候选概念页 + 反思 / 连接 | 自动 |
 | `cortex-reflect` | 知识库 | "反思" / "出洞察" | 跨页面生成反思 / 连接 / 疑问页 | 显式 |
 | `cortex-session` | 知识库 | "导入 session" | jsonl transcript → 知识库 sessions/ | 显式 |
 | `cortex-lint` | 知识库 | "vault 体检" / "lint" | 跑 17 条规则 + autofix 循环修复 | 自动 |

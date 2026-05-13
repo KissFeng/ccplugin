@@ -62,7 +62,7 @@ cortex 共 21 个 skill, **~10 自动 / ~11 显式**。显式 skill frontmatter 
 | `cortex-new`       | `<type> <title>`                                 | 创建笔记文件                     |
 | `cortex-refactor`  | "rename / merge / split / fold / migrate-locale" | 批量改名 / 合并 / 拆分           |
 
-> P6 删: `cortex-fold` 并入 `cortex-historian` agent (见 §Fold 工作流); `cortex-cron` 并入 `cortex-install` SKILL §7 (装机一次性询问 + 内联 launchd/cron/GHA 注册)。
+> P6 删: `` 并入 `cortex-historian` agent (见 §Fold 工作流); `cortex-cron` 并入 `cortex-install` SKILL §7 (装机一次性询问 + 内联 launchd/cron/GHA 注册)。
 
 约束:
 

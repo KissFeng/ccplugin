@@ -28,7 +28,7 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 15. **backlink 完整性** — 抽样 5 个 `log/` 与 `知识库/领域/` 页面, 检查其 `[[X]]` wikilink 是否在 X 的 `## Backlinks` 段中出现; 不一致计入报告
 16. **共享 config 存在性** — `~/.cortex/config.json` 是否存在。缺失 → ℹ️ info (非 fail), 提示运行 `~/.cortex/scripts/config.sh init` 或 `python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py init`
 17. **共享 config 合法性** — 跑 `python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py validate`; exit 0 + "config ok" → ✅; "config absent" → ℹ️; exit 1 → ❌ 列出字段错误
-18. **wrapper 完整性** — 检 `~/.cortex/scripts/` 下 7 个 wrapper (`lint.sh`, `fold.sh`, `dashboard.sh`, `doctor.sh`, `install_cron.sh`, `config.sh`, `update.sh`) 是否存在且可执行。缺失 → ⚠️ warn (PR5 才生成), 提示运行 `bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/install.sh`
+18. **wrapper 完整性** — 检 `~/.cortex/scripts/` 下 7 个 wrapper (`lint.sh`, ``, `dashboard.sh`, `doctor.sh`, `install_cron.sh`, `config.sh`, `update.sh`) 是否存在且可执行。缺失 → ⚠️ warn (PR5 才生成), 提示运行 `bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/install.sh`
 
 ## 行为
 

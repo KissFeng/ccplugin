@@ -166,50 +166,6 @@ class SplitTest(unittest.TestCase):
             self.assertEqual(r.returncode, 2)
 
 
-class FoldTest(unittest.TestCase):
-    def test_fold_old_files(self):
-        with tempfile.TemporaryDirectory() as d:
-            vault = make_vault(Path(d))
-            old_dir = vault / "log" / "2024-01"
-            old_dir.mkdir(parents=True)
-            (old_dir / "01-1200-foo.md").write_text(
-                "---\ntype: log\ntitle: foo\n---\n# foo\nbody\n",
-                encoding="utf-8",
-            )
-            (old_dir / "02-1300-bar.md").write_text(
-                "---\ntype: log\ntitle: bar\n---\n# bar\nbody\n",
-                encoding="utf-8",
-            )
-            r = run_script("fold.py", "--vault", str(vault),
-                           "--days", "7", "--apply")
-            self.assertEqual(r.returncode, 0, msg=r.stderr)
-            data = json.loads(r.stdout)
-            self.assertTrue(data["applied"])
-            # produced fold file
-            folds = list((vault / "folds").glob("2024-01-fold-*.md"))
-            self.assertEqual(len(folds), 1)
-            # NNN format
-            self.assertRegex(folds[0].name, r"^2024-01-fold-001\.md$")
-
-    def test_dry_run_no_writes(self):
-        with tempfile.TemporaryDirectory() as d:
-            vault = make_vault(Path(d))
-            old_dir = vault / "log" / "2024-01"
-            old_dir.mkdir(parents=True)
-            (old_dir / "01-1200-foo.md").write_text("body", encoding="utf-8")
-            r = run_script("fold.py", "--vault", str(vault), "--days", "7")
-            self.assertEqual(r.returncode, 0)
-            data = json.loads(r.stdout)
-            self.assertFalse(data["applied"])
-
-    def test_no_log_dir_returns_2(self):
-        with tempfile.TemporaryDirectory() as d:
-            vault = Path(d)
-            (vault / "_meta").mkdir()
-            (vault / "_meta" / "version.json").write_text("{}", encoding="utf-8")
-            r = run_script("fold.py", "--vault", str(vault))
-            self.assertEqual(r.returncode, 2)
-
 
 class MigrateLocaleTest(unittest.TestCase):
     def test_dry_run(self):
