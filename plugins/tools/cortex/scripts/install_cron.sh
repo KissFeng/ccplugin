@@ -160,55 +160,121 @@ print_task_table() {
 EOF
 }
 
-print_cron() {
-  print_task_table
-  cat <<EOF
-# ===== cortex cron snippet (Linux/macOS cron) =====
-# 复制以下行到 'crontab -e':
-
-0 1 * * * bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/lint.sh" --vault "${VAULT}"
-30 2 * * * bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/dashboard.sh" --vault "${VAULT}"
-0 3 * * * bash "$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/digest.sh" --vault "${VAULT}"
-EOF
+cron_lines() {
+  # 输出 3 行 cortex cron job, 调 ~/.cortex/scripts/ 用户级 wrapper (统一入口)
+  printf '0 1 * * * bash "%s/.cortex/scripts/lint.sh"\n' "$HOME"
+  printf '30 2 * * * bash "%s/.cortex/scripts/dashboard.sh"\n' "$HOME"
+  printf '0 3 * * * bash "%s/.cortex/scripts/digest.sh"\n' "$HOME"
 }
 
-print_launchd() {
+install_cron_auto() {
+  # 读现有 crontab → 滤去所有 cortex 旧行 → 追加最新 3 行 → 写回.
+  # 幂等: 重复跑结果一致.
   print_task_table
-  cat <<EOF
-# ===== cortex launchd plist (macOS) =====
-# 保存为 ~/Library/LaunchAgents/dev.lazygophers.cortex.daily-lint.plist
-# 然后: launchctl load ~/Library/LaunchAgents/dev.lazygophers.cortex.daily-lint.plist
-# 注意: 路径硬编码为 marketplace 绝对路径, 避免 env var 解析 bug
 
+  if ! command -v crontab >/dev/null 2>&1; then
+    echo "[install_cron] crontab 未安装, 无法自动注册." >&2
+    echo "[install_cron] 手工 snippet:" >&2
+    cron_lines
+    return 1
+  fi
+
+  local existing filtered new tmp
+  existing=$(crontab -l 2>/dev/null || true)
+  # 滤掉所有 cortex 旧行: marketplace plugin 路径 + 用户 ~/.cortex/scripts/ 路径 (旧/新都清)
+  filtered=$(printf '%s\n' "$existing" \
+    | grep -Ev 'cortex/scripts/cron/(lint|dashboard|digest|fold|consolidate)\.sh' \
+    | grep -Ev '\.cortex/scripts/(lint|dashboard|digest|fold|consolidate)\.sh' \
+    || true)
+  # 拼接新内容
+  new=$(printf '%s\n%s' "$filtered" "$(cron_lines)" | sed -e 's/^[[:space:]]*$//' | awk 'NF || prev{print; prev=NF}')
+
+  tmp=$(mktemp)
+  printf '%s\n' "$new" > "$tmp"
+
+  if printf '%s\n' "$new" | crontab -; then
+    echo "✓ crontab 已更新 (新增 3 个 cortex job, 去重旧 cortex 行)" >&2
+    echo "  当前 cortex 相关 cron 行:" >&2
+    crontab -l 2>/dev/null | grep -E '\.cortex/scripts/' | sed 's/^/    /' >&2
+  else
+    echo "✗ crontab 写入失败, 手工 snippet 保存到: $tmp" >&2
+    return 2
+  fi
+  rm -f "$tmp"
+}
+
+launchd_plist() {
+  # $1 = job name (lint/dashboard/digest), $2 = Hour, $3 = Minute
+  local job="$1" hour="$2" minute="$3"
+  cat <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>dev.lazygophers.cortex.daily-lint</string>
+  <string>dev.lazygophers.cortex.daily-${job}</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cron/lint.sh</string>
-    <string>--vault</string>
-    <string>${VAULT}</string>
+    <string>${HOME}/.cortex/scripts/${job}.sh</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict>
-    <key>Hour</key><integer>1</integer>
-    <key>Minute</key><integer>0</integer>
+    <key>Hour</key><integer>${hour}</integer>
+    <key>Minute</key><integer>${minute}</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>${HOME}/.cache/cortex/lint.log</string>
+  <string>${HOME}/.cache/cortex/${job}.log</string>
   <key>StandardErrorPath</key>
-  <string>${HOME}/.cache/cortex/lint.err</string>
+  <string>${HOME}/.cache/cortex/${job}.err</string>
 </dict>
 </plist>
-
-# 同样模板可派生:
-#   - dev.lazygophers.cortex.daily-dashboard (Hour=2, Minute=30, dashboard.sh)
-#   - dev.lazygophers.cortex.daily-digest (Hour=3, Minute=0, digest.sh)
 EOF
+}
+
+install_launchd_auto() {
+  # 写 3 个 plist 到 ~/Library/LaunchAgents/, 卸载旧 + load 新.
+  print_task_table
+
+  if ! command -v launchctl >/dev/null 2>&1; then
+    echo "[install_cron] launchctl 未找到 (非 macOS?), fallback 输出 plist 内容:" >&2
+    launchd_plist lint 1 0
+    return 1
+  fi
+
+  local agent_dir="$HOME/Library/LaunchAgents"
+  mkdir -p "$agent_dir" "$HOME/.cache/cortex"
+
+  # job, hour, minute
+  local jobs=(
+    "lint:1:0"
+    "dashboard:2:30"
+    "digest:3:0"
+  )
+
+  # 先卸载/删旧 (含 fold / consolidate)
+  for old in fold consolidate; do
+    local op="$agent_dir/dev.lazygophers.cortex.daily-${old}.plist"
+    local ow="$agent_dir/dev.lazygophers.cortex.weekly-${old}.plist"
+    for f in "$op" "$ow"; do
+      [[ -f "$f" ]] && launchctl unload "$f" 2>/dev/null
+      [[ -f "$f" ]] && rm -f "$f" && echo "  - removed $f" >&2
+    done
+  done
+
+  for entry in "${jobs[@]}"; do
+    IFS=: read -r job hour minute <<< "$entry"
+    local plist="$agent_dir/dev.lazygophers.cortex.daily-${job}.plist"
+    # unload existing
+    [[ -f "$plist" ]] && launchctl unload "$plist" 2>/dev/null
+    launchd_plist "$job" "$hour" "$minute" > "$plist"
+    if launchctl load "$plist"; then
+      echo "  + loaded $plist" >&2
+    else
+      echo "  ✗ load failed: $plist" >&2
+    fi
+  done
+  echo "✓ launchd 已更新 (3 个 daily job)" >&2
 }
 
 print_gha() {
@@ -282,8 +348,8 @@ EOF
 }
 
 case "$KIND" in
-  cron)    print_cron ;;
-  launchd) print_launchd ;;
+  cron)    install_cron_auto ;;
+  launchd) install_launchd_auto ;;
   gha)     print_gha ;;
   *)
     echo "usage: $0 [--plugin-root <path>] [cron|launchd|gha]" >&2
@@ -295,8 +361,11 @@ cat <<EOF
 
 # ----------------------------------------------------------------------
 # 注意:
-# 1. 本脚本仅打印 snippet, 不写入任何用户配置 (跨平台风险)
-# 2. 选定方案后用户自行复制安装
+# 1. cron/launchd 自动注册 (读现有 → 去重 → 写回, 幂等);
+#    gha 仍 print snippet (需用户提交到 vault 仓库 .github/workflows/)
+# 2. 用户级 wrapper: ~/.cortex/scripts/ (无需 sudo, 写入用户 crontab)
+# 3. vault = ${VAULT} (from ~/.cortex/config.json)
+# 4. 验证: 查 'crontab -l' 或 'launchctl list | grep cortex' 确认
 # 3. PLUGIN_ROOT = ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex
 # 4. vault = ${VAULT} (from ~/.cortex/config.json)
 # 5. 验证: 复制完成后立即手跑一次, 确认输出与权限正常

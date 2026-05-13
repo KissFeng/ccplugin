@@ -34,16 +34,17 @@ run_install_raw() {
 }
 
 test_default_prints_cron() {
+  # cron mode: auto-write crontab (HOME isolated). Output has task table + status.
   out=$(run_install)
-  assert_contains "cortex cron snippet" "$out"
   assert_contains "lint.sh" "$out"
-    assert_contains "dashboard.sh" "$out"
+  assert_contains "dashboard.sh" "$out"
+  assert_contains "digest.sh" "$out"
 }
 
 test_launchd_prints_plist() {
-  out=$(run_install launchd)
-  assert_contains "launchd" "$out"
-  assert_contains "<plist" "$out"
+  # launchd mode: auto-write ~/Library/LaunchAgents (HOME isolated).
+  out=$(run_install launchd 2>&1)
+  assert_contains "lint" "$out"
 }
 
 test_gha_prints_yaml() {
@@ -68,7 +69,7 @@ test_unknown_kind_exits_2() {
 
 test_includes_disclaimer() {
   out=$(run_install)
-  assert_contains "本脚本仅打印" "$out"
+  assert_contains "vault" "$out"
 }
 
 # ---- 新增: PLUGIN_ROOT 解析优先级 ----
