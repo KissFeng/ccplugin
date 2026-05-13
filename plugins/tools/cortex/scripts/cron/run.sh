@@ -136,8 +136,10 @@ shift || true
 
 # shellcheck source=../lib/config.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib/config.sh"
-# shellcheck source=../lib/stream_progress.sh
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib/stream_progress.sh"
+# stream_progress.sh 已弃用 — 直接调 python3 <abs>/cortex_stream.py.
+_CORTEX_SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+STREAM_PY="$_CORTEX_SCRIPTS_DIR/mcp/cortex_stream.py"
+[[ -f "$STREAM_PY" ]] || { echo "[cortex] cortex_stream.py missing: $STREAM_PY" >&2; exit 4; }
 # Validate ~/.cortex/config.json in this process so broken JSON fails fast.
 cortex_config_init
 
@@ -203,7 +205,7 @@ CMD=(claude
   --settings "$SETTINGS"
   -p "/cortex:$SLASH_CMD"
 )
-# Note: --output-format stream-json --verbose is injected by cortex_stream_runner.
+# Note: --output-format stream-json --verbose is injected by cortex_stream.py.
 # 无 --print: stream-json 模式即流式输出, --print 仅适用于单次 markdown 输出, 二者互斥.
 
 # Extra flags after `--`: 过滤 legacy 限制 (--bare / --allowed-tools / --append-system-prompt),
@@ -245,7 +247,7 @@ trap 'rm -f "$TMP_NDJSON"; cx_git_commit_vault "cortex-${JOB}"' EXIT
 
 export CORTEX_JOB_LABEL="cortex-${JOB}"
 export CORTEX_STREAM_TEE_FILE="$TMP_NDJSON"
-# cortex_stream_runner reads CORTEX_TIMEOUT and forwards it to cortex_stream.py
+# cortex_stream.py reads --timeout and forwards it to cortex_stream.py
 # via `--timeout`. Inline (in-process) timeout is enforced by the python wrapper
 # — no external `timeout(1)` / `perl_timeout` binary is needed here, which
 # avoids the "bash function not on PATH" failure when Python's subprocess.Popen
@@ -263,11 +265,11 @@ export CORTEX_TIMEOUT="$TIMEOUT"
 # stdout passthrough from cortex_stream.py is discarded to keep the
 # terminal clean — only the rich UI on stderr is shown to the user.
 if [[ -t 2 ]]; then
-  cortex_stream_runner "${CMD[@]}" \
+  python3 "$STREAM_PY" --label "cortex-${JOB}" --timeout "${TIMEOUT:-0}" -- "${CMD[@]}" \
     2> >(tee -a "$ERR_FILE" >&2) \
     > /dev/null
 else
-  cortex_stream_runner "${CMD[@]}" 2>>"$ERR_FILE" > /dev/null
+  python3 "$STREAM_PY" --label "cortex-${JOB}" --timeout "${TIMEOUT:-0}" -- "${CMD[@]}" 2>>"$ERR_FILE" > /dev/null
 fi
 rc=$?
 if [[ $rc -ne 0 ]]; then

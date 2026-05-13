@@ -3,7 +3,7 @@
 #
 # Generates the proxy wrappers under <target-dir> (default ~/.cortex/scripts/).
 # All wrappers route through `claude -p "/cortex-<name>"` over stream-json
-# (via cortex_stream_runner + cx_filter_stream — rich UI on stderr, only the
+# (via python3 <abs>/cortex_stream.py + cx_filter_stream — rich UI on stderr, only the
 # final result.text reaches stdout). No args, full plugin permissions, no
 # --bare, no --allowed-tools, no --print. Slash commands are
 # defined in plugins/tools/cortex/commands/*.md and registered in plugin.json.
@@ -164,7 +164,7 @@ emit() {
 
 # emit_slash <name>:
 #   生成 wrapper 调 `claude -p "/cortex-<name>"` (全权限, 无 args, 无 --bare, 无 --print).
-#   走 cortex_stream_runner (stream-json + rich UI on stderr) | cx_filter_stream
+#   走 python3 <abs>/cortex_stream.py (stream-json + rich UI on stderr) | cx_filter_stream
 #   (stdout 仅 final result.text, 防 raw NDJSON 漏到终端).
 #   通过 plugins/tools/cortex/commands/<name>.md 触发 slash command, 行为由 .md 内描述定义.
 emit_slash() {
@@ -179,17 +179,14 @@ SETTINGS="\${SETTINGS:-\$HOME/.claude/settings.json}"
 export CORTEX_JOB_LABEL="cortex-$name"
 banner "$name (slash /cortex:$name)"
 
-# 加载 stream_progress.sh — 提供 cortex_stream_runner (rich 实时 UI + stream-json).
-LIB_PATH="$INSTALL_PATH/scripts/lib/stream_progress.sh"
-[[ -f "\$LIB_PATH" ]] || err "stream_progress.sh missing: \$LIB_PATH" 4
-# shellcheck disable=SC1090
-source "\$LIB_PATH"
-
-# 无入参, 启全 plugin 环境 (skills/agents/hooks/mcp/全工具), 不加限制.
-# 通过 plugin slash command /cortex:$name 触发, 行为由 commands/$name.md 定义.
-# cortex_stream_runner 自动注 --output-format stream-json --verbose, 走 rich UI on stderr.
+# 直接 python3 <绝对路径>/cortex_stream.py 启 claude (禁包 / 禁 PATH binary).
+# stream_progress.sh 不再 source — 函数指代隐藏了真实调用, 不利于审计.
+# cortex_stream.py 自动注 --output-format stream-json --verbose, 走 rich UI on stderr.
 # cx_filter_stream 仅放 final result.text 到 stdout, 防 raw NDJSON 漏到终端.
-cortex_stream_runner claude --settings "\$SETTINGS" -p "/cortex:$name" \\
+STREAM_PY="$INSTALL_PATH/scripts/mcp/cortex_stream.py"
+[[ -f "\$STREAM_PY" ]] || err "cortex_stream.py missing: \$STREAM_PY" 4
+python3 "\$STREAM_PY" --label "cortex-$name" --timeout 0 -- \\
+  claude --settings "\$SETTINGS" -p "/cortex:$name" \\
   | cx_filter_stream
 rc=\${PIPESTATUS[0]}
 if [[ \$rc -eq 0 ]]; then ok "$name done"; else err "$name failed code=\$rc" "\$rc"; fi
