@@ -8,7 +8,7 @@ PLUGIN_ROOT="$(cd "$DIR/../.." && pwd)"
 # shellcheck source=./_assert.sh
 source "$DIR/_assert.sh"
 
-RV="$PLUGIN_ROOT/hooks/_lib/resolve_vault.sh"
+RV="$PLUGIN_ROOT/scripts/hooks/_lib/resolve_vault.sh"
 
 # Run the resolver in a subshell with controlled HOME so we don't pollute parent.
 run_rv() {

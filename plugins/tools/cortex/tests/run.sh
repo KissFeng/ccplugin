@@ -56,7 +56,7 @@ fi
 if [[ "$COVERAGE" == "1" ]] && command -v coverage >/dev/null 2>&1; then
   printf '\n%s\n' "$(bold '== Coverage ==')"
   cd "$DIR/python"
-  coverage report --include="$PLUGIN_ROOT/hooks/_lib/*,$PLUGIN_ROOT/lint/*,$PLUGIN_ROOT/refactor/*" 2>/dev/null || true
+  coverage report --include="$PLUGIN_ROOT/scripts/hooks/_lib/*,$PLUGIN_ROOT/scripts/lint/*,$PLUGIN_ROOT/scripts/refactor/*" 2>/dev/null || true
 fi
 
 printf '\n%s\n' "$(bold '== Summary ==')"

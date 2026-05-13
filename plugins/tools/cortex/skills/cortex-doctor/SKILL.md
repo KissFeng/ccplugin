@@ -11,7 +11,7 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 
 ## 检查项
 
-1. **vault 路径解析** — 跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh`, 显示命中的来源 (env / config / default / auto-detect / 未命中)
+1. **vault 路径解析** — 跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/resolve_vault.sh`, 显示命中的来源 (env / config / default / auto-detect / 未命中)
 2. **vault 结构** — 共享根目录 (`_meta/`, `_templates/`, `index.md`, `hot.md`, `log/`, `folds/`) 是否齐全
 3. **preset 类型** — 读 `<vault>/_meta/version.json` 显示 preset (lyt/zettel/para/blank)
 4. **官方 obsidian CLI** — `command -v obsidian` 是否存在, `obsidian --version` 输出 (期望 v1.12.x+); 同时 `obsidian vault list` 检查 vault 是否已注册到 `obsidian.json`。**cortex 主路径**: read=`obsidian read` / write=`obsidian create overwrite=true` / append=`obsidian create append=true` / list=`obsidian files` / search=`obsidian search:context` / move=`obsidian move` / frontmatter=`obsidian property` / daily=`obsidian daily`。未安装提示: 参考官方 docs <https://docs.obsidian.md/Plugins/Obsidian+CLI> (Obsidian Settings → General → Command line interface 启用并安装)
@@ -49,7 +49,7 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 
 ## 实现提示 (给 Claude)
 
-1. 用 `Bash` 跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh` 拿 vault 路径
+1. 用 `Bash` 跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/resolve_vault.sh` 拿 vault 路径
 2. 用 `Read`/`Glob` 检查共享根目录与模板
 3. obsidian CLI / app-running / MCP / REST 检查用一组 `Bash` 命令; CLI 在但 app 未跑 → ❌ CLI 全部失败, 提示启动 app; CLI 缺失但 MCP 在 → 给降级建议 ("官方 obsidian CLI 不可用, cortex 将走 MCP REST 路径; 需要 Local REST API 插件 + Obsidian 进程常驻; 单调用延迟 ~10ms→~50ms 量级"); 两者都缺 → ❌ 致命
 4. 全部容错: 任一项失败仅标 ❌, 不中断后续检查

@@ -26,7 +26,7 @@ cortex-new source "Building a Second Brain"
 
 ## 行为
 
-1. 解析 vault 路径 (跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh`)
+1. 解析 vault 路径 (跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/resolve_vault.sh`)
 2. 读 `<vault>/_meta/version.json` 拿 `preset` 字段; 不存在则报错并提示先跑 cortex-install
 3. 读 `<vault>/_templates/<type>.md` (回退到 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/templates/<type>.md`)
 4. 替换 frontmatter 占位:

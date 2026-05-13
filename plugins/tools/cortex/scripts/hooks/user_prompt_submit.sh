@@ -11,7 +11,7 @@ RAW_INPUT="$(cat)"
 
 # Resolve vault, silent exit if missing
 # shellcheck source=_lib/resolve_vault.sh
-source "$PLUGIN_ROOT/hooks/_lib/resolve_vault.sh"
+source "$PLUGIN_ROOT/scripts/hooks/_lib/resolve_vault.sh"
 VAULT=$(resolve_vault)
 [[ -z "$VAULT" ]] && exit 0
 

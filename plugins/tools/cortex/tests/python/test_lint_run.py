@@ -14,7 +14,7 @@ add_paths()
 
 import run as lint_run  # noqa: E402
 
-SCRIPT = PLUGIN_ROOT / "lint" / "run.py"
+SCRIPT = PLUGIN_ROOT / "scripts" / "lint" / "run.py"
 
 
 def run_lint(vault: Path, *args: str) -> tuple[int, dict]:

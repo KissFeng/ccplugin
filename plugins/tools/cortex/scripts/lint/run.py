@@ -63,7 +63,7 @@ def _load_vault_lang(vault: Path) -> str:
     except Exception:
         pass
     try:
-        _hooks_lib = Path(__file__).resolve().parent.parent / "hooks" / "_lib"
+        _hooks_lib = Path(__file__).resolve().parents[2] / "scripts" / "hooks" / "_lib"
         if str(_hooks_lib) not in sys.path:
             sys.path.insert(0, str(_hooks_lib))
         from cortex_config import load_config
@@ -181,7 +181,7 @@ def check_vault_structure(
 
 def _load_locale_dirs(plugin_root: Path, vault: Path, lang: str) -> set[str]:
     """Load `dirs` mapping for given lang; return set of localized dir names."""
-    sys.path.insert(0, str(plugin_root / "hooks" / "_lib"))
+    sys.path.insert(0, str(plugin_root / "scripts" / "hooks" / "_lib"))
     try:
         from cortex_locale import load_locale  # type: ignore
         loc = load_locale(plugin_root, vault, lang)
@@ -1947,7 +1947,7 @@ def main() -> int:
     by_name, by_alias, referrers = index_wikilinks(vault)
 
     vault_lang = args.lang or _load_vault_lang(vault)
-    plugin_root = Path(__file__).resolve().parent.parent
+    plugin_root = Path(__file__).resolve().parents[2]
     locale_dirs = _load_locale_dirs(plugin_root, vault, vault_lang)
     fm_schema = _load_frontmatter_schema(vault, plugin_root)
 

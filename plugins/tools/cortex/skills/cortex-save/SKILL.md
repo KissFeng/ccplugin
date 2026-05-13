@@ -23,7 +23,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 
 - 用户参数 (可选): `--topic "X"` / `--from-session` / `--type concept|entity|domain|log|source|question|dashboard`
 - 默认: 推断要点 + 默认 `type=log`
-- vault 路径必须先解析: `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh`
+- vault 路径必须先解析: `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/resolve_vault.sh`
 
 ## 流程
 
@@ -38,7 +38,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 1. **解析 vault**
 
    ```bash
-   bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh
+   bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/resolve_vault.sh
    ```
 
    失败 → 提示用户配 `OBSIDIAN_VAULT` env 或 `~/.cortex/config.json`, 退出。
@@ -76,7 +76,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
    - **P0 masking 前置**:写盘前必经 `masking.py` 脱敏 (AWS/OpenAI/Anthropic/GitHub PAT/JWT/PEM/Slack token → `<REDACTED:*>`),`save_session.py` 已内置;手写 body 时先
 
      ```bash
-     SAFE_BODY="$(python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/masking.py <<< "$BODY")"
+     SAFE_BODY="$(python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/masking.py <<< "$BODY")"
      ```
 
      绕过 (仅测试): `CORTEX_SKIP_SANITIZE=1`,生产禁用。
@@ -93,7 +93,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 8. **反向 wikilink 回填**
 
    ```bash
-   python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/backlink_sync.py \
+   python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/backlink_sync.py \
      --vault "$VAULT" --source "<rel-path>"
    ```
 
@@ -107,7 +107,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 9. **快捷调用 save_session.py (--from-session 路径)**
 
    ```bash
-   python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/save_session.py \
+   python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/save_session.py \
      --vault "$VAULT" \
      --transcript "$CLAUDE_TRANSCRIPT_PATH" \
      --reason manual \

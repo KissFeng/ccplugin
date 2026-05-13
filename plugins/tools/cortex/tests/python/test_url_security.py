@@ -14,7 +14,7 @@ add_paths()
 import url_security  # noqa: E402
 from url_security import is_safe  # noqa: E402
 
-MODULE = PLUGIN_ROOT / "hooks" / "_lib" / "url_security.py"
+MODULE = PLUGIN_ROOT / "scripts" / "hooks" / "_lib" / "url_security.py"
 
 
 def _fake_getaddrinfo(ip: str):

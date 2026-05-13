@@ -16,8 +16,8 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 
 ## 行为
 
-1. 解析 vault 路径 (跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/resolve_vault.sh`); 不存在则报错
-2. 调 `python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/lint/run.py --vault <path> [--fix] [--scope=<glob>]`
+1. 解析 vault 路径 (跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/resolve_vault.sh`); 不存在则报错
+2. 调 `python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/lint/run.py --vault <path> [--fix] [--scope=<glob>]`
 3. 解析 JSON 报告:
    - 报错块 (severity=error): rule#1 fm-missing-type, #3 dead-wikilink, #5 duplicate-alias, #10 filename-illegal, #11 block-id-duplicate
    - 警告块 (severity=warn): rule#2 fm-missing-created, #4 orphan-page, #6 hot-too-long, #7 log-too-long, #8 index-missing-section, #9 title-h1-mismatch, #12 callout-unknown-type, #13 path-naming-violation
@@ -120,7 +120,7 @@ cortex-lint --fix 输出 JSON 含 `structure_purge` 字段且 `violation_count >
 
 **数据安全**: 永远 mv 到 backup, **从不**真 rm。backup_root 累积大时用户可手动清 `_meta/.cortex-backup/`。
 
-完整 preset schema 见 `plugins/tools/cortex/lint/schemas.py` (LYT / PARA / flat 三套)。
+完整 preset schema 见 `plugins/tools/cortex/scripts/lint/schemas.py` (LYT / PARA / flat 三套)。
 
 白名单匹配规则: vault 根相对路径**精确串相等** (dir 加尾 `/`, file 不加), 不支持 glob。隐藏目录 `.obsidian` / `.trash` 默认 allowed, 无需白名单。
 

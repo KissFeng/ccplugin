@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
-HOOK = PLUGIN_ROOT / "hooks" / "session_start.sh"
+HOOK = PLUGIN_ROOT / "scripts" / "hooks" / "session_start.sh"
 
 
 def _make_vault(tmp_path: Path, lang: str = "zh-CN") -> Path:

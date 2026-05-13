@@ -162,7 +162,7 @@ class StructurePurgeMvPlanTest(unittest.TestCase):
     """run.py main() emits structure_purge.mv_plan for vault-structure violations."""
 
     RUN_PY = (
-        Path(__file__).resolve().parent.parent.parent / "lint" / "run.py"
+        Path(__file__).resolve().parent.parent.parent / "scripts" / "lint" / "run.py"
     )
 
     def _run_lint(self, vault: Path) -> dict:

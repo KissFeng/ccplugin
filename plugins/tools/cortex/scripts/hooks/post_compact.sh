@@ -35,7 +35,7 @@ print(d.get('transcript_path', '') or '-', d.get('session_id', '') or '-')
 [[ "$SESSION_ID" == "-" ]] && SESSION_ID=""
 
 # shellcheck source=./_lib/resolve_vault.sh
-source "$PLUGIN_ROOT/hooks/_lib/resolve_vault.sh"
+source "$PLUGIN_ROOT/scripts/hooks/_lib/resolve_vault.sh"
 VAULT=$(resolve_vault 2>/dev/null || true)
 if [[ -z "$VAULT" ]]; then
   log "post_compact: vault not resolved; skip"
@@ -47,7 +47,7 @@ if [[ -z "$TRANSCRIPT_PATH" || ! -f "$TRANSCRIPT_PATH" ]]; then
   exit 0
 fi
 
-SAVE_OUT=$(python3 "$PLUGIN_ROOT/hooks/_lib/save_session.py" \
+SAVE_OUT=$(python3 "$PLUGIN_ROOT/scripts/hooks/_lib/save_session.py" \
   --vault "$VAULT" \
   --transcript "$TRANSCRIPT_PATH" \
   --reason compact \

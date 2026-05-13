@@ -12,7 +12,7 @@ add_paths()
 
 import backlink_sync as bs  # noqa: E402
 
-SCRIPT = PLUGIN_ROOT / "hooks" / "_lib" / "backlink_sync.py"
+SCRIPT = PLUGIN_ROOT / "scripts" / "hooks" / "_lib" / "backlink_sync.py"
 
 
 class StripCodeBlocksTest(unittest.TestCase):

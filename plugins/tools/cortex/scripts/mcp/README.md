@@ -28,7 +28,7 @@ a clean install after the plugin tree updates (`pipx install --force`).
 If `pipx` is not available, you can run the server directly:
 
 ```bash
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/mcp/server.py
+python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/mcp/server.py
 ```
 
 The plugin manifest declares both the `cortex-mcp` console entry point and a

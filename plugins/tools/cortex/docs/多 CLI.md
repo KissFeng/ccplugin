@@ -100,7 +100,7 @@ vault 同时有多 CLI 写入时:
 新增 CLI 写入支持时, 仅需:
 
 1. 在该 CLI 平台上实现等价 Stop/SessionEnd hook
-2. 调用 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/_lib/save_session.py --cli <name>` (现成)
+2. 调用 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/save_session.py --cli <name>` (现成)
 3. 复用 `templates/` (frontmatter 已含 `cli` 占位)
 
 不需要改 vault 结构、不需要改既有 cortex skill, 也不需要改 lint 规则。这就是 "vault 数据兼容" 的含义。

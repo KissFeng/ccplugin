@@ -16,7 +16,7 @@ cat >/dev/null 2>&1 || true
 
 # Resolve vault
 # shellcheck source=./_lib/resolve_vault.sh
-source "$PLUGIN_ROOT/hooks/_lib/resolve_vault.sh"
+source "$PLUGIN_ROOT/scripts/hooks/_lib/resolve_vault.sh"
 VAULT=$(resolve_vault)
 
 if [[ -z "$VAULT" ]]; then
@@ -47,7 +47,7 @@ plugin_root = Path(os.environ["PLUGIN_ROOT"])
 vault = Path(os.environ["VAULT"])
 
 # Load locale
-sys.path.insert(0, str(plugin_root / "hooks" / "_lib"))
+sys.path.insert(0, str(plugin_root / "scripts" / "hooks" / "_lib"))
 try:
     from cortex_locale import load_locale, detect_vault_lang
 except Exception:

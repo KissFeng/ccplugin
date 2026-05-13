@@ -11,9 +11,9 @@ PLUGIN_ROOT = Path(__file__).resolve().parents[2]
 def add_paths() -> None:
     """Make plugin Python modules importable."""
     paths = [
-        str(PLUGIN_ROOT / "hooks" / "_lib"),
-        str(PLUGIN_ROOT / "lint"),
-        str(PLUGIN_ROOT / "refactor"),
+        str(PLUGIN_ROOT / "scripts" / "hooks" / "_lib"),
+        str(PLUGIN_ROOT / "scripts" / "lint"),
+        str(PLUGIN_ROOT / "scripts" / "refactor"),
     ]
     for p in paths:
         if p not in sys.path:

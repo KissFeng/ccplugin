@@ -8,7 +8,7 @@ PLUGIN_ROOT="$(cd "$DIR/../.." && pwd)"
 # shellcheck source=./_assert.sh
 source "$DIR/_assert.sh"
 
-SCRIPT="$PLUGIN_ROOT/hooks/session_start.sh"
+SCRIPT="$PLUGIN_ROOT/scripts/hooks/session_start.sh"
 
 # Build a minimal vault on tmp.
 make_vault() {

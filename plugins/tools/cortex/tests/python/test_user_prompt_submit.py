@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
-HOOK = PLUGIN_ROOT / "hooks" / "user_prompt_submit.sh"
+HOOK = PLUGIN_ROOT / "scripts" / "hooks" / "user_prompt_submit.sh"
 
 
 def _run(prompt, vault):

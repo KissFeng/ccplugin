@@ -15,7 +15,7 @@ from _helpers import PLUGIN_ROOT, add_paths, make_vault, write_md
 
 add_paths()
 
-REFACTOR = PLUGIN_ROOT / "refactor"
+REFACTOR = PLUGIN_ROOT / "scripts" / "refactor"
 
 
 def run_script(name: str, *args: str) -> subprocess.CompletedProcess:

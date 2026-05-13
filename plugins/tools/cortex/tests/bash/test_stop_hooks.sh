@@ -7,8 +7,8 @@ PLUGIN_ROOT="$(cd "$DIR/../.." && pwd)"
 # shellcheck source=./_assert.sh
 source "$DIR/_assert.sh"
 
-STOP="$PLUGIN_ROOT/hooks/stop.sh"
-POST_COMPACT="$PLUGIN_ROOT/hooks/post_compact.sh"
+STOP="$PLUGIN_ROOT/scripts/hooks/stop.sh"
+POST_COMPACT="$PLUGIN_ROOT/scripts/hooks/post_compact.sh"
 
 make_vault() {
   local root="$1"

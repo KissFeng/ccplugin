@@ -11,7 +11,7 @@ add_paths()
 
 from html_sanitize import sanitize  # noqa: E402
 
-MODULE = PLUGIN_ROOT / "hooks" / "_lib" / "html_sanitize.py"
+MODULE = PLUGIN_ROOT / "scripts" / "hooks" / "_lib" / "html_sanitize.py"
 
 
 class SanitizeBlockTest(unittest.TestCase):

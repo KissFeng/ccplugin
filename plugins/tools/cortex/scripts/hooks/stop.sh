@@ -60,7 +60,7 @@ esac
 
 # ---- 解析 vault ----
 # shellcheck source=./_lib/resolve_vault.sh
-source "$PLUGIN_ROOT/hooks/_lib/resolve_vault.sh"
+source "$PLUGIN_ROOT/scripts/hooks/_lib/resolve_vault.sh"
 VAULT=$(resolve_vault 2>/dev/null || true)
 if [[ -z "$VAULT" ]]; then
   log "stop: vault not resolved; skip ($HOOK_EVENT)"
@@ -74,7 +74,7 @@ if [[ -z "$TRANSCRIPT_PATH" || ! -f "$TRANSCRIPT_PATH" ]]; then
 fi
 
 # ---- 调度 save_session.py ----
-SAVE_OUT=$(python3 "$PLUGIN_ROOT/hooks/_lib/save_session.py" \
+SAVE_OUT=$(python3 "$PLUGIN_ROOT/scripts/hooks/_lib/save_session.py" \
   --vault "$VAULT" \
   --transcript "$TRANSCRIPT_PATH" \
   --reason "$REASON" \
@@ -118,7 +118,7 @@ esac
 # 异步隔离, 不阻塞 hook 返回; git_sync.py 内部 fail-soft.
 if [[ -n "${VAULT:-}" ]]; then
   (
-    python3 "$PLUGIN_ROOT/hooks/_lib/git_sync.py" auto "$VAULT" \
+    python3 "$PLUGIN_ROOT/scripts/hooks/_lib/git_sync.py" auto "$VAULT" \
       >>"$LOG_FILE" 2>&1
   ) &
   disown 2>/dev/null || true

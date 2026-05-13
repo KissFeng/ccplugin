@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/session_start.sh"
+            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/session_start.sh"
           }
         ]
       }
@@ -73,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/stop.sh",
+            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/stop.sh",
             "async": true
           }
         ]
@@ -84,7 +84,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/stop.sh",
+            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/stop.sh",
             "async": true
           }
         ]
@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/post_compact.sh",
+            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/post_compact.sh",
             "async": true
           }
         ]
@@ -106,7 +106,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/hooks/user_prompt_submit.sh",
+            "command": "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/user_prompt_submit.sh",
             "async": false
           }
         ]
@@ -116,7 +116,9 @@
   "mcpServers": {
     "cortex": {
       "command": "python3",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.py"],
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/mcp/server.py"
+      ],
       "env": {
         "CORTEX_VAULT_PATH": "${CORTEX_VAULT_PATH:-}",
         "CORTEX_PLUGIN_ROOT": "${CLAUDE_PLUGIN_ROOT}"

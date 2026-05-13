@@ -61,7 +61,7 @@ def _load_masking() -> Any:
 
     The MCP server may be installed via pipx (out-of-tree) or run in-place; in
     both cases we resolve the path relative to this file: `mcp/tools/save.py`
-    → `mcp/` → `plugins/tools/cortex/hooks/_lib/masking.py`.
+    → `mcp/` → `plugins/tools/cortex/scripts/hooks/_lib/masking.py`.
     """
     here = Path(__file__).resolve()
     candidate = here.parent.parent.parent / "hooks" / "_lib" / "masking.py"

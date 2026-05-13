@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "_lib"))
 from _common import iter_md_files, make_backup_ts  # noqa: E402
 from cortex_locale import load_locale  # noqa: E402
 
-PLUGIN_ROOT = Path(__file__).resolve().parent.parent
+PLUGIN_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _is_git_repo(vault: Path) -> bool:

@@ -32,7 +32,7 @@ from typing import Any
 import importlib.util as _ilu
 
 _PLUGIN_ROOT = Path(__file__).resolve().parents[1]
-_LOADER_PATH = _PLUGIN_ROOT / "hooks" / "_lib" / "cortex_config.py"
+_LOADER_PATH = _PLUGIN_ROOT / "scripts" / "hooks" / "_lib" / "cortex_config.py"
 _spec = _ilu.spec_from_file_location("_cortex_config_loader", _LOADER_PATH)
 _loader_mod = _ilu.module_from_spec(_spec)
 _spec.loader.exec_module(_loader_mod)

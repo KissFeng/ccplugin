@@ -12,7 +12,7 @@ add_paths()
 
 import _common  # noqa: E402
 
-REFACTOR = PLUGIN_ROOT / "refactor"
+REFACTOR = PLUGIN_ROOT / "scripts" / "refactor"
 
 
 def run_script(name: str, *args: str) -> subprocess.CompletedProcess:

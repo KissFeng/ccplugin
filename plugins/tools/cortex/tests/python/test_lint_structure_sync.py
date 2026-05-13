@@ -6,8 +6,9 @@ import sys
 from pathlib import Path
 
 PLUGIN = Path(__file__).resolve().parents[2]
-if str(PLUGIN) not in sys.path:
-    sys.path.insert(0, str(PLUGIN))
+SCRIPTS = PLUGIN / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
 
 from lint.run import (  # noqa: E402
     _check_meta_missing,

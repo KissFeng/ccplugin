@@ -14,7 +14,7 @@ add_paths()
 
 import save_session as ss  # noqa: E402
 
-SCRIPT = PLUGIN_ROOT / "hooks" / "_lib" / "save_session.py"
+SCRIPT = PLUGIN_ROOT / "scripts" / "hooks" / "_lib" / "save_session.py"
 
 
 def _make_transcript(path: Path, entries: list[dict]) -> None:

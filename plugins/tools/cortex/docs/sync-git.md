@@ -31,8 +31,8 @@ vault 是知识库, 跨机使用刚需。P5 在 Stop hook 末尾加 **opt-in** a
 ### 方式 C: CLI 自检
 
 ```bash
-python3 $CLAUDE_PLUGIN_ROOT/hooks/_lib/git_sync.py status /path/to/vault
-python3 $CLAUDE_PLUGIN_ROOT/hooks/_lib/git_sync.py auto   /path/to/vault
+python3 $CLAUDE_PLUGIN_ROOT/scripts/hooks/_lib/git_sync.py status /path/to/vault
+python3 $CLAUDE_PLUGIN_ROOT/scripts/hooks/_lib/git_sync.py auto   /path/to/vault
 ```
 
 ## 多机协同

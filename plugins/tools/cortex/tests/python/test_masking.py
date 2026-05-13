@@ -12,7 +12,7 @@ add_paths()
 
 from masking import mask  # noqa: E402
 
-MODULE = PLUGIN_ROOT / "hooks" / "_lib" / "masking.py"
+MODULE = PLUGIN_ROOT / "scripts" / "hooks" / "_lib" / "masking.py"
 
 
 class MaskingHitTest(unittest.TestCase):
