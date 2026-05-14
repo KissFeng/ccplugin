@@ -336,7 +336,7 @@ def cli_memory_consolidate(args: dict[str, Any]) -> dict[str, Any]:
     conn_added = 0
     cross = [(e, sorted(ts)) for e, ts in entity_topics.items() if len(ts) >= 3]
     if cross:
-        conn_dir = vault / "知识库" / "反思" / "连接"
+        conn_dir = views_dir / "connections"
         conn_dir.mkdir(parents=True, exist_ok=True)
         conn_path = conn_dir / f"{week_tag}.md"
         with file_lock(str(conn_path)):

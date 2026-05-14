@@ -30,6 +30,7 @@ from typing import Any
 # Allow direct CLI invocation.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from lib.cortex_common import SCOPE_GLOB as _SCOPE_GLOB  # noqa: E402
 from lib.vault_path import resolve_vault  # noqa: E402
 from search import (  # noqa: E402
     _dedup,
@@ -38,14 +39,6 @@ from search import (  # noqa: E402
     _smart_connections,
     _title_from,
 )
-
-
-_SCOPE_GLOB = {
-    "all": "知识库",
-    "concepts": "知识库/领域",
-    "domains": "知识库/项目",
-    "log": "知识库/日记",
-}
 
 _WIKILINK_RE = re.compile(
     r"(?<!\!)\[\[([^\[\]\n|#^]+)((?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?)\]\]"

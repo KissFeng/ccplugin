@@ -29,15 +29,8 @@ from typing import Any
 # Allow direct `python3 search.py`: add this dir to sys.path so `from lib...` works.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from lib.cortex_common import SCOPE_GLOB as _SCOPE_GLOB  # noqa: E402
 from lib.vault_path import resolve_vault  # noqa: E402
-
-
-_SCOPE_GLOB = {
-    "all": "知识库",
-    "concepts": "知识库/领域",
-    "domains": "知识库/项目",
-    "log": "知识库/日记",
-}
 
 
 def _title_from(path: Path) -> str:

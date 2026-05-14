@@ -53,6 +53,11 @@ def _derive_tags(fm: dict, body: str) -> list[str]:
     若派生不足 _TAGS_MIN, 返回尽力派生的结果 (调用方自决是否报错).
     """
     existing = list(fm.get("tags") or [])
+    if len(existing) >= _TAGS_MIN and all(
+        isinstance(t, str) and t.strip() and not _PLACEHOLDER_RE.search(t)
+        for t in existing
+    ):
+        return existing[:_TAGS_MAX]
     derived: list[str] = []
 
     def _push(t: str) -> None:
@@ -114,19 +119,10 @@ def _derive_tags(fm: dict, body: str) -> list[str]:
 
 
 def _load_masking() -> Any:
-    """Import the P0 masking module from `hooks/_lib/masking.py`.
-
-    The MCP server may be run via 绝对路径 (no package install); in
-    both cases we resolve the path relative to this file: `mcp/tools/save.py`
-    → `mcp/` → `plugins/tools/cortex/scripts/hooks/_lib/masking.py`.
-    """
+    """Import the P0 masking module from `hooks/_lib/masking.py`."""
     here = Path(__file__).resolve()
-    # cli/save.py → cli/ → scripts/ → scripts/hooks/_lib/masking.py
     candidate = here.parent.parent / "hooks" / "_lib" / "masking.py"
     if not candidate.is_file():
-        # via abs path: hooks 与 source 同 checkout, 直接
-        # ~/.cortex/config.json (install_path) so cortex-doctor can wire it
-        # explicitly without env vars.
         import json
 
         cfg = Path.home() / ".cortex" / "config.json"

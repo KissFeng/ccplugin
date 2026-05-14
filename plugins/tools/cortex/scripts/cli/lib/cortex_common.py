@@ -1,9 +1,4 @@
-"""Shared helpers for the cortex CLI memory/ledger/session/html-render modules.
-
-Extracted from the legacy `scripts/mcp/cortex_mcp.py` MCP module so the
-business logic survives the MCP removal (Phase 2a refactor). Algorithms
-are unchanged — only the MCP protocol layer was stripped.
-"""
+"""Shared helpers for cortex CLI modules (memory/ledger/session/html-render/search)."""
 
 from __future__ import annotations
 
@@ -17,6 +12,15 @@ from .vault_path import resolve_vault
 # ── URI parsing ─────────────────────────────────────────────────────
 
 URI_RE = re.compile(r"^(L\d)://(.+)$")
+
+# ── search scope → vault subdir glob root ───────────────────────────
+
+SCOPE_GLOB: dict[str, str] = {
+    "all": "知识库",
+    "concepts": "知识库/领域",
+    "domains": "知识库/项目",
+    "log": "知识库/日记",
+}
 
 
 def resolve_uri(uri: str, vault: Path) -> Path:

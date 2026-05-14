@@ -275,7 +275,7 @@ KEEP_LIST=" "
 for w in "${EXPECTED[@]}"; do KEEP_LIST="${KEEP_LIST}${w} "; done
 shopt -s nullglob
 for f in "$TARGET_DIR"/*.sh; do
-  base="$(basename "$f")"
+  base="${f##*/}"
   case "$KEEP_LIST" in
     *" $base "*) : ;;
     *)
