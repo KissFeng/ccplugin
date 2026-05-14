@@ -28,7 +28,7 @@ type: project
 | Slash commands | 20 | `/cortex:<name>` 冒号 (dash 无法解析) |
 | Wrappers | 22 | 10 slash + 3 shell + 9 CLI, 装在 `~/.cortex/scripts/*.sh` |
 | Python CLI | 9 | save / search / deep_search / ingest_url / ingest_file / memory / ledger / session / html_render |
-| Lint 规则 | 17 | run.py autofix 自循环至 clean |
+| Lint 规则 | 18 | run.py autofix 自循环至 clean; rule 18 = `path-lang-mismatch` (按 vault.lang 校验 path segment, 豁免 host/org/repo + ASCII 专名 + frontmatter `path_lang_exempt`) |
 | Hooks | 5 | SessionStart / PostCompact / Stop / SubagentStop / UserPromptSubmit |
 | Cron jobs | 8 | lint / dashboard / digest / memory-{promote,forget,compact,warden,archive} |
 
@@ -54,15 +54,34 @@ type: project
 - 记忆 `memory.py recall`: L0→L1→L2→L3→L4 加权, 策略走 `_meta/memory-policy.yaml`
 - scope: `all=知识库/`, `concepts=知识库/领域/`, `domains=知识库/项目/`, `log=知识库/日记/`
 
+## Ingest 项目级硬契约 (SKILL §1.1 / §7 / §8 / §9)
+
+- **4 层目录** (`知识库/项目/<host>/<org>/<repo>/`): `主题/` (架构/决策/陷阱/依赖/配置/错误码/测试/功能 ≥4) + `模块/` (top-dir 拆) + `文件/` (源文件→.md) + `符号/api/` (函数/类级)
+- **分级 .md 下限**: ≤50 文件 ≥15 .md / 50-500 ≥40 / >500 ≥100; 大 repo 用 `符号/api/<module>/<name>.md` 二级目录防爆炸
+- **6 类抽取**: API surface + 配置 schema + 错误码 + 测试用例 + 功能模块 + 全局常量
+- **强制排除**: build 产物 / lock / binary / 系统 IDE / 临时备份 / 压缩包
+- **知识图谱 4 制品** (内联生): `_db.base` (Bases 3 视图 Obsidian 1.7+) + `_assets/canvases/<repo>.canvas` (≤20 节点) + Wikilink 网 (每 .md 出链 ≥5, 小 repo prorated ≥3) + websearch 扩展 (5 URL 容忍跳过)
+- **拒交**: 4 层任一空 / 6 类任一缺 / ALL_MD < 下限 / M/R < 0.8 (R 应用排除清单) → AI 必须继续补
+
+## Digest 路由识别 (SKILL §2-§3-§5)
+
+- **6 信号识别** repo 归属: frontmatter `host/org/repo` (强) > `source_url` (强) > wikilink (中) > URL (中) > tag `host/org/repo/<v>` (中) > keyword ≥3 次 (弱)
+- **路由表**: 反思/连接/矛盾/决策 4 类 — 命中 repo 落 `知识库/项目/<host>/<org>/<repo>/笔记/` 或 `主题/决策.md` append; 未命中 fallback `知识库/收件箱/`
+- 多 repo: 强信号优先 + 其他 repo 加 backlink
+- repo 目录缺: `mkdir -p` + minimal `_index.md` stub
+- §5 清理: 收件箱 ≥30 天复扫识别, 命中迁项目/笔记/, 否则归档 `归档/收件箱-<YYYY-QN>.md`
+
 ## 关键约定
 
 - AUTO_MODE persistent (禁询问 ≠ 中止, AI 自决循环修复至 clean)
 - Frontmatter `tags` ≥10 强制, lint `fm-missing-tags` autofix 派生 (12 维度, 严禁占位符)
 - Banned fm fields: `preset` (已废, lint autofix pop)
+- 路径 lang 校验 (lint rule 18): vault.lang=zh-CN segment 全 ASCII 或 lang=en segment 含 CJK → warn; 豁免 host/org/repo + ASCII 专名 + frontmatter `path_lang_exempt: true`
 - cortex-refactor 3 子操作: `rename` / `merge` / `split` (fold / restructure 已删)
 - 插件路径硬编码 `$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex` (env var 解析 bug 规避)
 - 自研 MCP 已移除, 走官方 `mcp-obsidian` (用户 `claude mcp add` 自行注册)
-- 测试: `cd plugins/tools/cortex/tests/python && python3 -m pytest -q` (314 pass + 9 subtests)
+- Slash wrapper: `-h`/`--help` + `-i`/`--interactive` (无 -p 进 REPL, 注入 `/cortex:<name>` 首消息) + `--no-commit`; 调 claude 时 echo bash + `--dangerously-skip-permissions`
+- 测试: `cd plugins/tools/cortex/tests/python && python3 -m pytest -q` (324 pass + 9 subtests)
 
 ## 关联 docs
 
