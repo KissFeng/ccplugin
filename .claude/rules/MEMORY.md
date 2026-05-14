@@ -39,15 +39,20 @@
   - **方法论**：三路并行 Agent 审查（代码复用/质量/效率）
 - `cortex-plugin-2026-05-13.md` — **@cortex 整体重构基线**（2026-05-13）
   - **单一真相清单**：vault 结构 / 配置 / env var 政策 / slash 形式 / AUTO_MODE persistent / 插件路径硬编码 / MOC 已删
-  - **实际计数**：8 agent · 21 skill · 20 command · 21 wrapper (9 slash + 3 shell + 9 CLI) · 20 lint · 5 hook · 10 CLI 模块
+  - **实际计数**：8 agent · 21 skill · 20 command · 22 wrapper (10 slash + 3 shell + 9 CLI) · 26 lint · 5 hook · 10 CLI 模块
   - **目录布局**：所有 python/bash 集中 `scripts/`,install.sh 例外;`scripts/cli/` (替 `scripts/mcp/`)
+  - **知识库 4 子目录** (v6 对齐 vault): `项目/<host>/<org>/<repo>/`, `领域/<域>/`, `日记/日/<YYYY-MM>/`, `收件箱/` — 删 来源/反思/实体/概念/问题/临时/日记-周/月/年
   - **ingest 全局规则**：folder-first + 嵌套 git 独立 + L1-L6 深度 + 评分制度
+  - **嵌套 repo** (v6): 任一子目录有 `.git/` 独立 ingest 到自己 `项目/<host>/<org>/<repo>/`, 父项目排除子 repo
+  - **local 项目相对 $HOME 路径** (v6): `~/persons/lyxamour/ccplugin/` → host=persons/org=lyxamour/repo=ccplugin, 不足 3 段用 `_local` 补齐
+  - **AI 自决域** (v6): `--domain` 可选, 缺时 AI 读 body 自决 6 域 (创作/学习/工作/技术/生活/金融), 不匹配默 `领域/未分类/`
   - **Digest SKILL.md 单一真相**：L4 单向漏斗 0 残留 + 既有 L0-L3 交叉学习 (update/enrich/conflict)
-  - **Lint 4 新规则**：fm-{duplicate,banned,missing}-tags + fm-banned-fields;parse_frontmatter 多行 list bug 修
+  - **Lint 11 规则升级**: fm-{duplicate,banned,missing}-tags + fm-banned-fields + repo-path-deprecated + kb-{reflection,question-fleeting,entity-concept,journal-multi-freq,source-non-repo}-path-deprecated; parse_frontmatter 多行 list bug 修
   - **Vault root 强制 merge**：实体/概念/领域/来源 等子层名 mv 入 知识库/
-  - **Dashboard seed 12 页重构**：清 100 个 `{{X}}` runtime 占位符,DASH:BEGIN/END 单一数据源
-  - **自研 MCP 移除** (晚批 v2): `plugin.json:mcpServers` 删 + `scripts/mcp/` → `scripts/cli/` + 9 bash wrapper + 16 文件改文本 + install.sh 引导官方 `mcp-obsidian`
-  - **测试基线**：python 286 pass + 9 subtests, 0 fail; bash 8 files
+  - **Dashboard 12 seed v4**: view_query 改 dict + view_chart 7 类 + view_kpi 真实表达式 + view_legend, mermaid fallback (heatmap→emoji table, sankey→flowchart LR), 严禁 N/A 占位
+  - **自研 MCP 移除** (v2): `plugin.json:mcpServers` 删 + `scripts/mcp/` → `scripts/cli/` + bash wrappers + install.sh 引导官方 `mcp-obsidian`
+  - **模板重做 v6**: 6 个 (`{_index,dashboard,project,inbox,journal-day,domain-topic}.md`), 全 lint-skip
+  - **测试基线**：python 320 pass, 0 fail; bash 8 files
 
 ## Rules文件索引
 
@@ -127,6 +132,37 @@ uv run scripts/update_version.py
 - `.claude/skills/gitnexus/` — 代码智能工具（exploring/impact-analysis/debugging/refactoring/cli）
 
 ## 更新日志
+
+**2026-05-14** (修复批)：install_wrappers.sh bash 3.2 兼容 + ingest wrapper 补 + install.sh MCP 段精简
+
+- `9a1a4471` install.sh MCP 段精简 — 删介绍/尾注, step2 + claude mcp add 合并单行
+- `d0b22973` install_wrappers.sh bash 3.2 兼容 — `declare -A` 改空格分隔字符串 + `case` 边界匹配 (macOS 默认 bash 3.2 不支持 -A)
+- `e2bc30cc` install_wrappers.sh 补 `emit_slash ingest` (commands/ingest.md 合法 `/cortex:ingest`) + `TARGET_DIR` 内非白名单 .sh 自动 rm (清旧 mcp/ 残留)
+- wrapper 总数: 21 → 22 (10 slash + 3 shell + 9 CLI)
+
+**2026-05-13** (晚批 v6)：Cortex 知识库 4 子目录对齐 vault + 嵌套 repo + AI 自决域
+
+- `68d2ab7a` 知识库收紧到 4 子目录 (项目/领域/日记/收件箱), 删 来源/反思/实体/概念/问题/临时/日记-周/月/年
+- save.py kind 路由 11 种: entity/concept → 领域/<域>/, reflection → 日记一项, question/fleeting/inbox → 收件箱, log/journal 仅日, source 严禁 repo host
+- ingest_file 嵌套 repo (`_find_nested_repos`) + 相对 `$HOME` 路径策略 (`_rel_home_to_host_org_repo`, 不足 3 段 `_local` 补齐)
+- Lint 5 新规则: kb-{reflection,question-fleeting,entity-concept,journal-multi-freq,source-non-repo}-path-deprecated
+- AI 自决域: --domain 可选, 缺时读 body 自决 6 域, 不匹配默 `领域/未分类/`
+- 模板重做: 删 5 建 3 (inbox/journal-day/domain-topic), 总 6 个
+- 测试 300 → 320 pass (+15 新 case)
+
+**2026-05-13** (晚批 v5)：Cortex GitHub/GitLab 项目目录 `知识库/项目/<host>/<org>/<repo>/`
+
+- `f76d735c` 路径统一: github/gitlab/local git → 项目/; 来源仅承载非 repo
+- save.py 新 `kind=project`, `kind=domain` 保留 alias, `kind=source` 严禁 repo host
+- ingest_url/ingest_file 自动 host 路由
+- Lint 新规则 `repo-path-deprecated` autofix mv + frontmatter rewrite
+- 模板新 `_templates/project.md`, schema 重写
+
+**2026-05-13** (晚批 v4)：Cortex 仪表盘输出优化
+
+- `12bebfb2` 12 seed 升级: view_query 改 dict + view_chart (7 类) + view_kpi (真实 Bash 表达式) + view_legend, tags ≥10, 仪表盘从 lint exemption 移除
+- SKILL 重写: 8 kind 查询 + 7 chart 渲染模板, mermaid fallback (heatmap→emoji table, sankey→flowchart LR), DASH 区结构 (KPI + chart + Top-N + LEGEND), 严禁 N/A 占位
+- cron/dashboard.sh PROMPT 单行委托
 
 **2026-05-13** (晚批 v3)：Cortex 知识库 md 强制 tags ≥10
 

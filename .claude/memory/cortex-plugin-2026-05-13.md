@@ -30,8 +30,8 @@ type: project
 | Agent | 8 (`agents/*.md`) |
 | Skill | 21 (`skills/<name>/SKILL.md`) |
 | Slash command | 20 (`commands/<name>.md`) |
-| Bash wrapper | 21 (`~/.cortex/scripts/<name>.sh` = 9 slash + 3 shell + 9 CLI) |
-| Lint 规则 | 20 (`scripts/lint/rules.json`) |
+| Bash wrapper | 22 (`~/.cortex/scripts/<name>.sh` = 10 slash + 3 shell + 9 CLI) |
+| Lint 规则 | 26 (20 旧 + 1 repo-path-deprecated + 5 kb-*-deprecated) |
 | Hook | 5 (SessionStart / PostCompact / Stop / SubagentStop / UserPromptSubmit) |
 | 自研 MCP | **已移除** (2026-05-13 晚批): scripts/mcp/ → scripts/cli/, plugin.json 删 mcpServers |
 | 官方 MCP (可选) | `mcp-obsidian` (用户走 install.sh 引导自行注册, 不 bundle) |
@@ -235,3 +235,104 @@ plugins/tools/cortex/
 - pytest 286 → 292 pass (6 新 case), 0 fail
 - 模板 31 个 `lint-skip: true` 全加
 - grep `≥3 tag` 残留 = 0
+
+## 仪表盘输出优化 (`12bebfb2`, 2026-05-13 v4)
+
+12 dashboard seed + skill + cron prompt 全套升级:
+
+- seed `view_query` 改 dict (kind + level + limit + window), 加 `view_chart` (7 类) + `view_kpi` (真实 Bash 计数表达式) + `view_legend` + `view_stale_after`
+- 仪表盘从 lint exemption 移除, 全 12 seed tags ≥10
+- SKILL 重写: 8 kind 查询 (memory/knowledge/ledger/cron/bridge/distribution/promotion/warden) + 7 chart 模板 (pie/sankey/heatmap/timeline/mindmap/table/grid), mermaid fallback (heatmap→emoji table 🟩🟨🟧🟥, sankey→flowchart LR)
+- DASH:BEGIN/END 区结构: KPI callout + chart + Top-N + LEGEND
+- 错误处理: 路径缺→报 error 不写盘保留上次; 路径空→渲染 0 (真实数据); 严禁 N/A 占位
+- cron/dashboard.sh PROMPT 单行委托
+
+## GitHub/GitLab 项目目录 (`f76d735c`, 2026-05-13 v5)
+
+- github/gitlab/local git repo → `知识库/项目/<host>/<org>/<repo>/`
+- 来源仅承载非 repo (网页/论文/书/视频/PDF)
+- `scripts/cli/save.py` 新 `kind=project`, `kind=domain` 保留 alias, `kind=source` 严禁 repo host
+- `ingest_url/ingest_file` 自动 host 路由
+- Lint 新规则 `repo-path-deprecated` autofix mv + frontmatter rewrite
+- 新模板 `_templates/project.md`, schema 重写
+
+## 知识库 4 子目录对齐 vault (`68d2ab7a`, 2026-05-13 v6)
+
+**核心**: 用户实际 vault 仅用 4 子目录, 插件 spec 收紧。
+
+### 4 子目录最终模型
+
+```
+知识库/
+├── 收件箱/           # 落档兜底, 待 digest 分发
+├── 日记/日/<YYYY-MM>/<YYYY-MM-DD>.md
+├── 项目/<host>/<org>/<repo>/
+└── 领域/<域>/
+```
+
+**删**: 来源/反思/实体/概念/问题/临时/日记-周/日记-月/日记-年
+
+### kind 路由 11 种 (save.py)
+
+| kind | 路径 |
+|------|------|
+| project | `知识库/项目/<host>/<org>/<repo>/<slug>.md` |
+| domain | alias project |
+| source | host ∈ github/gitlab 报错; 否则 `知识库/收件箱/<host>-<slug>.md` |
+| entity / concept | `知识库/领域/<domain>/<kebab>.md` (--domain 可选, 缺默 `未分类`, AI 自决) |
+| reflection | `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>-反思-<slug>.md` |
+| question / fleeting / inbox | `知识库/收件箱/<slug>.md` |
+| log / journal | `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>.md` (仅日, 周/月/年 kind 删) |
+
+### local 项目相对 `$HOME` 路径
+
+- `~/persons/lyxamour/ccplugin/` → host=persons, org=lyxamour, repo=ccplugin
+- 不足 3 段用 `_local` 补齐
+- source_url: `file://$HOME/<rel>`
+
+### 嵌套 repo
+
+`ingest_file._find_nested_repos`: 递归发现 `.git/`, 每个独立 ingest 到自己的 `项目/<host>/<org>/<repo>/`, 父项目内容排除子 repo。
+
+### 模板重做 (6 个)
+
+**删**: `_templates/{entity,concept,question,source,domain}.md`
+**保留**: `_templates/{project,_index,dashboard}.md`
+**新**: `_templates/{inbox,journal-day,domain-topic}.md` (lint-skip + tags ≥10)
+
+### Lint 5 新规则
+
+| Rule | Autofix |
+|------|---------|
+| `kb-reflection-path-deprecated` | mv 收件箱 |
+| `kb-question-fleeting-path-deprecated` | mv 收件箱 |
+| `kb-entity-concept-path-deprecated` | warn-only (需 AI 选域) |
+| `kb-journal-multi-freq-deprecated` | mv `归档/日记/<YYYY-QN>.md` |
+| `kb-source-non-repo-path-deprecated` | mv `收件箱/<host>-<slug>.md` |
+
+### AI 自决域选择
+
+`--domain` 可选, 缺时 SKILL/agent 读 body 自决 6 域 (创作/学习/工作/技术/生活/金融), 不匹配默 `领域/未分类/`, 允许创建新子目录。
+
+### 验收
+
+pytest 300 → 320 pass (+15 新 case: save 路由 9 + rel_home 4 + lint deprecation 6)
+
+## install_wrappers.sh 修复 (`e2bc30cc` + `d0b22973`, 2026-05-13/14)
+
+### `e2bc30cc` — 补 ingest + 清旧残留
+- `emit_slash ingest` (commands/ingest.md 是合法 `/cortex:ingest`)
+- `TARGET_DIR` 内非白名单 .sh 自动 `rm` (避免重命名后旧 wrapper 残留)
+- wrapper 总数 21 → 22 (10 slash + 3 shell + 9 CLI)
+
+### `d0b22973` — bash 3.2 兼容
+- `declare -A` 需 bash 4+, macOS 默认 bash 3.2 报 `invalid option`
+- 改空格分隔字符串 + `case` 边界匹配 (POSIX-ish)
+- 头尾空格防误匹配 (save.sh vs save_session.sh)
+
+## install.sh MCP 段精简 (`9a1a4471`, 2026-05-14)
+
+- 删介绍行 "如需通过 Obsidian REST API 操作 vault, 装官方 mcp-obsidian"
+- 删尾注 "注: cortex 内部业务 (memory/digest/lint/ingest) 走 bash wrappers"
+- step2 label + claude mcp add 命令合并单行
+- 最终 3 printf (标题 + step1 + step2 含命令)
