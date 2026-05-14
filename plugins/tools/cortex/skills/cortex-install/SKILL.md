@@ -90,7 +90,7 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
   - `html/` 子目录 (8 文件): `badge.html` / `card.html` / `timeline.html` / `canvas-heatmap.html` / `progressive-disclosure.html` / `mermaid-flowchart.md` / `mermaid-sankey.md` / `mermaid-mindmap.md`
   - `memory/` 子目录 (6 文件): `L0-core.md` / `L1-procedural.md` / `L1-semantic-stable.md` / `L2-semantic.md` / `L3-episodic.md` / `L4-session.md`
   - `knowledge/` 子目录 (15 文件): `project.md` / `source-{repo,web,paper,book}.md` / `domain-{concept,fact,method}.md` / `journal-{day,week,month,year}.md` / `reflection-{insight,connection,question}.md`
-- `index.md` / `hot.md` / `log/_index.md` / `folds/_index.md` — 空骨架 (frontmatter `type: meta`)
+- `index.md` / `hot.md` — 空骨架 (frontmatter `type: meta`)
 
 ### 4. 写业务结构
 
@@ -117,7 +117,7 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
 **Seed files** (按 `_structure.json:seed_files[]` 复制 44 文件):
 - 根入口 2: `主页.md` / `焦点.md` (`dst_key="."` → vault 根)
 - `_meta/memory-policy.yaml` 1
-- 知识库 `_index.md` × 24 (项目/来源/领域/日记/反思/收件箱 各层)
+- 知识库 `_index.md` × 各层 (项目/领域/日记/收件箱)
 - 记忆 `_index.md` × 5 (L0/L1/L2/L3/L4 顶层)
 - 仪表盘 stub × 12: `总览.md` / `知识库分布.md` / `记忆-L0-核心.md` / `记忆-L1-长期.md` / `记忆-L2-中期.md` / `记忆-L3-短期.md` / `记忆-L4-流水.md` / `记忆-晋级候选.md` / `记忆-腐化监控.md` / `知识-记忆 桥接.md` / `记忆-cron 状态.md` / `固化流.md`
 
@@ -141,7 +141,7 @@ vault 不是 git repo → 跳过, 不写两字段。
 
 列已创建/已存在/跳过的文件; 提示运行 `/cortex:doctor` 验证。
 
-### 7. 询问 9 cron (P6 内联, 装机一次性, 原 cortex-cron skill 并入)
+### 7. 询问 9 cron (装机一次性, 内联 launchd/cron/GHA 注册)
 
 **必须**调 `AskUserQuestion` (禁文本式提问), 合并 ≤4 questions 单次调用:
 
@@ -245,13 +245,13 @@ lang: zh-CN
 ✅ 复制 _templates/html/ (8 片段)
 ✅ 复制 _templates/memory/ (6 模板)
 ✅ 复制 _templates/knowledge/ (15 模板)
-✅ 写入 index.md / hot.md / log/_index.md / folds/_index.md
+✅ 写入 index.md / hot.md
 
 [知识库 namespace]
-✅ 创建 项目/<host>/<org>/<repo>/ 来源/{网页,论文,书籍}/
-✅ 创建 领域/{技术,金融,生活,工作,学习,创作,元学习}/ + 30 三级子类
-✅ 创建 日记/{日,周,月,年}/ 反思/{洞察,连接,疑问}/ 收件箱/
-✅ 复制 24 个 _index.md
+✅ 创建 项目/<host>/<org>/<repo>/
+✅ 创建 领域/{创作,学习,工作,技术,生活,金融}/
+✅ 创建 日记/日/ 收件箱/
+✅ 复制 各层 _index.md
 
 [记忆 namespace]
 ✅ 创建 L0-核心/ L1-长期/{procedural,semantic-stable}/ L2-中期/semantic/

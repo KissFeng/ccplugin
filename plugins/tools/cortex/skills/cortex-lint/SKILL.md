@@ -36,8 +36,8 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 | 3   | dead-wikilink         | error    | ✗ (建议 cortex-new 创建 stub)                    |
 | 4   | orphan-page           | warn     | ✗ (人工补 tag/链接)                              |
 | 5   | duplicate-alias       | error    | ✗ (人工合并)                                     |
-| 6   | hot-too-long          | warn     | ✓ (截断+落 folds/)                               |
-| 7   | log-too-long          | warn     | ✗ (建议触发 cortex-historian agent §Fold 工作流) |
+| 6   | hot-too-long          | warn     | ✓ (截断+落 归档/)                                |
+| 7   | log-too-long          | warn     | ✗ (digest 自动归档)                              |
 | 8   | index-missing-section | warn     | ✓ (自动补条目)                                   |
 | 9   | title-h1-mismatch     | warn     | ✓ (以 frontmatter 为准)                          |
 | 10  | filename-illegal      | error    | ✗ (cortex-refactor rename)                       |
@@ -152,10 +152,10 @@ prompt 含 `[AUTO_MODE]` 时 (来自 `~/.cortex/scripts/lint.sh` wrapper), **严
 | orphan-page | Read 正文行数: ≤ 3 行 (空 stub) `git rm` 删除; 否则 `Edit` 加 `tags: [orphan]` 或在最近邻 `_index.md` 插反链 (`bash ~/.cortex/scripts/search.sh` 找邻) |
 | filename-illegal / path-naming-violation | `git mv` 改: 长度 ≤ 50 字符, kebab-case, ASCII + 数字 + 连字符; 超长用 `<prefix>-<sha8>.md` (前 30 字符 + content sha 8 位); grep+Edit 改所有引用 |
 | callout-unknown-type | `Edit` 替成最近已知 callout (note/tip/warning/info) |
-| log-too-long | Read+Write 切尾部到 `folds/<YYYY-QN>.md` |
+| log-too-long | digest 自动归档 (无需 lint 介入) |
 | i18n-path-not-in-locale | 比对 `_meta/version.json:.lang` 与 `locales/<lang>.yml:.dirs` 顶层名; 顶层名不在 locale dirs → `git mv` 改为标准名 |
 | vault-misaligned | 单步 `python3 <abs>/scripts/lint/run.py --vault <vault> --sync-templates` 同步 `_templates/`, 再回主循环 |
-| frontmatter-schema-violation | run.py --fix 补 type/created; 其余字段 AI 启发式补: `desc` = H1 + 首段 ≤ 100 字; `source_url` = git remote / 原始 URL / "N/A"; `version` = git sha / pkg version / fetch date; `when_to_read` = "当用户问 <topic> 时"; `score` = 1-5 (上游活跃度, 无信号 = 3); `maturity` = 按目录 (项目/收件箱=draft, 来源/=stable, 反思/=review) |
+| frontmatter-schema-violation | run.py --fix 补 type/created; 其余字段 AI 启发式补: `desc` = H1 + 首段 ≤ 100 字; `source_url` = git remote / 原始 URL / "N/A"; `version` = git sha / pkg version / fetch date; `when_to_read` = "当用户问 <topic> 时"; `score` = 1-5 (上游活跃度, 无信号 = 3); `maturity` = 按目录 (项目/收件箱=draft, 领域/=stable, 日记/=review) |
 | vault-structure-violation (`structure_purge`) | **BATCH_MV 默认**: `mkdir -p <backup_root>` → 遍历 `mv_plan[]` mv 到 backup_root, **无 AskUserQuestion** |
 
 ### 工具优先级 (依次尝试)

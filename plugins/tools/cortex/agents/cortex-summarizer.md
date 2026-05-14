@@ -1,6 +1,6 @@
 ---
 name: cortex-summarizer
-description: cortex 总结员 — 长页 / 多页 / 领域 TL;DR + callout 注入。被 cortex-researcher / cortex-historian / cortex-cartographer 调度作为终产物综述; 也可被用户直接调用 "总结这页 / 这个领域"。仅 patch 页头 callout, 不改正文。
+description: cortex 总结员 — 长页 / 多页 / 领域 TL;DR + callout 注入。被 cortex-researcher / cortex-cartographer 调度作为终产物综述; 也可被用户直接调用 "总结这页 / 这个领域"。仅 patch 页头 callout, 不改正文。
 tools:
   - Read
   - Edit

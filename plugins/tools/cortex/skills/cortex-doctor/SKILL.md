@@ -12,7 +12,7 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 ## 检查项
 
 1. **vault 路径解析** — 跑 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/resolve_vault.sh`, 显示命中的来源 (env / config / default / auto-detect / 未命中)
-2. **vault 结构** — 共享根目录 (`_meta/`, `_templates/`, `index.md`, `hot.md`, `log/`, `folds/`) 是否齐全
+2. **vault 结构** — 共享根 (`_meta/`, `_templates/`, `index.md`, `hot.md`) + 顶层 (`知识库/`, `记忆/`, `仪表盘/`, `归档/`) 是否齐全
 3. **preset 类型** — 读 `<vault>/_meta/version.json` 显示 preset (lyt/zettel/para/blank)
 4. **官方 obsidian CLI** — `command -v obsidian` 是否存在, `obsidian --version` 输出 (期望 v1.12.x+); 同时 `obsidian vault list` 检查 vault 是否已注册到 `obsidian.json`。**cortex 主路径**: read=`obsidian read` / write=`obsidian create overwrite=true` / append=`obsidian create append=true` / list=`obsidian files` / search=`obsidian search:context` / move=`obsidian move` / frontmatter=`obsidian property` / daily=`obsidian daily`。未安装提示: 参考官方 docs <https://docs.obsidian.md/Plugins/Obsidian+CLI> (Obsidian Settings → General → Command line interface 启用并安装)
 5. **Obsidian app 在跑** — 官方 CLI 经 app runtime, app 不在跑全部失败。探活: mac `pgrep -x Obsidian` / linux `pgrep obsidian` / win `tasklist /FI "IMAGENAME eq Obsidian.exe"`。未跑 → 提示用户启动 Obsidian app

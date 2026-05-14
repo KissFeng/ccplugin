@@ -39,7 +39,6 @@ agent_titles:
   curator: cortex curator
   researcher: cortex researcher
   translator: cortex translator
-  historian: cortex historian
   cartographer: cortex cartographer
   archivist: cortex archivist
   linker: cortex linker

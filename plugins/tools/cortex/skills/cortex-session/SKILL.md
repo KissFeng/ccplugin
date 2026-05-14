@@ -12,7 +12,6 @@ allowed-tools: Bash Read Write Glob
 ## 触发场景
 - Claude Code Stop hook 自动触发 (SessionEnd 事件)
 - 用户显式 "import this session" / "归档会话" / "导入 transcript"
-- cortex-historian agent 多月汇总前的预处理
 
 ## 输入
 - transcript_path: 默认从 hook stdin 的 `transcript_path` 字段, 或 `$CLAUDE_TRANSCRIPT_PATH`

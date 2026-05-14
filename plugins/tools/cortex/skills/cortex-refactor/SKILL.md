@@ -1,7 +1,7 @@
 ---
 name: cortex-refactor
-description: vault 重构 — rename/merge/split/fold/migrate-locale, --apply 才落盘 backup。仅显式触发。
-argument-hint: "<rename|merge|split|fold|migrate-locale> [args...]"
+description: vault 重构 — rename/merge/split/migrate-locale, --apply 才落盘 backup。仅显式触发。
+argument-hint: "<rename|merge|split|migrate-locale> [args...]"
 disable-model-invocation: true
 allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir
 ---
@@ -45,16 +45,6 @@ python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scri
 - 每个 H2 节生成一个新页 `<src-stem>--<slug>.md`
 - 原页保留, 末尾追加 `> [!info] split into:` callout 列出子页
 - 重名不覆盖 (跳过)
-
-### fold — log/ 滚动归档至 folds/
-
-```bash
-  --vault <path> [--days N] [--apply]
-```
-
-- 默认保留近 7 天 log 不动
-- 早于 cutoff 的 log 按月聚合到 `folds/YYYY-MM-fold-NNN.md` (NNN 三位序号, 续号)
-- 折叠完成后删除原 log 文件 (backup 已存)
 
 ### migrate-locale — 切 vault.lang 时一次性 rename 业务目录
 

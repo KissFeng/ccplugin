@@ -521,9 +521,9 @@ def determine_target(
 
 
 def collect_existing_block_ids(vault: Path) -> set[str]:
-    """扫 知识库/日记/日/ 与 folds/ 已有 ^cortex-<sha8>, 防冲突。"""
+    """扫 知识库/日记/日/ 已有 ^cortex-<sha8>, 防冲突。"""
     seen: set[str] = set()
-    for sub in ("知识库/日记/日", "folds"):
+    for sub in ("知识库/日记/日",):
         d = vault / sub
         if not d.is_dir():
             continue

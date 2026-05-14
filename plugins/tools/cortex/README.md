@@ -8,7 +8,7 @@
 |------|-----|------|
 | Hooks | 5 | `SessionStart` / `PostCompact` / `Stop` / `SubagentStop` / `UserPromptSubmit` |
 | Skills | 21 | 自动触发 + 显式调 (详见 `docs/Skills 详解.md`) |
-| Agents | 8 | curator / researcher / archivist / cartographer / historian / linker / summarizer / translator |
+| Agents | 7 | curator / researcher / archivist / cartographer / linker / summarizer / translator |
 | Slash commands | 20 | `/cortex:<name>` (无入参, 全自动 AUTO_MODE persistent) |
 | Bash wrappers | 21 | `~/.cortex/scripts/*.sh` — slash 走 stream-json + rich UI; CLI 直 exec python3 |
 | Lint 规则 | 17 | 自动修复 (autofix) + 自动循环至 vault clean |

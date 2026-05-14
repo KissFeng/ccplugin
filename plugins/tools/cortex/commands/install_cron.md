@@ -1,5 +1,5 @@
 ---
-description: 注册 cortex 定时任务 (lint/fold/dashboard/memory-*) 到 crontab (无入参)
+description: 注册 cortex 定时任务 (lint/dashboard/memory-*/digest) 到 crontab (无入参)
 ---
 
 # /cortex:install_cron

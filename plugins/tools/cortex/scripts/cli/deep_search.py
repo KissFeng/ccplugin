@@ -152,43 +152,45 @@ def _extract_gap_tokens(
     return query + " " + " ".join(most)
 
 
-def _backlinks(vault: Path, page_stem: str) -> set[str]:
-    """All vault md files whose body contains [[<stem>]] (any variant)."""
-    out: set[str] = set()
-    stem_lc = page_stem.lower()
+def _build_wikilink_index(
+    vault: Path,
+) -> dict[Path, tuple[str, set[str]]]:
+    """Map each md → (stem_lc, {wikilink target stem lowercase}). Single pass."""
+    idx: dict[Path, tuple[str, set[str]]] = {}
     for md in _iter_md_files(vault):
         try:
             text = md.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
+        targets: set[str] = set()
         for m in _WIKILINK_RE.finditer(text):
             target = m.group(1).strip()
             if target.lower().endswith(".md"):
                 target = target[:-3]
-            if target.split("/")[-1].lower() == stem_lc:
-                out.add(str(md))
-                break
-    return out
+            targets.add(target.split("/")[-1].lower())
+        idx[md] = (md.stem.lower(), targets)
+    return idx
 
 
-def _forward_links(vault: Path, page: Path) -> set[str]:
-    """All vault paths referenced by ``[[...]]`` inside page."""
-    out: set[str] = set()
-    try:
-        text = page.read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        return out
-    for m in _WIKILINK_RE.finditer(text):
-        target = m.group(1).strip()
-        if target.lower().endswith(".md"):
-            target = target[:-3]
-        stem = target.split("/")[-1].lower()
-        # locate first md whose stem matches
-        for md in _iter_md_files(vault):
-            if md.stem.lower() == stem and md != page:
-                out.add(str(md))
-                break
-    return out
+def _backlinks(
+    idx: dict[Path, tuple[str, set[str]]], page_stem: str
+) -> set[str]:
+    stem_lc = page_stem.lower()
+    return {str(p) for p, (_, tgts) in idx.items() if stem_lc in tgts}
+
+
+def _forward_links(
+    idx: dict[Path, tuple[str, set[str]]], page: Path
+) -> set[str]:
+    entry = idx.get(page)
+    if not entry:
+        return set()
+    _, tgts = entry
+    return {
+        str(p)
+        for p, (stem, _) in idx.items()
+        if p != page and stem in tgts
+    }
 
 
 def _path_to_hit(vault: Path, path_str: str, score: float) -> dict[str, Any]:
@@ -255,6 +257,7 @@ def _run_subgraph(
     expanded: set[str] = set(seed_paths)
     hop_score: dict[str, float] = {p: 1.0 for p in seed_paths}
 
+    wikilink_idx = _build_wikilink_index(vault)
     frontier = set(seed_paths)
     for hop in range(1, max_hops + 1):
         new_paths: set[str] = set()
@@ -262,8 +265,8 @@ def _run_subgraph(
             page = Path(p)
             if not page.is_file():
                 continue
-            new_paths |= _backlinks(vault, page.stem)
-            new_paths |= _forward_links(vault, page)
+            new_paths |= _backlinks(wikilink_idx, page.stem)
+            new_paths |= _forward_links(wikilink_idx, page)
         new_paths -= expanded
         if not new_paths:
             break

@@ -48,7 +48,7 @@ model: sonnet
 ## 边界
 
 - 单次翻译 ≤ 50 页 (深 dir 自动分页)
-- 不动 sessions/ folds/ log/ (这些是 cli/工具产物, 不应翻)
+- 不动 记忆/L4-流水账/sessions/ 与 归档/ (这些是 cli/工具产物, 不应翻)
 - 翻译失败一页不影响其余 (容错继续, 报告失败列表)
 - 不调 cortex-locale 改 vault.lang
 - 译版 frontmatter 加 `translated_from: <src vault-rel path>` 字段

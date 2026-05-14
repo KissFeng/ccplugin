@@ -83,7 +83,7 @@ allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_conten
 5. **block-id 自动注入** (prd §10.5)
    - 每个 H2 / H3 段落末尾追加 ` ^cortex-<sha8>`
    - sha8 = `sha256(<rel-path>::<UTC-iso>::<section-index>::<heading>)[:8]`
-   - 命中冲突 → seed 加序号重哈希; 检查 `<vault>/log/` `<vault>/folds/` 已有 `^cortex-` 防重复
+   - 命中冲突 → seed 加序号重哈希; 检查 `<vault>/知识库/日记/日/` 已有 `^cortex-` 防重复
 
 6. **写入** (prd §10.8 与 obsidian-git 协调)
    - **P0 masking 前置**:写盘前必经 `masking.py` 脱敏 (AWS/OpenAI/Anthropic/GitHub PAT/JWT/PEM/Slack token → `<REDACTED:*>`),`save_session.py` 已内置;手写 body 时先
