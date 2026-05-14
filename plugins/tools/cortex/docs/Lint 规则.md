@@ -18,7 +18,7 @@
 | 5 | `duplicate-alias` | error | ❌ | alias 跨页冲突 |
 | 6 | `hot-too-long` | warn | ✅ | hot.md 超 200 行 |
 | 7 | `log-too-long` | warn | ❌ | log 单文件 > 2000 行, 需 fold |
-| 8 | `index-missing-section` | warn | ✅ | index.md 未包含某 wiki 顶级子目录 |
+| 8 | `index-missing-section` | warn | ✅ | index.md 未包含某 知识库 顶级子目录 |
 | 9 | `title-h1-mismatch` | warn | ✅ | H1 与 frontmatter title 不一致 |
 | 10 | `filename-illegal` | error | ❌ | 文件名含非法字符或与 alias 冲突 |
 | 11 | `block-id-duplicate` | error | ✅ | block-id 重复 (`^cortex-<sha8>`) |
@@ -78,7 +78,7 @@ wikilink `[[X]]` 找不到对应文件。
 
 ### 8. index-missing-section (warn, autofix)
 
-`index.md` 没有覆盖某个 wiki 顶级子目录 (新加目录后忘了同步)。
+`index.md` 没有覆盖某个 知识库 顶级子目录 (新加目录后忘了同步)。
 
 - **autofix 策略**：扫 vault 顶层目录, 缺的章节自动追加。
 
@@ -179,7 +179,7 @@ python3 lint/run.py --vault /path/to/vault --fix
 或自然语言：
 
 ```text
-"wiki audit --fix"
+"知识库 audit --fix"
 "vault 体检 然后修复"
 ```
 

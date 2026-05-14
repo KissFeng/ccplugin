@@ -6,7 +6,7 @@ allowed-tools: Bash Read Write Edit Glob WebFetch mcp__obsidian__obsidian_get_fi
 
 # cortex-ingest
 
-把外部内容 (本地文件 / 网页 / 目录批量) 转成结构化 wiki 页面写入 Obsidian vault。
+把外部内容 (本地文件 / 网页 / 目录批量) 转成结构化 知识库 页面写入 Obsidian vault。
 
 ## 调用优先级 (P4)
 

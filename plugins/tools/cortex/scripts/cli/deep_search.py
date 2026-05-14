@@ -81,7 +81,7 @@ def _base_search(
             hits.extend(sc_hits)
 
     if len(hits) < limit:
-        hits.extend(_ripgrep(vault, _SCOPE_GLOB.get(scope, "wiki"), query))
+        hits.extend(_ripgrep(vault, _SCOPE_GLOB.get(scope, "知识库"), query))
 
     return _dedup(hits)[:limit], degraded
 
@@ -301,7 +301,7 @@ def _run_hybrid(
     sc_hits = _smart_connections(query, limit * 2, sc_base)
     degraded = sc_hits is None
     sc_hits = sc_hits or []
-    rg_hits = _ripgrep(vault, _SCOPE_GLOB.get(scope, "wiki"), query)
+    rg_hits = _ripgrep(vault, _SCOPE_GLOB.get(scope, "知识库"), query)
     merged = sc_hits + rg_hits
     reranked = _bm25_rerank(merged, query)
     deduped = _dedup(reranked)[:limit]

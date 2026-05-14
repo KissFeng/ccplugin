@@ -49,7 +49,7 @@ cortex 共 21 个 skill, **~10 自动 / ~11 显式**。显式 skill frontmatter 
 | `cortex-search`      | 自动 ("查知识库" / "搜知识库")                           |
 | `cortex-ingest`      | 自动 ("ingest" / "摄取")                                 |
 | `cortex-ingest-bulk` | 自动 ("批量 ingest" / "ingest these urls")               |
-| `cortex-lint`        | 自动, 默认 dry-run, --fix 才改盘 ("wiki audit" / "lint") |
+| `cortex-lint`        | 自动, 默认 dry-run, --fix 才改盘 ("知识库 audit" / "lint") |
 | `cortex-session`     | 自动 ("list sessions" / "session 备份")                  |
 
 **7 个显式 skill** (`disable-model-invocation: true`, 仅用户显式触发):

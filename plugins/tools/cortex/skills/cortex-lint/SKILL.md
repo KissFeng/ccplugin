@@ -10,8 +10,8 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_list_files_in_vault mcp__o
 
 ## 触发场景
 
-- 用户问"vault 健康吗 / wiki audit / 找 orphan"
-- 显式 "/cortex:lint" 或 "lint the wiki"
+- 用户问"vault 健康吗 / 知识库 audit / 找 orphan"
+- 显式 "/cortex:lint" 或 "lint the 知识库"
 - cron daily 任务
 
 ## 行为

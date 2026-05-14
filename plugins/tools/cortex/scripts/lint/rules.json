@@ -64,7 +64,7 @@
     {
       "id": "index-missing-section",
       "severity": "warn",
-      "description": "index.md 未包含某 wiki 顶级子目录",
+      "description": "index.md 未包含某 知识库 顶级子目录",
       "autofix": true
     },
     {

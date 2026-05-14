@@ -139,7 +139,7 @@ prd 在 §10 列了 research 后浮现的修订:
 
 ### §10.4 启发式落档判定
 
-最初 Stop hook 总是落档, 研究发现绝大多数会话内容平凡 (CRUD / 通用问答), 全落档造成 wiki 噪音。
+最初 Stop hook 总是落档, 研究发现绝大多数会话内容平凡 (CRUD / 通用问答), 全落档造成 知识库 噪音。
 
 **修订**：加 `min_lines` / `min_chars` / `skip_if_only_questions` 启发式, 默认阈值 30 行 / 800 字符。
 
