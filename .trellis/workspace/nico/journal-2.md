@@ -544,3 +544,36 @@ claude CLI positional prompt 在 interactive 模式作初始消息。emit_slash 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 76: slash wrapper echo bash cmd + bypass permissions
+
+**Date**: 2026-05-14
+**Task**: slash wrapper echo bash cmd + bypass permissions
+**Branch**: `master`
+
+### Summary
+
+emit_slash 两处 claude 调用前 printf 完整 bash 命令 (debug); 加 --dangerously-skip-permissions (wrapper 自动场景, 不弹权限)。10 slash wrapper 全受益。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e87b2103` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
