@@ -709,3 +709,36 @@ SKILL §2 6 信号识别 (frontmatter/source_url/wikilink/URL/tag/keyword≥3); 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 81: lint rule 18 path-lang-mismatch
+
+**Date**: 2026-05-14
+**Task**: lint rule 18 path-lang-mismatch
+**Branch**: `master`
+
+### Summary
+
+新 lint 规则 path-lang-mismatch (warn, autofix false): vault path segment 不符 lang flag。豁免 host/org/repo 前 5 段 + 基础设施顶层 + ASCII 专名 stem (README/LICENSE 等) + frontmatter path_lang_exempt。test_lint_path_lang.py 10 case。pytest 324 pass (+10 new).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d8252080` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
