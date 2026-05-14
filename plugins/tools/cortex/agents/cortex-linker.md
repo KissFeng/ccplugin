@@ -49,7 +49,7 @@ model: sonnet
 - 单页加链上限 8 (避免 wikilink 过载)
 - 不删既有 wikilink
 - 不改 frontmatter
-- 不动 fold / log / sessions
+- 不动 归档/ 与 记忆/L4-流水账/sessions/
 - SC 模型名通过 `/embeddings/info` 探测, 不 hardcode
 
 ## 输出格式

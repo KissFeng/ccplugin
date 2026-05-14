@@ -17,11 +17,11 @@ bash "$INSTALL_PATH/scripts/install_cron.sh"
 
 默认任务:
 - `lint --check` 每日 03:00
-- `fold` 每周日 02:00
-- `dashboard` 每周日 02:30
+- `dashboard` 每日 02:30
+- `digest` 每周日 03:00
 - `memory-promote` 每周一 02:15
 - `memory-forget` 每月 1 号 02:45
-- `digest` 每周日 03:00
+- `memory-archive` / `memory-compact` / `memory-warden` 各自 schedule
 
 报告注册了哪些 cron 行 + 完整 crontab 摘要。
 

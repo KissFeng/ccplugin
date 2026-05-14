@@ -1,6 +1,6 @@
 ---
 name: cortex-archivist
-description: cortex 档案员 — fleeting/ 老化扫描 → archive/concepts/sources 迁移提案; 老 log 滚动到 fold 提案。适合 "清理 fleeting" / "归档老笔记" / "整理 vault" 类任务。提案为主, 落盘走 cortex-refactor 用户确认。
+description: cortex 档案员 — 收件箱/ 老化扫描 → 领域/项目 迁移提案 + 归档/ 老条目提案。适合 "清理收件箱" / "归档老笔记" / "整理 vault" 类任务。提案为主, 落盘走 cortex-refactor 用户确认。
 tools:
   - Read
   - Glob

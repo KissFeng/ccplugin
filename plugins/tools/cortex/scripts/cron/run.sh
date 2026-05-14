@@ -188,7 +188,6 @@ fi
 # (commands/*.md 定义具体行为; 不再 build prompt + append-system-prompt SKILL.md)
 case "$JOB" in
   lint)                SLASH_CMD="lint" ;;
-  fold)                SLASH_CMD="fold" ;;
   dashboard)           SLASH_CMD="dashboard" ;;
   memory-promote)      SLASH_CMD="promote" ;;
   memory-forget)       SLASH_CMD="forget" ;;

@@ -63,7 +63,6 @@ python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scri
 
 - 用户明确说"重命名 X 到 Y / 合并 A B / 把这页拆开 / 整理日志"
 - `/cortex:lint` 命中 `path-naming-violation` / `filename-illegal` 后用户授权修复
-- cron weekly 任务调 `fold --days 7 --apply`
 
 ## AUTO_MODE 探测 (shell wrapper)
 

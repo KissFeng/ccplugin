@@ -145,9 +145,8 @@ vault 不是 git repo → 跳过, 不写两字段。
 
 **必须**调 `AskUserQuestion` (禁文本式提问), 合并 ≤4 questions 单次调用:
 
-**Q1 (multiSelect)**: "勾选要注册的 cron job (9 项)":
+**Q1 (multiSelect)**: "勾选要注册的 cron job (8 项)":
 - `daily 01:00 知识库 lint`
-- `weekly Sun 02:00 fold`
 - `daily 02:30 dashboard`
 - `daily 02:00 memory-promote` (L4→L3 提炼 + 候选写 candidates.md)
 - `daily 03:00 memory-forget` (扫过期标 archive_pending)
@@ -175,11 +174,13 @@ Q2 ∈ {launchd, cron, gha} → 走内联注册流程 (下文)。
 | job | cron 表达式 |
 |-----|-------------|
 | lint | `0 1 * * *` |
-| fold | `0 2 * * 0` |
-| dashboard | `30 2 * * 0` |
+| dashboard | `30 2 * * *` |
 | memory-promote | `0 2 * * *` |
 | memory-forget | `0 3 * * *` |
+| memory-compact | `0 4 * * 0` |
 | digest | `30 4 * * 0` |
+| memory-warden | `0 5 1,15 * *` |
+| memory-archive | `0 6 1 * *` |
 **后端 1: launchd (macOS)** — 为每选中 job 写 plist:
 - 路径: `~/Library/LaunchAgents/dev.lazygophers.cortex.<job>.plist`
 - 内容: `<ProgramArguments>` = `["bash", "<PLUGIN_ROOT>/scripts/cron/<job>.sh"]`, `<StartCalendarInterval>` 按上表
