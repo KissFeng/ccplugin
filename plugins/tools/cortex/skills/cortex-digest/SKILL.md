@@ -9,7 +9,7 @@ allowed-tools: Bash Read Write Edit Glob Grep Skill
 
 [AUTO_MODE persistent: 禁询问, 自决执行, 禁中止]
 
-每日运行一次完整的 log/session 数据生命周期 (五阶段), 包含 L4 全清 + 既有知识层交叉学习更新。
+每日运行一次完整的 log/session 数据生命周期 (六阶段), 包含 L4 全清 + 既有知识层交叉学习更新 + evolution 经验抽取 (semantic 模式库 + 反写提议)。
 
 ## 输入
 
@@ -17,7 +17,7 @@ allowed-tools: Bash Read Write Edit Glob Grep Skill
 - `--lang <code>` (可选, 默认 vault `_meta/version.json:lang` 或 zh-CN)
 - `--dry-run` (可选, 仅分析不写盘)
 
-## 五阶段 (一次跑完, 顺序严格)
+## 六阶段 (一次跑完, 顺序严格)
 
 ### 1. 读 (Read)
 
@@ -35,57 +35,15 @@ allowed-tools: Bash Read Write Edit Glob Grep Skill
 
 ### 2. 析 (Analyze)
 
-**新增数据**:
-- 模式聚合: 同事件类型 ≥ 5 → 抽象为 L2 语义候选
-- 实体频度: 抽取高频 wikilink / tag / 标题关键词
-- 决策提炼: 含 "决定/决策/选择/采纳" 段落 → 决策候选
-- 疑问识别: 含 "?" / "怎么/为何" 段落 → 反思候选
+抽 4 类候选 (反思/连接/矛盾/决策) + 跑 repo 归属识别 (6 信号并集), 标 `update_target` / `enrich_target` / `conflict` / `concretize`。
 
-**新增 vs 既有交叉**:
-- 命中既有 L1/L2/L3 概念 → 标 `update_target` (待阶段 3 加深)
-- 命中既有 知识库/领域 概念 → 标 `enrich_target` (待阶段 3 补例/补连)
-- 与既有条目矛盾 → 标 `conflict` (待阶段 3 写反思页, 不动既有)
-- 既有疑问页反向链接 ≥ 3 → 标 `concretize` (待阶段 5 清理)
-
-**repo 归属识别 (反思/连接/矛盾/决策 候选必跑, 6 信号并集, 任一命中即归属)**:
-
-| # | 信号 | 强度 | 示例 |
-|---|------|------|------|
-| 1 | frontmatter `host` / `org` / `repo` 三字段齐 | 强 | `host: github.com, org: anthropics, repo: claude-code` |
-| 2 | frontmatter `source_url` 含 repo 模式 | 强 | `github.com/<org>/<repo>` · `gitlab.*/<org>/<repo>` · `<host>:<port>/<org>/<repo>` |
-| 3 | 正文 wikilink `[[知识库/项目/<host>/<org>/<repo>/...]]` 或 `[[<repo-name>]]` 命中已知 repo | 中 | `[[ccplugin]]` 命中 `知识库/项目/persons/lyxamour/ccplugin/` |
-| 4 | 正文含 git URL | 中 | `git@github.com:<org>/<repo>.git` · `https://github.com/<org>/<repo>` |
-| 5 | tag `repo/<name>` · `host/<host>` · `org/<org>` | 中 | `tags: [repo/ccplugin, org/lyxamour]` |
-| 6 | 关键词匹配 `<repo-name>` 出现 ≥ 3 次 (repo 名单从 `知识库/项目/**` 现有目录拉) | 弱 | "ccplugin" 在正文出现 ≥3 次 |
-
-识别结果落候选元数据: `route_target = 知识库/项目/<host>/<org>/<repo>/` (命中) 或 `route_target = inbox` (全无信号)。
-多 repo 命中按**强信号优先** (1 > 2 > 3 > 4 > 5 > 6) 选首要 repo, 余者保留为次要 (阶段 3 加 backlink)。
+详见 [references/extraction.md](references/extraction.md) §1-§2。
 
 ### 3. 处 (Process)
 
-**新写 (按候选 `route_target` 路由, 反思/连接/矛盾/决策 4 类)**:
+按候选 `route_target` 路由 4 类 (反思/连接/矛盾/决策), 命中 repo 落 `知识库/项目/<host>/<org>/<repo>/`, 否则 fallback `知识库/收件箱/`。同时更新既有 (weight bump / append 例证, 不删原文)。
 
-| 候选类型 | 命中 repo (`route_target` ≠ inbox) | 未命中 (fallback inbox) |
-|---|---|---|
-| 反思 | `知识库/项目/<host>/<org>/<repo>/笔记/<YYYY-MM-DD>-反思-<topic>.md` | `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>-反思-<topic>.md` |
-| 连接 | a/b 同 repo: `知识库/项目/<repo>/笔记/<YYYY-MM-DD>-连接-<a-b>.md`; 跨 repo: 落 a 端 (首要), b 端写 backlink (`## 相关` 列 `[[a-side-path]]`) | `知识库/收件箱/<date>-连接-<a-b>.md` |
-| 矛盾 | `知识库/项目/<repo>/笔记/<YYYY-MM-DD>-矛盾-<topic>.md` (frontmatter 列既有条目 path) | `知识库/收件箱/<date>-矛盾-<topic>.md` |
-| 决策 | `知识库/项目/<repo>/主题/决策.md` append 新段 (文件不存在则新建) | `知识库/收件箱/<date>-决策-<topic>.md` |
-
-其他新写:
-- `记忆/views/consolidated/<YYYY-MM-DD>.md` 当日摘要 (主题/高频实体/决策清单)
-- 概念候选 → `记忆/views/candidates.md` (待 cortex-promote 审批, **不路由到 项目/**, 记忆层独立)
-
-**路由 fallback 规则**:
-- **多 repo 候选**: 路由首要 repo (信号强度: frontmatter > source_url > wikilink > URL > tag > keyword), 其他 repo 各加 backlink 兜底 (b 端 `## 相关` 写 `[[a-side-path]]`)
-- **repo 目录不存在** (`知识库/项目/<host>/<org>/<repo>/` 缺): 自动 `mkdir -p`, 同时若 `_index.md` 不存在则建 minimal stub (frontmatter 5 字段: `type: project` / `host` / `org` / `repo` / `created`, body 1 行说明)
-- **笔记目录** (`知识库/项目/<repo>/笔记/`) **不存在**: 自动 `mkdir -p`
-- **弱信号防误判**: 信号 6 (keyword) 单独命中且无其他强信号 → 不路由, 留 inbox
-
-**更新既有 (学习 + 完善, 不删原文)**:
-- `update_target` (L1/L2/L3 命中) → `bash ~/.cortex/scripts/memory.sh write --uri <u> --content <c> --level <l>` append 新例证/新连接, weight += 0.05 (cap 1.0)
-- `enrich_target` (知识库/领域 命中) → patch 文件追加 `## 新增例证 <YYYY-MM-DD>` + 加 `[[wikilink]]`
-- `conflict` → 新建 `知识库/收件箱/<date>-矛盾-<topic>.md` 列对照 (不直接改既有条目, 待人工分发)
+详见 [references/extraction.md](references/extraction.md) §3。
 
 ### 4. 更新 (Update)
 
@@ -95,17 +53,23 @@ allowed-tools: Bash Read Write Edit Glob Grep Skill
 
 ### 5. 清理 + 归档 (Cleanup + Archive)
 
-- **L4-流水账强制全清** (无时间窗例外, 单向漏斗): 阶段 1 读取的每个 L4 文件必须出 L4 (三选一):
-  - **升 L3**: 高频/概念化潜力 → `bash ~/.cortex/scripts/memory.sh promote --uri <u> --target-level L3`
-  - **归档**: 历史价值无升级潜力 → mv 到 `归档/L4-<YYYY>/<原相对路径>`
-  - **删**: 无价值 (debug 噪音/纯重复/已聚合) → `git rm`
-  - 处理后 `记忆/L4-流水账/**` 必须 0 文件残留
-- L3-短期: 删 > 90 天且 weight < 0.3
-- 知识库/收件箱: 已被概念化 (反向链接 ≥ 3) 的疑问/连接条目 → 删 (已被领域条目吸收)
-- 收件箱: 已在阶段 3 强清 (≥30 天必处理); 此阶段复核不残留 ≥30 天文件
-- **收件箱 ≥30 天复扫识别 (强制)**: 对 `知识库/收件箱/` 内 mtime ≥ 30 天文件逐一重跑阶段 2 repo 识别 6 信号 — 命中则迁移到 `知识库/项目/<host>/<org>/<repo>/笔记/` (保留原文件名前缀加日期), 仍无命中则归档季度桶 `归档/收件箱-<YYYY-QN>.md` (append, idempotent), 处理后该批 0 残留
-- 知识库/日记/日: > 7 天文件转存 `归档/日记/<YYYY-QN>.md` (累积季度桶, idempotent)
-- **不动** `记忆/L0-核心` / `L1-长期` 条目 (仅 weight bump 由阶段 3 update_target 处理)
+L4-流水账强制全清 (单向漏斗: promote/archive/delete), L3 > 90 天 weight<0.3 删, 收件箱 ≥30 天复扫识别, 日记 > 7 天转季度桶, L0/L1 永不动条目。
+
+详见 [references/cleanup.md](references/cleanup.md)。
+
+### 6. Evolution (经验抽取 → semantic 模式库 + 反写提议)
+
+调 `bash ~/.cortex/scripts/digest.sh evolution --lookback-days 7 --json` (直接 exec python CLI, 不走 slash) 获取 JSON 输出, 含:
+
+- `sessions_scanned`: 扫描的 session jsonl 文件数
+- `patterns_candidates`: 候选 pattern 数 (`applications ≥ 3`)
+- `patterns_added`: 新写入 `记忆/L0-核心/patterns.md` 的 pattern 数
+- `patterns_updated`: 既有 pattern applications +1 的数
+- `proposals_generated`: 落 `_assets/evolution-proposals/` 的 proposal 文件路径列表 (confidence ≥ 0.8 AND applications ≥ 3 才生)
+
+详见 [references/evolution.md](references/evolution.md)。
+
+**反写 SKILL/AGENT 不在 digest 流程内自动执行** — 仅生 proposal 列表。用户主动调 cortex-refactor 或下次 cortex-digest 跑时通过 AskUserQuestion 单次确认 → patch (PR4 范围)。
 
 ## 输出 (compact JSON)
 
@@ -171,5 +135,6 @@ allowed-tools: Bash Read Write Edit Glob Grep Skill
 
 ## 调度
 
-每日 03:00 cron 自动跑 `~/.cortex/scripts/digest.sh` (wrapper) → `/cortex:digest` (slash) → 本 skill。
+每日 03:00 cron 自动跑 `~/.cortex/scripts/digest.sh` (wrapper) → `/cortex:digest` (slash) → 本 skill (会在阶段 6 内联调 `digest.sh evolution` 抽 pattern)。
 用户手动: `bash ~/.cortex/scripts/digest.sh` 或会话内 `/cortex:digest`。
+evolution 单独跑: `bash ~/.cortex/scripts/digest.sh evolution --lookback-days 7 --json` (直调 python CLI, 不走 claude session)。
