@@ -162,6 +162,12 @@
       "severity": "warn",
       "description": "vault path segment 不符 vault.lang (zh-CN 应含 CJK / en 应全 ASCII / ja 应含 Kana 或 CJK); 豁免: 项目 host/org/repo + ASCII 专名 stem (README/LICENSE/pyproject 等) + frontmatter path_lang_exempt: true; 重命名走 cortex-refactor rename",
       "autofix": false
+    },
+    {
+      "id": "skill-references-exists",
+      "severity": "warn",
+      "description": "SKILL.md / AGENT.md 引用 [...](references/<name>.md) 的目标文件必须存在 (相对当前文件目录解析); 仅检查插件源内 markdown, 不影响 vault 扫描",
+      "autofix": false
     }
   ]
 }

@@ -53,3 +53,47 @@ IDE 内交互模式不受此约束, 可走 `AskUserQuestion` 4 选项流程。
 ## Skill 详细文档
 
 每个 skill 的完整描述 / 触发短语 / 失败处理见 `skills/<name>/SKILL.md`。
+
+## SKILL.md + references/ 架构 (P5 引入)
+
+借鉴 [agent-playbook context-layering](https://github.com/zhaono1/agent-playbook/blob/main/docs/context-layering-for-agent-playbooks.md) 3 层模型:
+
+- **L1 always-on**: AGENT.md 协作约定 + hook 注入 (每会话加载)
+- **L2 routing**: SKILL.md procedural (skill 触发时加载, 留骨架 + 指针)
+- **L3 on-demand**: `skills/<name>/references/*.md` (按需查阅, 不进默认 context)
+
+### 已拆分 references 的 skill
+
+| Skill | SKILL.md 行数 | references/ 文件 |
+|---|---|---|
+| cortex-ingest | ~200 (原 497) | layout.md / extract.md / exclude.md / knowledge-graph.md |
+| cortex-digest | ~140 (原 175) | extraction.md / cleanup.md / evolution.md |
+
+### lint 强制 (rule skill-references-exists)
+
+SKILL.md / AGENT.md / `agents/*.md` 内 `[xxx](references/<name>.md)` 链接的目标必须存在, 否则 lint 报 warn。autofix=false (需手工修复或挪 reference)。
+
+## cortex-digest evolution 抽取 (P5)
+
+cortex-digest 在原 5 阶段后加第 6 阶段 evolution 抽取, 借鉴 [self-improving-agent multi-memory](https://github.com/zhaono1/agent-playbook/blob/main/skills/self-improving-agent/SKILL.md):
+
+- **输入**: `记忆/L4-流水账/sessions/` 近 7 天 jsonl (episodic memory)
+- **抽取**: 复发 pattern (applications ≥ 3) + 用户纠正语 → semantic memory
+- **落盘**: `记忆/L0-核心/patterns.md` (按 category section 组织)
+- **反写提议**: `_assets/evolution-proposals/<date>-<slug>.md`
+- **实际 patch**: 用户调 `/cortex:refactor evolution-apply` → AskUserQuestion 接受 → patch SKILL/AGENT
+
+阈值硬编码: `confidence ≥ 0.8 AND applications ≥ 3`。
+
+Safety gate:
+- 白名单: `skills/*/SKILL.md`, `skills/*/references/*.md`, `agents/*.md`, `AGENT.md`
+- 黑名单: `commands/`, `scripts/`, `_meta/`, `_templates/`
+- patch 前要求插件 git working tree clean
+
+详见:
+
+- `scripts/cli/digest.py` (evolution CLI)
+- `scripts/cli/lib/evolution.py` (核心逻辑)
+- `scripts/refactor/evolution_apply.py` (proposal 消化)
+- `skills/cortex-digest/references/evolution.md`
+- `skills/cortex-refactor/SKILL.md §evolution-apply`

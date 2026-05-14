@@ -10,6 +10,7 @@ Output (JSON to stdout):
 
 stdlib only.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,7 +26,9 @@ from pathlib import Path
 from typing import Any
 
 # ---- regex helpers ----
-WIKILINK_RE = re.compile(r"(?<!\!)\[\[([^\[\]\n|#^]+)(?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?\]\]")
+WIKILINK_RE = re.compile(
+    r"(?<!\!)\[\[([^\[\]\n|#^]+)(?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?\]\]"
+)
 # Strip fenced code blocks (``` ... ```) and inline code (` ... `) so wikilink
 # scan ignores shell snippets like `[[ "$x" == "y" ]]` which are not real links.
 _FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
@@ -35,21 +38,48 @@ _INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 def strip_code_for_wikilinks(text: str) -> str:
     """Return text with fenced + inline code replaced by blank-equivalent so
     wikilink scanning skips code snippets while keeping line numbers stable."""
+
     def _blank_keep_lines(m):
         return "".join("\n" if c == "\n" else " " for c in m.group(0))
+
     text = _FENCED_CODE_RE.sub(_blank_keep_lines, text)
     text = _INLINE_CODE_RE.sub(_blank_keep_lines, text)
     return text
+
+
 BLOCK_ID_RE = re.compile(r"\s\^(cortex-[a-f0-9]{8})\b")
 CALLOUT_RE = re.compile(r"^\s*>\s*\[!([a-zA-Z][\w-]*)\][+\-]?\s", re.MULTILINE)
 H1_RE = re.compile(r"^#\s+(.+)$", re.MULTILINE)
 ILLEGAL_CHARS = set(r':\|?*<>"')
 
 CALLOUT_WHITELIST = {
-    "note", "abstract", "summary", "tldr", "info", "todo", "tip", "hint", "important",
-    "success", "check", "done", "question", "help", "faq", "warning", "caution",
-    "attention", "failure", "fail", "missing", "danger", "error", "bug", "example",
-    "quote", "cite",
+    "note",
+    "abstract",
+    "summary",
+    "tldr",
+    "info",
+    "todo",
+    "tip",
+    "hint",
+    "important",
+    "success",
+    "check",
+    "done",
+    "question",
+    "help",
+    "faq",
+    "warning",
+    "caution",
+    "attention",
+    "failure",
+    "fail",
+    "missing",
+    "danger",
+    "error",
+    "bug",
+    "example",
+    "quote",
+    "cite",
 }
 
 EXCLUDE_DIRS = {"_meta", ".obsidian", ".trash", ".git"}
@@ -64,19 +94,48 @@ _ASCII_SEG_RE = re.compile(r"^[A-Za-z0-9._\-]+$")
 
 # ASCII 专名 stem 豁免清单 (项目根级常见配置/元文档)
 _ASCII_EXEMPT_STEMS = {
-    "readme", "license", "licence", "changelog", "contributing",
-    "code_of_conduct", "security", "authors", "maintainers", "notice",
-    "pyproject", "package", "package-lock", "cargo", "go", "go.mod",
-    "go.sum", "tsconfig", "jsconfig", "makefile", "dockerfile",
-    "_index", "index", "hot",
+    "readme",
+    "license",
+    "licence",
+    "changelog",
+    "contributing",
+    "code_of_conduct",
+    "security",
+    "authors",
+    "maintainers",
+    "notice",
+    "pyproject",
+    "package",
+    "package-lock",
+    "cargo",
+    "go",
+    "go.mod",
+    "go.sum",
+    "tsconfig",
+    "jsconfig",
+    "makefile",
+    "dockerfile",
+    "_index",
+    "index",
+    "hot",
 }
 
 # vault 顶层基础设施目录 — 永远豁免 path-lang 检查
 _PATH_LANG_INFRA_TOPS = {
-    "_meta", "_templates", "_assets", "locales",
-    ".obsidian", ".trash", ".git",
+    "_meta",
+    "_templates",
+    "_assets",
+    "locales",
+    ".obsidian",
+    ".trash",
+    ".git",
     # 记忆体系 / 归档 / 仪表盘 — 内部 URI 命名固定, 不参与 vault lang 校验
-    "记忆", "memory", "归档", "archive", "仪表盘", "dashboard",
+    "记忆",
+    "memory",
+    "归档",
+    "archive",
+    "仪表盘",
+    "dashboard",
 }
 
 
@@ -126,7 +185,9 @@ def _segment_matches_lang(seg: str, lang: str) -> bool:
 
 
 def _check_path_lang_mismatch(
-    rel: str, fm: dict[str, Any], vault_lang: str,
+    rel: str,
+    fm: dict[str, Any],
+    vault_lang: str,
 ) -> list[dict[str, Any]]:
     """rule 18: path-lang-mismatch — vault path segment 不符 vault.lang.
 
@@ -154,8 +215,12 @@ def _check_path_lang_mismatch(
     # 知识库 i18n 等价顶层名也豁免 (lang=en vault: `kb/`); 用 segment 检测处理
     # 项目子目录: 知识库/项目/<host>/<org>/<repo>/... — 前 5 段豁免
     # (parts[0]=知识库, parts[1]=项目, parts[2]=host, parts[3]=org, parts[4]=repo)
-    project_prefix_zh = (len(parts) >= 5 and parts[0] == "知识库" and parts[1] == "项目")
-    project_prefix_en = (len(parts) >= 5 and parts[0] in {"kb", "knowledge"} and parts[1] in {"projects", "project"})
+    project_prefix_zh = len(parts) >= 5 and parts[0] == "知识库" and parts[1] == "项目"
+    project_prefix_en = (
+        len(parts) >= 5
+        and parts[0] in {"kb", "knowledge"}
+        and parts[1] in {"projects", "project"}
+    )
     if project_prefix_zh or project_prefix_en:
         check_parts = parts[5:]
     else:
@@ -169,7 +234,10 @@ def _check_path_lang_mismatch(
             continue
         if not _segment_matches_lang(seg, vault_lang):
             finding = _f(
-                "path-lang-mismatch", "warn", rel, 0,
+                "path-lang-mismatch",
+                "warn",
+                rel,
+                0,
                 (
                     f"path segment '{seg}' 不符 vault.lang={vault_lang} "
                     f"(豁免: 项目 host/org/repo / ASCII 专名 / frontmatter path_lang_exempt: true; "
@@ -184,10 +252,15 @@ def _check_path_lang_mismatch(
             break
     return findings
 
+
 # Shared root dirs (i18n whitelist; never reported by i18n-* rules)
 SHARED_ROOT_DIRS = {
-    "_meta", "_templates", "locales",
-    ".obsidian", ".trash", ".git",
+    "_meta",
+    "_templates",
+    "locales",
+    ".obsidian",
+    ".trash",
+    ".git",
 }
 SHARED_ROOT_FILES = {"index.md", "hot.md"}
 TIME_DIR_RE = re.compile(r"^\d{4}-\d{2}$")
@@ -211,6 +284,7 @@ def _load_vault_lang(vault: Path) -> str:
         if str(_hooks_lib) not in sys.path:
             sys.path.insert(0, str(_hooks_lib))
         from cortex_config import load_config
+
         cfg_lang = load_config().get("lang")
         if isinstance(cfg_lang, str) and cfg_lang:
             return cfg_lang
@@ -248,7 +322,8 @@ _TAGS_MAX = 20
 
 # 占位符模式 — 严禁出现在 autofix 输出
 _PLACEHOLDER_RE = re.compile(
-    r"<.*?>|placeholder|TODO|待填|待用户填|TBD|FIXME|XXX", re.I,
+    r"<.*?>|placeholder|TODO|待填|待用户填|TBD|FIXME|XXX",
+    re.I,
 )
 
 
@@ -351,8 +426,7 @@ def _load_lint_whitelist(vault: Path) -> set[str]:
     v = _load_vault_meta(vault).get("lint_whitelist")
     if isinstance(v, list):
         return {
-            x for x in v
-            if isinstance(x, str) and x and x not in _DEPRECATED_WHITELIST
+            x for x in v if isinstance(x, str) and x and x not in _DEPRECATED_WHITELIST
         }
     return set()
 
@@ -377,7 +451,9 @@ def _prune_deprecated_whitelist(vault: Path) -> bool:
         return False
     data["lint_whitelist"] = pruned
     try:
-        p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        p.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
         return True
     except Exception:
         return False
@@ -430,17 +506,19 @@ def check_vault_structure(
             if name in allowed_dirs:
                 continue
             reason = f"目录 '{name}' 不在 vault schema 允许列表"
-            violations.append({
-                "rule": "vault-structure-violation",
-                "severity": "error",
-                "file": rel,
-                "line": 0,
-                "msg": reason,
-                "fixable": True,
-                "path": rel,
-                "kind": "dir",
-                "reason": reason,
-            })
+            violations.append(
+                {
+                    "rule": "vault-structure-violation",
+                    "severity": "error",
+                    "file": rel,
+                    "line": 0,
+                    "msg": reason,
+                    "fixable": True,
+                    "path": rel,
+                    "kind": "dir",
+                    "reason": reason,
+                }
+            )
         elif entry.is_file():
             rel = name
             if rel in whitelist:
@@ -448,17 +526,19 @@ def check_vault_structure(
             if name in allowed_files:
                 continue
             reason = f"文件 '{name}' 不在 vault schema 允许列表"
-            violations.append({
-                "rule": "vault-structure-violation",
-                "severity": "error",
-                "file": rel,
-                "line": 0,
-                "msg": reason,
-                "fixable": True,
-                "path": rel,
-                "kind": "file",
-                "reason": reason,
-            })
+            violations.append(
+                {
+                    "rule": "vault-structure-violation",
+                    "severity": "error",
+                    "file": rel,
+                    "line": 0,
+                    "msg": reason,
+                    "fixable": True,
+                    "path": rel,
+                    "kind": "file",
+                    "reason": reason,
+                }
+            )
 
     return violations
 
@@ -472,16 +552,23 @@ def _load_locale_dirs(plugin_root: Path, vault: Path, lang: str) -> set[str]:
     namespace dirs (e.g. 知识库/领域/), not at vault root.
     """
     _TOP_LEVEL_KEYS = {
-        "knowledge", "memory", "dashboard", "archive",
-        "meta", "templates", "assets",
+        "knowledge",
+        "memory",
+        "dashboard",
+        "archive",
+        "meta",
+        "templates",
+        "assets",
     }
     sys.path.insert(0, str(plugin_root / "scripts" / "hooks" / "_lib"))
     try:
         from cortex_locale import load_locale  # type: ignore
+
         loc = load_locale(plugin_root, vault, lang)
         dirs_map = loc.get_dirs()
         return {
-            v for k, v in dirs_map.items()
+            v
+            for k, v in dirs_map.items()
             if k in _TOP_LEVEL_KEYS and isinstance(v, str) and v
         }
     except Exception:
@@ -539,7 +626,9 @@ def iter_md_files(vault: Path, scope: str | None = None):
         yield p
 
 
-def index_wikilinks(vault: Path) -> tuple[dict[str, Path], dict[str, list[Path]], dict[str, set[str]]]:
+def index_wikilinks(
+    vault: Path,
+) -> tuple[dict[str, Path], dict[str, list[Path]], dict[str, set[str]]]:
     """Build name index, alias->paths index, and target->referrers map."""
     by_name: dict[str, Path] = {}
     by_alias: dict[str, list[Path]] = {}
@@ -582,6 +671,7 @@ def file_mtime_date(p: Path) -> str:
 
 # ---- per-rule checkers ----
 
+
 def check_file(
     path: Path,
     rel: str,
@@ -606,34 +696,69 @@ def check_file(
 
     # rule 1: fm-missing-type
     if not fm.get("type"):
-        findings.append(_f("fm-missing-type", "error", rel, 1, "frontmatter 缺 type 字段", True))
+        findings.append(
+            _f("fm-missing-type", "error", rel, 1, "frontmatter 缺 type 字段", True)
+        )
     # rule 2: fm-missing-created
     if not fm.get("created"):
-        findings.append(_f("fm-missing-created", "warn", rel, 1, "frontmatter 缺 created 字段", True))
+        findings.append(
+            _f(
+                "fm-missing-created",
+                "warn",
+                rel,
+                1,
+                "frontmatter 缺 created 字段",
+                True,
+            )
+        )
     # rule: fm-banned-fields (preset 等废弃字段, autofix pop)
     _banned_fields = [k for k in _BANNED_FM_FIELDS if k in fm]
     if _banned_fields:
-        findings.append(_f(
-            "fm-banned-fields", "warn", rel, 1,
-            f"frontmatter 含禁止字段: {', '.join(_banned_fields)}", True,
-        ))
+        findings.append(
+            _f(
+                "fm-banned-fields",
+                "warn",
+                rel,
+                1,
+                f"frontmatter 含禁止字段: {', '.join(_banned_fields)}",
+                True,
+            )
+        )
     # rule: fm-missing-tags (tags 字段必须存在 + 类型 list + 数量 ≥ 10)
     _tg_check = fm.get("tags") if "tags" in fm else None
     if "tags" not in fm:
-        findings.append(_f(
-            "fm-missing-tags", "warn", rel, 1,
-            "frontmatter 缺 tags 字段", True,
-        ))
+        findings.append(
+            _f(
+                "fm-missing-tags",
+                "warn",
+                rel,
+                1,
+                "frontmatter 缺 tags 字段",
+                True,
+            )
+        )
     elif not isinstance(_tg_check, list):
-        findings.append(_f(
-            "fm-missing-tags", "warn", rel, 1,
-            "frontmatter tags 非 list", True,
-        ))
+        findings.append(
+            _f(
+                "fm-missing-tags",
+                "warn",
+                rel,
+                1,
+                "frontmatter tags 非 list",
+                True,
+            )
+        )
     elif len(_tg_check) < 10:
-        findings.append(_f(
-            "fm-missing-tags", "warn", rel, 1,
-            f"frontmatter tags 数量 {len(_tg_check)} < 10", True,
-        ))
+        findings.append(
+            _f(
+                "fm-missing-tags",
+                "warn",
+                rel,
+                1,
+                f"frontmatter tags 数量 {len(_tg_check)} < 10",
+                True,
+            )
+        )
     # rule: fm-duplicate-tags + fm-banned-tags
     _tags = fm.get("tags")
     if isinstance(_tags, list) and _tags:
@@ -649,15 +774,27 @@ def check_file(
             if _t.lower() in _BANNED_TAGS and _t not in _banned:
                 _banned.append(_t)
         if _dups:
-            findings.append(_f(
-                "fm-duplicate-tags", "warn", rel, 1,
-                f"frontmatter tags 重复: {', '.join(_dups)}", True,
-            ))
+            findings.append(
+                _f(
+                    "fm-duplicate-tags",
+                    "warn",
+                    rel,
+                    1,
+                    f"frontmatter tags 重复: {', '.join(_dups)}",
+                    True,
+                )
+            )
         if _banned:
-            findings.append(_f(
-                "fm-banned-tags", "warn", rel, 1,
-                f"frontmatter tags 含结构标记 (非内容相关): {', '.join(_banned)}", True,
-            ))
+            findings.append(
+                _f(
+                    "fm-banned-tags",
+                    "warn",
+                    rel,
+                    1,
+                    f"frontmatter tags 含结构标记 (非内容相关): {', '.join(_banned)}",
+                    True,
+                )
+            )
 
     # rule 14: i18n-frontmatter-lang-mismatch
     if vault_lang:
@@ -670,17 +807,32 @@ def check_file(
             and page_lang != vault_lang
             and not any(rel.startswith(p) for p in skip_prefixes)
         ):
-            findings.append(_f(
-                "i18n-frontmatter-lang-mismatch", "warn", rel, 1,
-                f"page lang='{page_lang}' != vault.lang='{vault_lang}'", False,
-            ))
+            findings.append(
+                _f(
+                    "i18n-frontmatter-lang-mismatch",
+                    "warn",
+                    rel,
+                    1,
+                    f"page lang='{page_lang}' != vault.lang='{vault_lang}'",
+                    False,
+                )
+            )
 
     # rule 9: title-h1-mismatch
     title = fm.get("title")
     h1m = H1_RE.search(text)
     h1 = h1m.group(1).strip() if h1m else None
     if isinstance(title, str) and title and h1 and title.strip() != h1:
-        findings.append(_f("title-h1-mismatch", "warn", rel, body_line, f"H1='{h1}' != title='{title}'", True))
+        findings.append(
+            _f(
+                "title-h1-mismatch",
+                "warn",
+                rel,
+                body_line,
+                f"H1='{h1}' != title='{title}'",
+                True,
+            )
+        )
 
     # rule 3: dead-wikilink (skip code blocks — shell `[[ ... ]]` 不算 wikilink)
     _wikilink_scan_text = strip_code_for_wikilinks(text)
@@ -691,39 +843,82 @@ def check_file(
         key = tgt.split("/")[-1].lower()
         if key not in by_name and key not in by_alias:
             line = text[: m.start()].count("\n") + 1
-            findings.append(_f("dead-wikilink", "error", rel, line, f"dead link: [[{tgt}]]", True))
+            findings.append(
+                _f("dead-wikilink", "error", rel, line, f"dead link: [[{tgt}]]", True)
+            )
 
     # rule 12: callout-unknown-type
     for m in CALLOUT_RE.finditer(text):
         ct = m.group(1).lower()
         if ct not in CALLOUT_WHITELIST:
             line = text[: m.start()].count("\n") + 1
-            findings.append(_f("callout-unknown-type", "warn", rel, line, f"unknown callout type: [!{ct}]", True))
+            findings.append(
+                _f(
+                    "callout-unknown-type",
+                    "warn",
+                    rel,
+                    line,
+                    f"unknown callout type: [!{ct}]",
+                    True,
+                )
+            )
 
     # rule 6 & 7: file length
     if rel == "hot.md":
         nlines = text.count("\n") + 1
         if nlines > 200:
-            findings.append(_f("hot-too-long", "warn", rel, nlines, f"hot.md {nlines} lines > 200", True))
+            findings.append(
+                _f(
+                    "hot-too-long",
+                    "warn",
+                    rel,
+                    nlines,
+                    f"hot.md {nlines} lines > 200",
+                    True,
+                )
+            )
     # rule 4: orphan-page (skip _meta/_templates files)
     skip_orphan = (
         rel.startswith("_templates/")
-        or rel == "index.md" or rel == "hot.md" or path.name.startswith("_")
+        or rel == "index.md"
+        or rel == "hot.md"
+        or path.name.startswith("_")
     )
     if not skip_orphan:
         key = path.stem.lower()
         tags = fm.get("tags") or []
         has_tag = bool(tags) if isinstance(tags, list) else bool(tags)
         if not referrers.get(key) and not has_tag:
-            findings.append(_f("orphan-page", "warn", rel, 1, "orphan page (no inbound link, no tag)", True))
+            findings.append(
+                _f(
+                    "orphan-page",
+                    "warn",
+                    rel,
+                    1,
+                    "orphan page (no inbound link, no tag)",
+                    True,
+                )
+            )
 
     # rule 10: filename-illegal
     if any(c in ILLEGAL_CHARS for c in path.name):
-        findings.append(_f("filename-illegal", "error", rel, 1, f"filename has illegal chars: {path.name}", False))
+        findings.append(
+            _f(
+                "filename-illegal",
+                "error",
+                rel,
+                1,
+                f"filename has illegal chars: {path.name}",
+                False,
+            )
+        )
 
     # rule 18: path-lang-mismatch — vault path segment 不符 vault.lang
     if vault_lang:
         findings.extend(_check_path_lang_mismatch(rel, fm, vault_lang))
+
+    # rule: skill-references-exists — SKILL/AGENT/agent references/<x>.md 存在性
+    findings.extend(check_skill_references_exists(path, rel, text))
 
     return findings
 
@@ -740,8 +935,16 @@ def check_global(
     for alias, paths in by_alias.items():
         if len(paths) > 1:
             ps = ", ".join(str(p.relative_to(vault)) for p in paths)
-            findings.append(_f("duplicate-alias", "error", "(global)", 0,
-                              f"alias '{alias}' shared across: {ps}", True))
+            findings.append(
+                _f(
+                    "duplicate-alias",
+                    "error",
+                    "(global)",
+                    0,
+                    f"alias '{alias}' shared across: {ps}",
+                    True,
+                )
+            )
 
     # rule 8: index-missing-section
     idx = vault / "index.md"
@@ -758,8 +961,16 @@ def check_global(
             if sub.name in ("_templates", "log", "folds"):
                 continue
             if sub.name.lower() not in idx_text:
-                findings.append(_f("index-missing-section", "warn", "index.md", 1,
-                                   f"index.md missing reference to {sub.name}/", True))
+                findings.append(
+                    _f(
+                        "index-missing-section",
+                        "warn",
+                        "index.md",
+                        1,
+                        f"index.md missing reference to {sub.name}/",
+                        True,
+                    )
+                )
 
     # rule 11: block-id-duplicate
     block_map: dict[str, list[tuple[str, int]]] = {}
@@ -776,56 +987,86 @@ def check_global(
     for bid, occ in block_map.items():
         if len(occ) > 1:
             for rel, line in occ:
-                findings.append(_f("block-id-duplicate", "error", rel, line,
-                                   f"^{bid} duplicated ({len(occ)}x)", True))
+                findings.append(
+                    _f(
+                        "block-id-duplicate",
+                        "error",
+                        rel,
+                        line,
+                        f"^{bid} duplicated ({len(occ)}x)",
+                        True,
+                    )
+                )
 
     # rule 13: path-naming-violation (per prd §9; only for time-pattern paths)
     for p in files:
         rel = str(p.relative_to(vault))
         violation = _check_naming(rel)
         if violation:
-            findings.append(_f("path-naming-violation", "warn", rel, 1, violation, True))
+            findings.append(
+                _f("path-naming-violation", "warn", rel, 1, violation, True)
+            )
 
     # rule: repo-path-deprecated — `知识库/来源/代码仓库/...` should move to `知识库/项目/...`
     _DEPRECATED_PREFIX = "知识库/来源/代码仓库/"
     for p in files:
         rel = str(p.relative_to(vault))
         if rel.startswith(_DEPRECATED_PREFIX):
-            findings.append(_f(
-                "repo-path-deprecated", "warn", rel, 1,
-                f"path under {_DEPRECATED_PREFIX} is deprecated; should move to 知识库/项目/",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "repo-path-deprecated",
+                    "warn",
+                    rel,
+                    1,
+                    f"path under {_DEPRECATED_PREFIX} is deprecated; should move to 知识库/项目/",
+                    True,
+                )
+            )
 
     # rule: kb-reflection-path-deprecated — `知识库/反思/...` → autofix mv 到 `知识库/收件箱/`
     for p in files:
         rel = str(p.relative_to(vault))
         if rel.startswith("知识库/反思/"):
-            findings.append(_f(
-                "kb-reflection-path-deprecated", "warn", rel, 1,
-                "知识库/反思/ 已废弃, autofix mv 到 知识库/收件箱/<basename>.md (待 digest 重分配)",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "kb-reflection-path-deprecated",
+                    "warn",
+                    rel,
+                    1,
+                    "知识库/反思/ 已废弃, autofix mv 到 知识库/收件箱/<basename>.md (待 digest 重分配)",
+                    True,
+                )
+            )
 
     # rule: kb-question-fleeting-path-deprecated — `知识库/问题/...` 或 `知识库/临时/...` → autofix mv 到 `知识库/收件箱/`
     for p in files:
         rel = str(p.relative_to(vault))
         if rel.startswith("知识库/问题/") or rel.startswith("知识库/临时/"):
-            findings.append(_f(
-                "kb-question-fleeting-path-deprecated", "warn", rel, 1,
-                "知识库/问题/ 与 知识库/临时/ 已废弃, autofix mv 到 知识库/收件箱/<basename>.md",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "kb-question-fleeting-path-deprecated",
+                    "warn",
+                    rel,
+                    1,
+                    "知识库/问题/ 与 知识库/临时/ 已废弃, autofix mv 到 知识库/收件箱/<basename>.md",
+                    True,
+                )
+            )
 
     # rule: kb-entity-concept-path-deprecated — `知识库/实体/...` 或 `知识库/概念/...` → warn 不 mv (需 AI 选域)
     for p in files:
         rel = str(p.relative_to(vault))
         if rel.startswith("知识库/实体/") or rel.startswith("知识库/概念/"):
-            findings.append(_f(
-                "kb-entity-concept-path-deprecated", "warn", rel, 1,
-                "应迁到 知识库/领域/<域>/<kebab>.md;请用 cortex_save --kind entity 或 --kind concept 重新落档 (AI 自决选域, 缺则 领域/未分类/)",
-                False,
-            ))
+            findings.append(
+                _f(
+                    "kb-entity-concept-path-deprecated",
+                    "warn",
+                    rel,
+                    1,
+                    "应迁到 知识库/领域/<域>/<kebab>.md;请用 cortex_save --kind entity 或 --kind concept 重新落档 (AI 自决选域, 缺则 领域/未分类/)",
+                    False,
+                )
+            )
 
     # rule: kb-journal-multi-freq-deprecated — `知识库/日记/{周|月|年}/...` → autofix mv 到 `归档/日记/<YYYY-QN>.md`
     for p in files:
@@ -835,11 +1076,16 @@ def check_global(
             or rel.startswith("知识库/日记/月/")
             or rel.startswith("知识库/日记/年/")
         ):
-            findings.append(_f(
-                "kb-journal-multi-freq-deprecated", "warn", rel, 1,
-                "知识库/日记/{周|月|年}/ 已废弃 (仅日维度保留), autofix mv 到 归档/日记/<YYYY-QN>.md 季度桶",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "kb-journal-multi-freq-deprecated",
+                    "warn",
+                    rel,
+                    1,
+                    "知识库/日记/{周|月|年}/ 已废弃 (仅日维度保留), autofix mv 到 归档/日记/<YYYY-QN>.md 季度桶",
+                    True,
+                )
+            )
 
     # rule: kb-source-non-repo-path-deprecated — `知识库/来源/{网页|论文|书籍}/...` → autofix mv 到 `知识库/收件箱/`
     for p in files:
@@ -849,11 +1095,16 @@ def check_global(
             or rel.startswith("知识库/来源/论文/")
             or rel.startswith("知识库/来源/书籍/")
         ):
-            findings.append(_f(
-                "kb-source-non-repo-path-deprecated", "warn", rel, 1,
-                "知识库/来源/{网页|论文|书籍}/ 已废弃, autofix mv 到 知识库/收件箱/<host>-<slug>.md (待 digest 分发)",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "kb-source-non-repo-path-deprecated",
+                    "warn",
+                    rel,
+                    1,
+                    "知识库/来源/{网页|论文|书籍}/ 已废弃, autofix mv 到 知识库/收件箱/<host>-<slug>.md (待 digest 分发)",
+                    True,
+                )
+            )
 
     # rule 15: i18n-path-not-in-locale (top-level business dirs not in vault.lang dirs map)
     if locale_dirs is not None:
@@ -872,11 +1123,16 @@ def check_global(
                 # top-level file (non-md handled elsewhere; md shared files already gated)
                 continue
             if top not in locale_dirs:
-                findings.append(_f(
-                    "i18n-path-not-in-locale", "warn", top + "/", 1,
-                    f"top-level dir '{top}' not in vault.lang dirs map; consider migrate-locale",
-                    True,
-                ))
+                findings.append(
+                    _f(
+                        "i18n-path-not-in-locale",
+                        "warn",
+                        top + "/",
+                        1,
+                        f"top-level dir '{top}' not in vault.lang dirs map; consider migrate-locale",
+                        True,
+                    )
+                )
 
     return findings
 
@@ -887,7 +1143,11 @@ def _check_naming(rel: str) -> str | None:
     if parts and parts[0] in SHARED_ROOT_DIRS:
         pass
     # 60_dashboards/<topic>-dashboard.md
-    if parts[0] == "60_dashboards" and len(parts) == 2 and parts[1] not in ("_index.md",):
+    if (
+        parts[0] == "60_dashboards"
+        and len(parts) == 2
+        and parts[1] not in ("_index.md",)
+    ):
         if not parts[1].endswith("-dashboard.md"):
             return f"dashboard '{parts[1]}' must end with -dashboard.md"
     # zettels/YYYYMMDDHHMM-<slug>.md
@@ -897,11 +1157,60 @@ def _check_naming(rel: str) -> str | None:
     return None
 
 
-def _f(rule: str, severity: str, file: str, line: int, msg: str, fixable: bool) -> dict[str, Any]:
-    return {"rule": rule, "severity": severity, "file": file, "line": line, "msg": msg, "fixable": fixable}
+def _f(
+    rule: str, severity: str, file: str, line: int, msg: str, fixable: bool
+) -> dict[str, Any]:
+    return {
+        "rule": rule,
+        "severity": severity,
+        "file": file,
+        "line": line,
+        "msg": msg,
+        "fixable": fixable,
+    }
+
+
+# ---- rule: skill-references-exists ----
+
+# 仅捕获 `(references/<name>.md)` 形式的相对链接 (允许子目录), 跳过 http(s)/绝对/纯锚点
+_REFERENCES_LINK_RE = re.compile(r"\]\(\s*(references/[^)\s#]+\.md)(?:#[^)]*)?\s*\)")
+
+
+def check_skill_references_exists(
+    abs_path: Path,
+    rel: str,
+    content: str,
+) -> list[dict[str, Any]]:
+    """rule skill-references-exists — SKILL/AGENT/agent markdown 引用 references/<x>.md 必须存在.
+
+    仅对 `SKILL.md` / `AGENT.md` / 位于 `agents/` 目录下的 .md 生效。
+    `abs_path` 用于相对解析 references/ 目标; `rel` 进 finding.file。
+    """
+    findings: list[dict[str, Any]] = []
+    name = abs_path.name
+    if name not in {"SKILL.md", "AGENT.md"} and abs_path.parent.name != "agents":
+        return findings
+    base_dir = abs_path.parent
+    for m in _REFERENCES_LINK_RE.finditer(content):
+        ref_rel = m.group(1)
+        target = (base_dir / ref_rel).resolve()
+        if not target.exists():
+            line = content[: m.start()].count("\n") + 1
+            findings.append(
+                _f(
+                    "skill-references-exists",
+                    "warn",
+                    rel,
+                    line,
+                    f"references 目标不存在: {ref_rel}",
+                    False,
+                )
+            )
+    return findings
 
 
 # ---- backup-root helpers (PRD: lint backup must live outside vault) ----
+
 
 def _vault_hash(vault: Path) -> str:
     return hashlib.sha256(str(vault.resolve()).encode()).hexdigest()[:8]
@@ -921,6 +1230,7 @@ def _prune_old_backups(vault: Path, days: int = 30) -> None:
     if not root.is_dir():
         return
     import time
+
     cutoff = time.time() - days * 86400
     for child in root.iterdir():
         try:
@@ -932,14 +1242,17 @@ def _prune_old_backups(vault: Path, days: int = 30) -> None:
 
 # ---- frontmatter-schema helpers (rule frontmatter-schema-violation) ----
 
+
 def _load_frontmatter_schema(vault: Path, plugin_root: Path) -> dict[str, Any] | None:
     """Load frontmatter schema YAML. vault `_meta/` overrides plugin templates."""
     try:
         import yaml  # type: ignore
     except ImportError:
         return None
-    for p in (vault / "_meta" / "frontmatter-schema.yaml",
-              plugin_root / "presets" / "seed" / "_templates" / "frontmatter-schema.yaml"):
+    for p in (
+        vault / "_meta" / "frontmatter-schema.yaml",
+        plugin_root / "presets" / "seed" / "_templates" / "frontmatter-schema.yaml",
+    ):
         if p.is_file():
             try:
                 data = yaml.safe_load(p.read_text(encoding="utf-8"))
@@ -950,7 +1263,9 @@ def _load_frontmatter_schema(vault: Path, plugin_root: Path) -> dict[str, Any] |
     return None
 
 
-def _resolve_schema_for_path(rel_path: str, schema: dict[str, Any] | None) -> dict[str, Any] | None:
+def _resolve_schema_for_path(
+    rel_path: str, schema: dict[str, Any] | None
+) -> dict[str, Any] | None:
     """Walk namespaces by path segments (longest-prefix); return matched rule dict."""
     if not schema:
         return None
@@ -966,19 +1281,25 @@ def _resolve_schema_for_path(rel_path: str, schema: dict[str, Any] | None) -> di
         if isinstance(cur, dict):
             if p in cur:
                 nxt = cur[p]
-                if isinstance(nxt, dict) and ("required" in nxt or "defaults" in nxt or "tags_required" in nxt):
+                if isinstance(nxt, dict) and (
+                    "required" in nxt or "defaults" in nxt or "tags_required" in nxt
+                ):
                     return nxt
                 cur = nxt
             elif "*" in cur:
                 nxt = cur["*"]
-                if isinstance(nxt, dict) and ("required" in nxt or "defaults" in nxt or "tags_required" in nxt):
+                if isinstance(nxt, dict) and (
+                    "required" in nxt or "defaults" in nxt or "tags_required" in nxt
+                ):
                     return nxt
                 cur = nxt
             else:
                 return None
         else:
             return None
-    if isinstance(cur, dict) and ("required" in cur or "defaults" in cur or "tags_required" in cur):
+    if isinstance(cur, dict) and (
+        "required" in cur or "defaults" in cur or "tags_required" in cur
+    ):
         return cur
     if isinstance(cur, dict) and "*" in cur:
         leaf = cur["*"]
@@ -988,7 +1309,9 @@ def _resolve_schema_for_path(rel_path: str, schema: dict[str, Any] | None) -> di
 
 
 def _check_frontmatter_schema(
-    rel_path: str, fm: dict[str, Any], schema: dict[str, Any] | None,
+    rel_path: str,
+    fm: dict[str, Any],
+    schema: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
     """Check fm against resolved schema; return findings."""
     findings: list[dict[str, Any]] = []
@@ -999,25 +1322,40 @@ def _check_frontmatter_schema(
     tags_required = rule.get("tags_required", []) or []
     for k in required:
         if k not in fm or fm.get(k) in (None, "", []):
-            findings.append(_f(
-                "frontmatter-schema-violation", "warn", rel_path, 1,
-                f"frontmatter 缺 required 字段 '{k}'", True,
-            ))
+            findings.append(
+                _f(
+                    "frontmatter-schema-violation",
+                    "warn",
+                    rel_path,
+                    1,
+                    f"frontmatter 缺 required 字段 '{k}'",
+                    True,
+                )
+            )
     fm_tags = fm.get("tags", []) or []
     if isinstance(fm_tags, str):
         fm_tags = [fm_tags]
     for t in tags_required:
         prefix = str(t).split("/", 1)[0] + "/"
         if not any(str(ft).startswith(prefix) for ft in fm_tags):
-            findings.append(_f(
-                "frontmatter-schema-violation", "warn", rel_path, 1,
-                f"frontmatter 缺 required tag prefix '{prefix}*'", True,
-            ))
+            findings.append(
+                _f(
+                    "frontmatter-schema-violation",
+                    "warn",
+                    rel_path,
+                    1,
+                    f"frontmatter 缺 required tag prefix '{prefix}*'",
+                    True,
+                )
+            )
     return findings
 
 
 def _fix_frontmatter_schema(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     """Fill missing required (via defaults) + tags_required prefixes."""
     try:
@@ -1149,7 +1487,9 @@ def _read_template_version(p: Path) -> int:
 def _check_template_outdated(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
     """Rule template-outdated/template-missing — vault/_templates vs plugin manifest."""
     findings: list[dict[str, Any]] = []
-    manifest = _load_manifest(plugin_root / "presets" / "seed" / "_templates" / "_manifest.json")
+    manifest = _load_manifest(
+        plugin_root / "presets" / "seed" / "_templates" / "_manifest.json"
+    )
     if not manifest:
         return findings
     entries = manifest.get("entries", {}) if isinstance(manifest, dict) else {}
@@ -1159,31 +1499,42 @@ def _check_template_outdated(vault: Path, plugin_root: Path) -> list[dict[str, A
         vault_file = vault / "_templates" / rel
         plugin_sha = info.get("sha256", "")
         if not vault_file.exists():
-            findings.append(_f(
-                "template-missing", "warn", f"_templates/{rel}", 1,
-                f"vault 缺少模板 {rel} (plugin 有最新版)", True,
-            ))
+            findings.append(
+                _f(
+                    "template-missing",
+                    "warn",
+                    f"_templates/{rel}",
+                    1,
+                    f"vault 缺少模板 {rel} (plugin 有最新版)",
+                    True,
+                )
+            )
             continue
         vault_sha = _sha256_normalized(vault_file)
         if vault_sha != plugin_sha:
-            findings.append(_f(
-                "template-outdated", "warn", f"_templates/{rel}", 1,
-                f"模板 _templates/{rel} 与 plugin source 不一致 "
-                f"(vault sha={vault_sha[:8]} plugin sha={plugin_sha[:8]})",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "template-outdated",
+                    "warn",
+                    f"_templates/{rel}",
+                    1,
+                    f"模板 _templates/{rel} 与 plugin source 不一致 "
+                    f"(vault sha={vault_sha[:8]} plugin sha={plugin_sha[:8]})",
+                    True,
+                )
+            )
     return findings
 
 
 def _seed_rel_to_vault_rel(seed_rel: str) -> str | None:
     """Map presets manifest key (e.g. 'seed/root/主页.md') → vault rel path."""
     if seed_rel.startswith("seed/root/"):
-        return seed_rel[len("seed/root/"):]
+        return seed_rel[len("seed/root/") :]
     if seed_rel.startswith("seed/_meta/"):
         # _meta files (memory-policy.yaml etc.) excluded from manifest scope
-        return seed_rel[len("seed/"):]
+        return seed_rel[len("seed/") :]
     if seed_rel.startswith("seed/"):
-        return seed_rel[len("seed/"):]
+        return seed_rel[len("seed/") :]
     return None
 
 
@@ -1203,11 +1554,16 @@ def _check_structure_missing(vault: Path, plugin_root: Path) -> list[dict[str, A
             for k, v in node.items():
                 p = f"{prefix}/{k}" if prefix else k
                 if not (vault / p).is_dir():
-                    findings.append(_f(
-                        "structure-missing", "warn", p, 1,
-                        f"vault 缺目录 {p} (plugin _structure.json 要求)",
-                        True,
-                    ))
+                    findings.append(
+                        _f(
+                            "structure-missing",
+                            "warn",
+                            p,
+                            1,
+                            f"vault 缺目录 {p} (plugin _structure.json 要求)",
+                            True,
+                        )
+                    )
                 walk(v, p)
         elif isinstance(node, list):
             for item in node:
@@ -1236,11 +1592,16 @@ def _check_seed_missing(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
             continue
         rel = name if dst_key == "." else f"{dst_key}/{name}"
         if not (vault / rel).exists():
-            findings.append(_f(
-                "seed-missing", "warn", rel, 1,
-                f"vault 缺 seed 文件 {rel}",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "seed-missing",
+                    "warn",
+                    rel,
+                    1,
+                    f"vault 缺 seed 文件 {rel}",
+                    True,
+                )
+            )
     return findings
 
 
@@ -1248,27 +1609,43 @@ def _check_meta_missing(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
     """Report missing core _meta files."""
     findings: list[dict[str, Any]] = []
     targets = [
-        ("_meta/memory-policy.yaml",
-         plugin_root / "presets" / "seed" / "_meta" / "memory-policy.yaml"),
-        ("_meta/triggers.yaml",
-         plugin_root / "presets" / "seed" / "_templates" / "triggers.yaml"),
-        ("_meta/template-manifest.json",
-         plugin_root / "presets" / "seed" / "_templates" / "_manifest.json"),
-        ("_meta/frontmatter-schema.yaml",
-         plugin_root / "presets" / "seed" / "_templates" / "frontmatter-schema.yaml"),
+        (
+            "_meta/memory-policy.yaml",
+            plugin_root / "presets" / "seed" / "_meta" / "memory-policy.yaml",
+        ),
+        (
+            "_meta/triggers.yaml",
+            plugin_root / "presets" / "seed" / "_templates" / "triggers.yaml",
+        ),
+        (
+            "_meta/template-manifest.json",
+            plugin_root / "presets" / "seed" / "_templates" / "_manifest.json",
+        ),
+        (
+            "_meta/frontmatter-schema.yaml",
+            plugin_root / "presets" / "seed" / "_templates" / "frontmatter-schema.yaml",
+        ),
     ]
     for rel, src in targets:
         if src.exists() and not (vault / rel).exists():
-            findings.append(_f(
-                "meta-missing", "warn", rel, 1,
-                f"vault 缺 _meta 文件 {rel}",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "meta-missing",
+                    "warn",
+                    rel,
+                    1,
+                    f"vault 缺 _meta 文件 {rel}",
+                    True,
+                )
+            )
     return findings
 
 
 def _fix_structure_missing(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     p = vault / finding["file"]
     try:
@@ -1279,7 +1656,10 @@ def _fix_structure_missing(
 
 
 def _fix_seed_missing(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     rel = finding["file"]
     sf = plugin_root / "presets" / "_structure.json"
@@ -1325,18 +1705,33 @@ def _fix_seed_missing(
 
 
 def _fix_meta_missing(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     rel = finding["file"]
     src_map = {
-        "_meta/memory-policy.yaml":
-            plugin_root / "presets" / "seed" / "_meta" / "memory-policy.yaml",
-        "_meta/triggers.yaml":
-            plugin_root / "presets" / "seed" / "_templates" / "triggers.yaml",
-        "_meta/template-manifest.json":
-            plugin_root / "presets" / "seed" / "_templates" / "_manifest.json",
-        "_meta/frontmatter-schema.yaml":
-            plugin_root / "presets" / "seed" / "_templates" / "frontmatter-schema.yaml",
+        "_meta/memory-policy.yaml": plugin_root
+        / "presets"
+        / "seed"
+        / "_meta"
+        / "memory-policy.yaml",
+        "_meta/triggers.yaml": plugin_root
+        / "presets"
+        / "seed"
+        / "_templates"
+        / "triggers.yaml",
+        "_meta/template-manifest.json": plugin_root
+        / "presets"
+        / "seed"
+        / "_templates"
+        / "_manifest.json",
+        "_meta/frontmatter-schema.yaml": plugin_root
+        / "presets"
+        / "seed"
+        / "_templates"
+        / "frontmatter-schema.yaml",
     }
     src = src_map.get(rel)
     if src is None or not src.exists():
@@ -1354,29 +1749,44 @@ def _fix_meta_missing(
 
 # ---- backup-in-vault: migrate legacy <vault>/_meta/.cortex-backup/ ----
 
+
 def _check_backup_in_vault(vault: Path, plugin_root: Path) -> list[dict[str, Any]]:
     """Rule backup-in-vault — legacy lint backup dir found inside vault."""
     findings: list[dict[str, Any]] = []
     bak = vault / "_meta" / ".cortex-backup"
     if bak.is_dir():
-        findings.append(_f(
-            "backup-in-vault", "warn", "_meta/.cortex-backup", 1,
-            "vault 内有 lint backup 目录, 应迁出到 ~/.cache/cortex/lint-backup/",
-            True,
-        ))
+        findings.append(
+            _f(
+                "backup-in-vault",
+                "warn",
+                "_meta/.cortex-backup",
+                1,
+                "vault 内有 lint backup 目录, 应迁出到 ~/.cache/cortex/lint-backup/",
+                True,
+            )
+        )
     return findings
 
 
 def _fix_backup_in_vault(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     """mv vault/_meta/.cortex-backup → ~/.cache/cortex/lint-backup/<hash>/migrated-<ts>/."""
     src = vault / "_meta" / ".cortex-backup"
     if not src.is_dir():
         return False
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    dst = (Path.home() / ".cache" / "cortex" / "lint-backup"
-           / _vault_hash(vault) / f"migrated-{ts}")
+    dst = (
+        Path.home()
+        / ".cache"
+        / "cortex"
+        / "lint-backup"
+        / _vault_hash(vault)
+        / f"migrated-{ts}"
+    )
     dst.parent.mkdir(parents=True, exist_ok=True)
     try:
         shutil.move(str(src), str(dst))
@@ -1429,11 +1839,16 @@ def _check_seed_outdated(vault: Path, plugin_root: Path) -> list[dict[str, Any]]
         plugin_ver = int(info.get("template_version", 1))
         vault_ver = _read_template_version(vault_file)
         if vault_ver < plugin_ver:
-            findings.append(_f(
-                "seed-outdated", "warn", vault_rel, 1,
-                f"seed 文件 template_version={vault_ver} < plugin={plugin_ver}",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "seed-outdated",
+                    "warn",
+                    vault_rel,
+                    1,
+                    f"seed 文件 template_version={vault_ver} < plugin={plugin_ver}",
+                    True,
+                )
+            )
     return findings
 
 
@@ -1451,13 +1866,16 @@ def _find_plugin_seed_source(plugin_root: Path, vault_rel: str) -> Path | None:
 
 
 def _fix_template_outdated(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     """Copy plugin template over vault template (backup existing)."""
     file_path = finding["file"]
     if not file_path.startswith("_templates/"):
         return False
-    rel = file_path[len("_templates/"):]
+    rel = file_path[len("_templates/") :]
     src = plugin_root / "presets" / "seed" / "_templates" / rel
     dst = vault / "_templates" / rel
     if not src.exists():
@@ -1478,7 +1896,10 @@ def _fix_template_outdated(
 
 
 def _fix_seed_outdated(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     """Rewrite vault seed file's template-owned region (up to TEMPLATE_END marker)."""
     vault_rel = finding["file"]
@@ -1517,6 +1938,7 @@ def _fix_seed_outdated(
 
 # ---- vault-misaligned (强制对齐) ----
 
+
 def _sha256_normalized_part(p: Path, part: str = "head") -> str:
     """sha256 of TEMPLATE_END head ('<...>MARKER') or tail (after MARKER).
 
@@ -1540,7 +1962,7 @@ def _sha256_normalized_part(p: Path, part: str = "head") -> str:
 def _resolve_plugin_source(rel: str, plugin_root: Path) -> Path | None:
     """vault relpath → plugin 源路径反查。"""
     if rel.startswith("_meta/"):
-        name = rel[len("_meta/"):]
+        name = rel[len("_meta/") :]
         for cand in (
             plugin_root / "presets" / "seed" / "_meta" / name,
             plugin_root / "presets" / "seed" / "_templates" / name,
@@ -1554,7 +1976,9 @@ def _resolve_plugin_source(rel: str, plugin_root: Path) -> Path | None:
                 return cand
         return None
     if rel.startswith("_templates/"):
-        cand = plugin_root / "presets" / "seed" / "_templates" / rel[len("_templates/"):]
+        cand = (
+            plugin_root / "presets" / "seed" / "_templates" / rel[len("_templates/") :]
+        )
         return cand if cand.exists() else None
     # seed_files 反查
     sf = plugin_root / "presets" / "_structure.json"
@@ -1601,32 +2025,50 @@ def _check_vault_misaligned(vault: Path, plugin_root: Path) -> list[dict[str, An
             dst = vault / rel
             if not (src.is_file() and dst.is_file()):
                 continue
-            if _sha256_normalized_part(src, "head") != _sha256_normalized_part(dst, "head"):
-                findings.append(_f(
-                    "vault-misaligned", "warn", rel, 1,
-                    f"vault 文件 {rel} 头部 (TEMPLATE_END 之前) 与 plugin 源不一致",
-                    True,
-                ))
+            if _sha256_normalized_part(src, "head") != _sha256_normalized_part(
+                dst, "head"
+            ):
+                findings.append(
+                    _f(
+                        "vault-misaligned",
+                        "warn",
+                        rel,
+                        1,
+                        f"vault 文件 {rel} 头部 (TEMPLATE_END 之前) 与 plugin 源不一致",
+                        True,
+                    )
+                )
 
     # 2) _meta 固定文件 — 整体 sha 比对
     meta_pairs = [
-        ("_meta/memory-policy.yaml",
-         plugin_root / "presets" / "seed" / "_meta" / "memory-policy.yaml"),
-        ("_meta/triggers.yaml",
-         plugin_root / "presets" / "seed" / "_templates" / "triggers.yaml"),
-        ("_meta/frontmatter-schema.yaml",
-         plugin_root / "presets" / "seed" / "_templates" / "frontmatter-schema.yaml"),
+        (
+            "_meta/memory-policy.yaml",
+            plugin_root / "presets" / "seed" / "_meta" / "memory-policy.yaml",
+        ),
+        (
+            "_meta/triggers.yaml",
+            plugin_root / "presets" / "seed" / "_templates" / "triggers.yaml",
+        ),
+        (
+            "_meta/frontmatter-schema.yaml",
+            plugin_root / "presets" / "seed" / "_templates" / "frontmatter-schema.yaml",
+        ),
     ]
     for rel, src in meta_pairs:
         dst = vault / rel
         if not (src.is_file() and dst.is_file()):
             continue
         if _sha256_normalized(src) != _sha256_normalized(dst):
-            findings.append(_f(
-                "vault-misaligned", "warn", rel, 1,
-                f"vault _meta 文件 {rel} 与 plugin 源不一致 (强制对齐)",
-                True,
-            ))
+            findings.append(
+                _f(
+                    "vault-misaligned",
+                    "warn",
+                    rel,
+                    1,
+                    f"vault _meta 文件 {rel} 与 plugin 源不一致 (强制对齐)",
+                    True,
+                )
+            )
 
     # 3) _templates/* — 整体 sha 比对 (补 template-outdated 漏掉的: 同版本号但内容被改)
     tpl_dir = plugin_root / "presets" / "seed" / "_templates"
@@ -1642,17 +2084,25 @@ def _check_vault_misaligned(vault: Path, plugin_root: Path) -> list[dict[str, An
                 continue
             if _sha256_normalized(src) != _sha256_normalized(dst):
                 vault_rel = f"_templates/{rel_tpl}"
-                findings.append(_f(
-                    "vault-misaligned", "warn", vault_rel, 1,
-                    f"vault {vault_rel} 与 plugin 源不一致",
-                    True,
-                ))
+                findings.append(
+                    _f(
+                        "vault-misaligned",
+                        "warn",
+                        vault_rel,
+                        1,
+                        f"vault {vault_rel} 与 plugin 源不一致",
+                        True,
+                    )
+                )
 
     return findings
 
 
 def _fix_vault_misaligned(
-    finding: dict[str, Any], vault: Path, plugin_root: Path, backup_dir: Path,
+    finding: dict[str, Any],
+    vault: Path,
+    plugin_root: Path,
+    backup_dir: Path,
 ) -> bool:
     """强制对齐: TEMPLATE_END 拼接 (有 marker 时保留用户尾段); backup 原始。"""
     rel = finding["file"]
@@ -1698,12 +2148,20 @@ _STUB_CAP = 1000
 
 def _wikilink_freq(vault: Path, all_files: list[Path] | None = None) -> dict[str, int]:
     """Count wikilink target occurrences across the vault (key=lowercased stem)."""
-    WL = re.compile(r"(?<!\!)\[\[([^\[\]\n|#^]+)(?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?\]\]")
+    WL = re.compile(
+        r"(?<!\!)\[\[([^\[\]\n|#^]+)(?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?\]\]"
+    )
     freq: dict[str, int] = defaultdict(int)
-    files = all_files if all_files is not None else [
-        p for p in vault.rglob("*.md")
-        if p.is_file() and not any(part in EXCLUDE_DIRS for part in p.relative_to(vault).parts)
-    ]
+    files = (
+        all_files
+        if all_files is not None
+        else [
+            p
+            for p in vault.rglob("*.md")
+            if p.is_file()
+            and not any(part in EXCLUDE_DIRS for part in p.relative_to(vault).parts)
+        ]
+    )
     for f in files:
         try:
             txt = f.read_text(encoding="utf-8", errors="ignore")
@@ -1795,12 +2253,12 @@ def _fix_dead_wikilink(
             pass
         # Match [[target]], [[target|label]], [[target#anchor]], [[target#anchor|label]]
         esc = re.escape(target)
-        pattern = re.compile(
-            rf"\[\[{esc}(?:[#^][^\[\]\n|]*)?(?:\|([^\[\]\n]*))?\]\]"
-        )
+        pattern = re.compile(rf"\[\[{esc}(?:[#^][^\[\]\n|]*)?(?:\|([^\[\]\n]*))?\]\]")
+
         def _repl(mm: re.Match) -> str:
             label = mm.group(1)
             return label if label else target_stem.split("/")[-1]
+
         new_text = pattern.sub(_repl, text)
         if new_text == text:
             return False
@@ -1849,11 +2307,16 @@ def _fix_duplicate_alias_group(
             mtime = p.stat().st_mtime
         except Exception:
             mtime = 0.0
-        file_info.append({
-            "rel": rel, "path": p, "fm": fm, "body": body,
-            "created": str(created) if created else "",
-            "mtime": mtime,
-        })
+        file_info.append(
+            {
+                "rel": rel,
+                "path": p,
+                "fm": fm,
+                "body": body,
+                "created": str(created) if created else "",
+                "mtime": mtime,
+            }
+        )
     if len(file_info) < 2:
         return 0
 
@@ -1863,6 +2326,7 @@ def _fix_duplicate_alias_group(
         if c:
             return (0, c, info["mtime"])
         return (1, "", info["mtime"])
+
     file_info.sort(key=_sort_key)
 
     # Keep first; rename alias in others
@@ -1906,7 +2370,9 @@ def _fix_duplicate_alias_group(
         except Exception:
             continue
         try:
-            info["path"].write_text(f"---\n{new_fm}---\n{info['body']}", encoding="utf-8")
+            info["path"].write_text(
+                f"---\n{new_fm}---\n{info['body']}", encoding="utf-8"
+            )
             fixed += 1
         except Exception:
             continue
@@ -1917,16 +2383,34 @@ def _fix_duplicate_alias_group(
 
 # 14 Obsidian-standard callout types (rewrite anything else to `info`)
 _STANDARD_CALLOUTS = {
-    "info", "tip", "warning", "note", "abstract", "summary", "todo",
-    "success", "question", "failure", "danger", "bug", "example", "quote",
+    "info",
+    "tip",
+    "warning",
+    "note",
+    "abstract",
+    "summary",
+    "todo",
+    "success",
+    "question",
+    "failure",
+    "danger",
+    "bug",
+    "example",
+    "quote",
 }
 
 
 # 知识库 sub-namespace dirs — vault root 上出现的同名目录应 merge 入 知识库/, 非备份
 # 仅 4 子目录: 项目 / 领域 / 日记 / 收件箱 (zh-CN) + 英文 locale 等价
 _KB_SUB_NAMES = {
-    "项目", "领域", "日记", "收件箱",  # zh-CN canonical
-    "projects", "domains", "journal", "inbox",
+    "项目",
+    "领域",
+    "日记",
+    "收件箱",  # zh-CN canonical
+    "projects",
+    "domains",
+    "journal",
+    "inbox",
 }
 
 # 知识库/ 子层允许的目录白名单 (与 _KB_SUB_NAMES 对齐, 用于 vault-structure 子检查)
@@ -1972,8 +2456,12 @@ def _fix_vault_structure_violation(
             pass
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     structure_root = (
-        Path.home() / ".cache" / "cortex" / "lint-backup"
-        / _vault_hash(vault) / f"structure-{ts}"
+        Path.home()
+        / ".cache"
+        / "cortex"
+        / "lint-backup"
+        / _vault_hash(vault)
+        / f"structure-{ts}"
     )
     dst = structure_root / rel
     try:
@@ -2137,7 +2625,7 @@ def _fix_repo_path_deprecated(
     new_prefix = "知识库/项目/"
     if not rel.startswith(deprecated_prefix):
         return False
-    rest = rel[len(deprecated_prefix):]
+    rest = rel[len(deprecated_prefix) :]
     src = vault / rel
     dst = vault / (new_prefix + rest)
     if not src.exists():
@@ -2166,9 +2654,10 @@ def _fix_repo_path_deprecated(
     if end == -1:
         return True
     fm_block = text[4:end]
-    rest_text = text[end + len("\n---\n"):]
+    rest_text = text[end + len("\n---\n") :]
     # Rewrite type if `type: domain`
     fm_block = re.sub(r"(?m)^type:\s*domain\s*$", "type: project", fm_block)
+
     # Add missing host/org/repo lines
     def _ensure_field(block: str, key: str, value: str | None) -> str:
         if value is None:
@@ -2176,6 +2665,7 @@ def _fix_repo_path_deprecated(
         if re.search(rf"(?m)^{re.escape(key)}\s*:", block):
             return block
         return block.rstrip() + f"\n{key}: {value}\n"
+
     fm_block = _ensure_field(fm_block, "host", host)
     fm_block = _ensure_field(fm_block, "org", org)
     fm_block = _ensure_field(fm_block, "repo", repo)
@@ -2221,10 +2711,12 @@ def _fix_mv_to_inbox(
             end = text.find("\n---\n", 4)
             if end > 0:
                 fm_block = text[4:end]
-                rest = text[end + len("\n---\n"):]
+                rest = text[end + len("\n---\n") :]
                 if not re.search(r"(?m)^was_path:\s*", fm_block):
                     fm_block = fm_block.rstrip() + f"\nwas_path: {rel}\n"
-                    dst.write_text(f"---\n{fm_block.rstrip()}\n---\n{rest}", encoding="utf-8")
+                    dst.write_text(
+                        f"---\n{fm_block.rstrip()}\n---\n{rest}", encoding="utf-8"
+                    )
     except Exception:
         pass
     return True
@@ -2345,6 +2837,7 @@ def _fix_journal_multi_freq_to_archive(
 
 # ---- autofix ----
 
+
 def apply_fixes(
     vault: Path,
     findings: list[dict[str, Any]],
@@ -2368,9 +2861,13 @@ def apply_fixes(
         "meta-missing": _fix_meta_missing,
         "seed-missing": _fix_seed_missing,
     }
-    sync_findings = [f for f in findings
-                     if f.get("fixable") and f["rule"] in sync_rules
-                     and (rules_filter is None or f["rule"] in rules_filter)]
+    sync_findings = [
+        f
+        for f in findings
+        if f.get("fixable")
+        and f["rule"] in sync_rules
+        and (rules_filter is None or f["rule"] in rules_filter)
+    ]
     sync_findings.sort(key=lambda f: RULE_PRIORITY.get(f["rule"], 99))
     for f in sync_findings:
         fn = sync_rules[f["rule"]]
@@ -2383,8 +2880,12 @@ def apply_fixes(
         if not f.get("fixable"):
             continue
         rule = f["rule"]
-        if rule not in {"template-outdated", "template-missing", "seed-outdated",
-                        "vault-misaligned"}:
+        if rule not in {
+            "template-outdated",
+            "template-missing",
+            "seed-outdated",
+            "vault-misaligned",
+        }:
             continue
         if rules_filter is not None and rule not in rules_filter:
             continue
@@ -2408,7 +2909,10 @@ def apply_fixes(
             continue
         if f["rule"] != "frontmatter-schema-violation":
             continue
-        if rules_filter is not None and "frontmatter-schema-violation" not in rules_filter:
+        if (
+            rules_filter is not None
+            and "frontmatter-schema-violation" not in rules_filter
+        ):
             continue
         if plugin_root is None:
             continue
@@ -2421,22 +2925,32 @@ def apply_fixes(
 
     # 1c) dead-wikilink — per-finding fix with shared freq cache + stub counter
     dead_findings = [
-        f for f in findings
-        if f.get("fixable") and f["rule"] == "dead-wikilink"
+        f
+        for f in findings
+        if f.get("fixable")
+        and f["rule"] == "dead-wikilink"
         and (rules_filter is None or "dead-wikilink" in rules_filter)
     ]
     if dead_findings:
         freq_cache = _wikilink_freq(vault)
         stub_counter = {"n": 0}
         for f in dead_findings:
-            if _fix_dead_wikilink(f, vault, plugin_root, backup_dir,
-                                  freq_cache=freq_cache, stub_counter=stub_counter):
+            if _fix_dead_wikilink(
+                f,
+                vault,
+                plugin_root,
+                backup_dir,
+                freq_cache=freq_cache,
+                stub_counter=stub_counter,
+            ):
                 fixed += 1
 
     # 1d) duplicate-alias — group by alias name (parsed from msg) → batch rename
     dup_alias_findings = [
-        f for f in findings
-        if f.get("fixable") and f["rule"] == "duplicate-alias"
+        f
+        for f in findings
+        if f.get("fixable")
+        and f["rule"] == "duplicate-alias"
         and (rules_filter is None or "duplicate-alias" in rules_filter)
     ]
     if dup_alias_findings:
@@ -2449,7 +2963,10 @@ def apply_fixes(
             file_list_str = m.group(2)
             file_rels = [s.strip() for s in file_list_str.split(",") if s.strip()]
             fixed += _fix_duplicate_alias_group(
-                alias_name, file_rels, vault, backup_dir,
+                alias_name,
+                file_rels,
+                vault,
+                backup_dir,
             )
 
     # 1e) vault-structure-violation → mv 违规路径到 backup
@@ -2469,8 +2986,10 @@ def apply_fixes(
         # kb-entity-concept-path-deprecated: warn-only (no autofix, AI must choose domain)
     }
     extra_findings = [
-        f for f in findings
-        if f.get("fixable") and f["rule"] in extra_fixers
+        f
+        for f in findings
+        if f.get("fixable")
+        and f["rule"] in extra_fixers
         and (rules_filter is None or f["rule"] in rules_filter)
     ]
     extra_findings.sort(key=lambda f: RULE_PRIORITY.get(f["rule"], 99))
@@ -2487,10 +3006,16 @@ def apply_fixes(
         if not f.get("fixable"):
             continue
         if f["rule"] not in {
-            "fm-missing-type", "fm-missing-created", "fm-duplicate-tags",
-            "fm-banned-tags", "fm-banned-fields", "fm-missing-tags",
+            "fm-missing-type",
+            "fm-missing-created",
+            "fm-duplicate-tags",
+            "fm-banned-tags",
+            "fm-banned-fields",
+            "fm-missing-tags",
             "hot-too-long",
-            "index-missing-section", "title-h1-mismatch", "block-id-duplicate",
+            "index-missing-section",
+            "title-h1-mismatch",
+            "block-id-duplicate",
         }:
             continue
         if rules_filter is not None and f["rule"] not in rules_filter:
@@ -2550,7 +3075,9 @@ def apply_fixes(
                             if len(_new_tg) != len(_tg):
                                 _fm["tags"] = _new_tg
                                 _new_fm = _yaml.safe_dump(
-                                    _fm, allow_unicode=True, sort_keys=False,
+                                    _fm,
+                                    allow_unicode=True,
+                                    sort_keys=False,
                                 )
                                 new_text = f"---\n{_new_fm}---\n{m_fm.group(2)}"
                                 fixed += 1
@@ -2573,7 +3100,9 @@ def apply_fixes(
                                 removed = True
                         if removed:
                             _new_fm3 = _yaml3.safe_dump(
-                                _fm3, allow_unicode=True, sort_keys=False,
+                                _fm3,
+                                allow_unicode=True,
+                                sort_keys=False,
                             )
                             new_text = f"---\n{_new_fm3}---\n{m_fm3.group(2)}"
                             fixed += 1
@@ -2594,7 +3123,9 @@ def apply_fixes(
                         if _derived is not None and len(_derived) >= _TAGS_MIN:
                             _fm4["tags"] = _derived
                             _new_fm4 = _yaml4.safe_dump(
-                                _fm4, allow_unicode=True, sort_keys=False,
+                                _fm4,
+                                allow_unicode=True,
+                                sort_keys=False,
                             )
                             new_text = f"---\n{_new_fm4}---\n{_body4}"
                             fixed += 1
@@ -2614,9 +3145,11 @@ def apply_fixes(
                         _tg2 = _fm2.get("tags")
                         if isinstance(_tg2, list):
                             _filt = [
-                                _t for _t in _tg2
-                                if not (isinstance(_t, str)
-                                        and _t.lower() in _BANNED_TAGS)
+                                _t
+                                for _t in _tg2
+                                if not (
+                                    isinstance(_t, str) and _t.lower() in _BANNED_TAGS
+                                )
                             ]
                             if len(_filt) != len(_tg2):
                                 if _filt:
@@ -2624,7 +3157,9 @@ def apply_fixes(
                                 else:
                                     _fm2.pop("tags", None)
                                 _new_fm2 = _yaml2.safe_dump(
-                                    _fm2, allow_unicode=True, sort_keys=False,
+                                    _fm2,
+                                    allow_unicode=True,
+                                    sort_keys=False,
                                 )
                                 new_text = f"---\n{_new_fm2}---\n{m_fm2.group(2)}"
                                 fixed += 1
@@ -2639,7 +3174,10 @@ def apply_fixes(
                 if len(lines) > 200:
                     archive_dir = vault / "归档"
                     archive_dir.mkdir(exist_ok=True)
-                    arch = archive_dir / f"hot-archive-{datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+                    arch = (
+                        archive_dir
+                        / f"hot-archive-{datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+                    )
                     arch.write_text("\n".join(lines[200:]) + "\n", encoding="utf-8")
                     new_text = "\n".join(lines[:200]) + "\n"
                     fixed += 1
@@ -2656,13 +3194,19 @@ def apply_fixes(
                 bid_match = re.search(r"\^(cortex-[a-f0-9]{8})", it["msg"])
                 if bid_match:
                     old = bid_match.group(1)
-                    new_h = hashlib.sha1((relfile + str(it["line"]) + old).encode()).hexdigest()[:8]
+                    new_h = hashlib.sha1(
+                        (relfile + str(it["line"]) + old).encode()
+                    ).hexdigest()[:8]
                     new_bid = f"cortex-{new_h}"
                     # only replace one occurrence at the given line
                     lines = new_text.splitlines()
                     if 0 < it["line"] <= len(lines):
-                        lines[it["line"] - 1] = lines[it["line"] - 1].replace(f"^{old}", f"^{new_bid}", 1)
-                        new_text = "\n".join(lines) + ("\n" if new_text.endswith("\n") else "")
+                        lines[it["line"] - 1] = lines[it["line"] - 1].replace(
+                            f"^{old}", f"^{new_bid}", 1
+                        )
+                        new_text = "\n".join(lines) + (
+                            "\n" if new_text.endswith("\n") else ""
+                        )
                         fixed += 1
 
         if new_text != text:
@@ -2708,12 +3252,16 @@ def _ensure_fm_field(text: str, key: str, value: str) -> str:
 
 # ---- main ----
 
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--vault", required=True, help="Obsidian vault absolute path")
-    ap.add_argument("--fix", action="store_true", help="apply autofix (writes to disk + backup)")
     ap.add_argument(
-        "--sync-templates", action="store_true",
+        "--fix", action="store_true", help="apply autofix (writes to disk + backup)"
+    )
+    ap.add_argument(
+        "--sync-templates",
+        action="store_true",
         dest="sync_templates",
         help="only auto-fix template-outdated/template-missing/seed-outdated (no other rules)",
     )
@@ -2742,9 +3290,15 @@ def main() -> int:
         except Exception:
             continue
         rel = str(p.relative_to(vault))
-        findings.extend(check_file(p, rel, text, by_name, by_alias, referrers, vault_lang, fm_schema))
+        findings.extend(
+            check_file(
+                p, rel, text, by_name, by_alias, referrers, vault_lang, fm_schema
+            )
+        )
 
-    findings.extend(check_global(vault, files, by_alias, locale_dirs if locale_dirs else None))
+    findings.extend(
+        check_global(vault, files, by_alias, locale_dirs if locale_dirs else None)
+    )
 
     # rule #16: vault-structure-violation — strict preset schema check at root
     preset = _load_vault_preset(vault)
@@ -2772,11 +3326,16 @@ def main() -> int:
     # Backup root lives OUTSIDE the vault (PRD: vault stays clean).
     structure_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     structure_backup_root = str(
-        Path.home() / ".cache" / "cortex" / "lint-backup"
-        / _vault_hash(vault) / f"structure-{structure_ts}"
+        Path.home()
+        / ".cache"
+        / "cortex"
+        / "lint-backup"
+        / _vault_hash(vault)
+        / f"structure-{structure_ts}"
     )
-    sp_violations = [f for f in findings
-                     if f.get("rule") == "vault-structure-violation"]
+    sp_violations = [
+        f for f in findings if f.get("rule") == "vault-structure-violation"
+    ]
     for v in sp_violations:
         v["backup_target"] = f"{structure_backup_root}/{v['path']}"
 
@@ -2792,7 +3351,9 @@ def main() -> int:
         if args.sync_templates and not args.fix:
             rules_filter = {"template-outdated", "template-missing", "seed-outdated"}
         fixed = apply_fixes(
-            vault, findings, backup_dir,
+            vault,
+            findings,
+            backup_dir,
             plugin_root=plugin_root,
             rules_filter=rules_filter,
         )
@@ -2817,8 +3378,7 @@ def main() -> int:
             "violation_count": len(sp_violations),
             "backup_root": structure_backup_root,
             "mv_plan": [
-                {"from": v["path"], "to": v["backup_target"]}
-                for v in sp_violations
+                {"from": v["path"], "to": v["backup_target"]} for v in sp_violations
             ],
         }
     print(json.dumps(out, ensure_ascii=False, indent=2))

@@ -28,7 +28,7 @@ type: project
 | Slash commands | 20 | `/cortex:<name>` 冒号 (dash 无法解析) |
 | Wrappers | 22 | 10 slash + 3 shell + 9 CLI, 装在 `~/.cortex/scripts/*.sh` |
 | Python CLI | 9 | save / search / deep_search / ingest_url / ingest_file / memory / ledger / session / html_render |
-| Lint 规则 | 18 | run.py autofix 自循环至 clean; rule 18 = `path-lang-mismatch` (按 vault.lang 校验 path segment, 豁免 host/org/repo + ASCII 专名 + frontmatter `path_lang_exempt`) |
+| Lint 规则 | 19 | run.py autofix 自循环至 clean; rule 18 = `path-lang-mismatch` (按 vault.lang 校验 path segment); rule 19 = `skill-references-exists` (SKILL/AGENT/agent 引用 `references/<x>.md` 必须存在, warn 级, autofix=false) |
 | Hooks | 5 | SessionStart / PostCompact / Stop / SubagentStop / UserPromptSubmit |
 | Cron jobs | 8 | lint / dashboard / digest / memory-{promote,forget,compact,warden,archive} |
 
@@ -88,3 +88,39 @@ type: project
 - `plugins/tools/cortex/AGENT.md` §协作约定 — L1/L2/L3 写契约权威
 - `plugins/tools/cortex/docs/{知识库结构,Agents,Commands,Skills 详解,Hooks 机制}.md`
 - `plugins/tools/cortex/scripts/lint/schemas.py` — vault 单一 schema 定义
+
+## P5 — 借鉴 agent-playbook 增强 (2026-05-14)
+
+### 借鉴方法论
+
+| 来源 | 应用 |
+|---|---|
+| context-layering 3 层 (L1 always-on / L2 routing / L3 on-demand) | cortex-ingest/digest SKILL.md 拆 references/ |
+| self-improving multi-memory (episodic→semantic 抽取 + 反写) | cortex-digest 加 evolution 第 6 阶段 (semantic patterns 库 + proposal) |
+
+### 资产变更
+
+- cortex-ingest SKILL.md: 497 → ~200 行, 拆出 4 references/ (layout / extract / exclude / knowledge-graph)
+- cortex-digest SKILL.md: 175 → ~140 行, 拆出 3 references/ (extraction / cleanup / evolution), 加第 6 阶段 evolution
+- 新 CLI: `scripts/cli/digest.py` + `scripts/cli/lib/evolution.py` (evolution 子命令)
+- 新 CLI: `scripts/refactor/evolution_apply.py` (list / check / delete 子命令)
+- 新 wrapper 子命令: `digest.sh evolution`, `refactor.sh evolution-list/check/delete`
+- 新 memory 层: `记忆/L0-核心/patterns.md` (semantic, 多 category section)
+- 新 vault 路径: `_assets/evolution-proposals/<YYYY-MM-DD>-<slug>.md` (反写提议)
+- 新 lint 规则: `skill-references-exists` (rule 18 → 19)
+- 新测试: `test_digest_evolution.py` + `test_evolution_apply.py` + `test_skill_references_lint.py` (6)
+- 测试基线: 324 → 360 (+36)
+
+### 反写硬契约
+
+- 阈值硬编码: `confidence ≥ 0.8 AND applications ≥ 3` (digest.py 内常量)
+- 触发: 内联 cortex-digest 每次跑 (daily cron)
+- 反写流程: AI 主线读 proposal → AskUserQuestion 一条一问接受 → safety gate (git clean + 白名单) → patch SKILL/AGENT 源文件
+- Safety gate 白名单: `skills/*/SKILL.md`, `skills/*/references/*.md`, `agents/*.md`, `AGENT.md`
+- Safety gate 黑名单: `commands/`, `scripts/`, `_meta/`, `_templates/`
+
+### 关联文件
+
+- `plugins/tools/cortex/skills/cortex-digest/references/evolution.md` — 抽取规范
+- `plugins/tools/cortex/skills/cortex-refactor/SKILL.md §evolution-apply` — 反写流程
+- `plugins/tools/cortex/scripts/lint/run.py` — `check_skill_references_exists()` (rule 19)
