@@ -246,9 +246,66 @@ emit_slash doctor
 emit_slash init
 emit_slash promote
 emit_slash forget
+# digest.sh: 特殊 wrapper — 支持 `digest evolution [args...]` 直调 python CLI
+# (PR3 evolution 抽取), 无参或其他 args 走 slash /cortex:digest.
 emit_slash digest
+# 在 digest.sh 末尾追加 evolution 子命令 dispatch (覆盖 slash 行为).
+{
+  cat <<'EOF_DIGEST_DISPATCH'
+
+# ─────── evolution 子命令 dispatch (PR3) ───────
+# 若首参为 `evolution`, exec python CLI 不走 slash.
+# 此 block 由 install_wrappers.sh emit_slash digest 之后追加.
+EOF_DIGEST_DISPATCH
+} >> "$TARGET_DIR/digest.sh" 2>/dev/null || true
+# 用 sed 在 digest.sh 的 `while` 循环前注入 evolution 短路.
+python3 - "$TARGET_DIR/digest.sh" "$INSTALL_PATH" <<'PYEOF' || true
+import sys, pathlib
+p = pathlib.Path(sys.argv[1])
+install_path = sys.argv[2]
+if not p.is_file(): sys.exit(0)
+text = p.read_text()
+marker = 'INTERACTIVE=0'
+if 'EVOLUTION_DISPATCH' in text or marker not in text:
+    sys.exit(0)
+inject = (
+    '# EVOLUTION_DISPATCH (PR3): evolution 子命令直调 python CLI\n'
+    f'if [[ "${{1:-}}" == "evolution" ]]; then\n'
+    f'  trap - EXIT\n'
+    f'  shift\n'
+    f'  exec python3 "{install_path}/scripts/cli/digest.py" evolution "$@"\n'
+    f'fi\n\n'
+)
+text = text.replace(marker, inject + marker, 1)
+p.write_text(text)
+PYEOF
 emit_slash recall
 emit_slash refactor
+# refactor.sh: 加 evolution-{list,check,delete} 子命令短路, 直调 python CLI
+# (PR4 evolution-apply 工具子命令). 其余 args 走 slash /cortex:refactor.
+python3 - "$TARGET_DIR/refactor.sh" "$INSTALL_PATH" <<'PYEOF' || true
+import sys, pathlib
+p = pathlib.Path(sys.argv[1])
+install_path = sys.argv[2]
+if not p.is_file(): sys.exit(0)
+text = p.read_text()
+marker = 'INTERACTIVE=0'
+if 'EVOLUTION_APPLY_DISPATCH' in text or marker not in text:
+    sys.exit(0)
+inject = (
+    '# EVOLUTION_APPLY_DISPATCH (PR4): evolution-{list,check,delete} 直调 python CLI\n'
+    'case "${1:-}" in\n'
+    '  evolution-list|evolution-check|evolution-delete)\n'
+    '    trap - EXIT\n'
+    '    sub="${1#evolution-}"\n'
+    '    shift\n'
+    f'    exec python3 "{install_path}/scripts/refactor/evolution_apply.py" "$sub" "$@"\n'
+    '    ;;\n'
+    'esac\n\n'
+)
+text = text.replace(marker, inject + marker, 1)
+p.write_text(text)
+PYEOF
 emit_slash ingest
 
 # ─────────────────────────────────────────────────────────────────────────────
