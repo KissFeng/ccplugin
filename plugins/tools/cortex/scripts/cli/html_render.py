@@ -1,8 +1,5 @@
 """Cortex HTML render CLI — substitute `{{VAR}}` in vault templates.
 
-Extracted from legacy `scripts/mcp/cortex_mcp.py` (Phase 2a). Algorithm
-unchanged.
-
 Usage:
 
     python3 html_render.py --template <name> [--data '{"X":"v"}']

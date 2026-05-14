@@ -1,7 +1,6 @@
 """Cortex ledger CLI — append events + rebuild URI index.
 
-Extracted from legacy `scripts/mcp/cortex_mcp.py` (Phase 2a). Algorithms
-unchanged. Two ops:
+Usage:
 
     python3 ledger.py append --event '{"actor":"x","type":"y"}' [--date 2026-05-13]
     python3 ledger.py uri_index_rebuild

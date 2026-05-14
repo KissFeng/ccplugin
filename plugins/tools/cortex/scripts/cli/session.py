@@ -1,8 +1,7 @@
 """Cortex session CLI — import claude-code transcript into vault.
 
-Extracted from legacy `scripts/mcp/cortex_mcp.py` (Phase 2a). Algorithm
-unchanged. Writes `L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md` with a
-summary and appends per-turn events to `L4-流水账/ledger/<date>.jsonl`.
+Writes `L4-流水账/sessions/<cli>/<YYYY-MM>/<sid>.md` with a summary and
+appends per-turn events to `L4-流水账/ledger/<date>.jsonl`.
 
 Usage:
 

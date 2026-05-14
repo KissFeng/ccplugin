@@ -1,9 +1,8 @@
 """Cortex memory CLI — L0-L4 memory read/write/recall/forget/consolidate/promote.
 
-Extracted from legacy `scripts/mcp/cortex_mcp.py`. Algorithms unchanged;
-only the MCP protocol wrapper was stripped. Each operation has a
-`cli_memory_<op>` function returning a `{"ok", "code", "data"|"error"}`
-dict, plus a top-level argparse dispatcher for shell invocation:
+Each operation has a `cli_memory_<op>` function returning a
+`{"ok", "code", "data"|"error"}` dict, plus a top-level argparse
+dispatcher for shell invocation:
 
     python3 memory.py read --uri L2://semantic/go/goroutine
     python3 memory.py write --uri L2://... --level L2 --content - --weight 0.7
