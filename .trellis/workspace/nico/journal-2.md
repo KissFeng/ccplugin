@@ -814,3 +814,39 @@ vault truth 早已切到 知识库/ 4 子目录, 但代码 + lint + docs + skill
 ### Next Steps
 
 - None - task complete
+
+
+## Session 84: cortex 加 2 wrapper — ingest_remote (github/website) + refresh_projects 增量
+
+**Date**: 2026-05-14
+**Task**: cortex 加 2 wrapper — ingest_remote (github/website) + refresh_projects 增量
+**Branch**: `master`
+
+### Summary
+
+cortex 现有 ingest 缺 (1) 远程整 repo/整站入口 (2) 批量增量更新入口, 用户标 'wrapper 缺失, 注意所有关联地方'. 本会话 4 commit: PR1 ingest_remote (CLI 110 + lib/remote.py 412 + wrapper 71 + 17 test, github/gitlab shallow clone --depth=50 + website sitemap/BFS crawl depth ≤3, 三过滤器 url_security/html_sanitize/masking); PR2 refresh_projects (CLI 373 + wrapper 63 flock 锁 + 12 test, 仅增量 git sha 对比 / website SHA256 hash 对比, frontmatter schema +last_commit_sha/content_hash 落 layout.md); PR3 同步 install_wrappers (22→24 wrapper, EXPECTED 加 2, emit_cli 加 2 行) + install_cron (weekly Mon 03:00 +1 cron) + docs 3 (安装/快速上手/故障排查 各加节) + AGENT.md (CLI 主路径表 +2 行) + memory (Wrappers 22→24 / CLI 9→11 / Cron 8→9 + P6 节). 路径策略: github/gitlab→host/org/repo, website 有 author→host/author/slug, 无→host/_site/slug. 测试基线 360→389 +29. install_wrappers 干跑生 24 wrappers 验证通过.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `807c3498` | (see git log) |
+| `be9ae225` | (see git log) |
+| `374452c3` | (see git log) |
+| `18708440` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
