@@ -15,8 +15,9 @@ cortex-refactor 操作。
    - split 候选 (单文件 > 5KB)
    - dedupe 候选 (相同内容)
    - 输出 plan JSON, **dry-run 不落盘**
-3. 若有显式 args: 执行子命令 `rename / merge / split / migrate-locale / dedupe / extract / inline / graph-rebalance`
+3. 若有显式 args: 执行子命令 `rename / merge / split / migrate-locale / dedupe / extract / inline / graph-rebalance / evolution-apply`
    - 默认 dry-run, 仅当 `--apply` 时落盘
+   - `evolution-apply`: 消化 `_assets/evolution-proposals/` (PR3 cortex-digest 生成), AskUserQuestion 单次单条 (接受/拒绝/推迟), safety gate 通过才 patch SKILL/AGENT, 详见 cortex-refactor SKILL.md §evolution-apply
 
 输出: plan JSON (候选列表 + 影响范围 + 风险等级)。
 
