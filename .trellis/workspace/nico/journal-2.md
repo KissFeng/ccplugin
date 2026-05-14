@@ -439,3 +439,42 @@ schemas.py 三 preset root_dirs 移除 log/folds/sessions; run.py SHARED_ROOT_DI
 ### Next Steps
 
 - None - task complete
+
+
+## Session 73: cortex 大批量清理: fold/historian/preset 移除 + agent 路径对齐 + MCP 强制写契约 + neat-freak 精简
+
+**Date**: 2026-05-14
+**Task**: cortex 大批量清理: fold/historian/preset 移除 + agent 路径对齐 + MCP 强制写契约 + neat-freak 精简
+**Branch**: `master`
+
+### Summary
+
+本次会话 7 commits: (1) 清理 fold/cortex-cron 残留指令 + cron schedule 对齐 8 jobs; (2) 5 agent 路径对齐 vault truth 删 fleeting/sources/concepts 旧目录; (3) 完整移除 preset 系统 单一 vault schema; (4) user_prompt_submit hook 强制先搜 + 项目 scope 收敛 + KB 相对路径提示; (5) feat: 强制 MCP 写 vault — session_start hook 注入硬契约 (MCP first / AskUserQuestion 单次授权 / 硬拒未授权); (6) neat-freak 反膨胀: MEMORY.md 244→75, cortex-plugin memo 338→71, 同步 docs MCP 写契约。pytest 314 pass + 9 subtests。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5d31f607` | (see git log) |
+| `182ffc18` | (see git log) |
+| `c4fd72ea` | (see git log) |
+| `2e8a2930` | (see git log) |
+| `f596e496` | (see git log) |
+| `29249ead` | (see git log) |
+| `ae7bc0dc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
