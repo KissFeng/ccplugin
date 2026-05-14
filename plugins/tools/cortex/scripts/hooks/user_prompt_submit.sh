@@ -68,8 +68,8 @@ for kw in triggers:
 hits = hits[:10]
 
 
-def detect_project_hint() -> str:
-    """推当前项目 host/org/repo, 用作搜索 query 收敛词。"""
+def detect_project_hint() -> tuple[str, str]:
+    """推当前项目 host/org/repo + 来源 (git|local|""). 用作搜索 query 收敛词。"""
     # 1. git remote (github/gitlab)
     try:
         r = subprocess.run(
@@ -78,43 +78,48 @@ def detect_project_hint() -> str:
         )
         url = (r.stdout or "").strip()
         if url:
-            # git@host:org/repo.git or https://host/org/repo[.git]
             s = url.rstrip("/")
             if s.endswith(".git"):
                 s = s[:-4]
             if s.startswith("git@"):
-                # git@host:org/repo
                 host_rest = s[4:].split(":", 1)
                 if len(host_rest) == 2:
                     host = host_rest[0]
                     parts = host_rest[1].split("/")
                     if len(parts) >= 2:
-                        return f"{host}/{parts[-2]}/{parts[-1]}"
+                        return f"{host}/{parts[-2]}/{parts[-1]}", "git"
             elif "://" in s:
                 tail = s.split("://", 1)[1]
                 parts = tail.split("/")
                 if len(parts) >= 3:
-                    return f"{parts[0]}/{parts[-2]}/{parts[-1]}"
+                    return f"{parts[0]}/{parts[-2]}/{parts[-1]}", "git"
     except Exception:
         pass
-    # 2. 相对 $HOME 路径策略 (~/persons/<org>/<repo>) → host=最顶段
+    # 2. 相对 $HOME 路径策略 (~/persons/<org>/<repo>) → host=最顶段, 不足补 _local
     try:
         home = Path.home()
         rel = cwd.resolve().relative_to(home)
         parts = list(rel.parts)
         if len(parts) >= 3:
-            return f"{parts[0]}/{parts[-2]}/{parts[-1]}"
+            return f"{parts[0]}/{parts[-2]}/{parts[-1]}", "local"
         if len(parts) >= 1:
-            # 补 _local
             pad = parts + ["_local"] * (3 - len(parts))
-            return f"{pad[0]}/{pad[1]}/{pad[2]}"
+            return f"{pad[0]}/{pad[1]}/{pad[2]}", "local"
     except Exception:
         pass
-    return ""
+    return "", ""
 
 
-project_hint = detect_project_hint()
+project_hint, project_src = detect_project_hint()
 project_repo = project_hint.split("/")[-1] if project_hint else ""
+project_kb_path = f"知识库/项目/{project_hint}/" if project_hint else ""
+
+def _kb_line() -> str:
+    if not project_kb_path:
+        return ""
+    tag = "git remote" if project_src == "git" else "相对 $HOME"
+    return f"📁 当前项目在知识库: `{project_kb_path}` (来源: {tag})\n"
+
 
 msg = ""
 if hits:
@@ -122,7 +127,7 @@ if hits:
     if project_hint:
         proj_line = (
             f'   - 步骤 a: --scope domains --query "<主题>" (限 知识库/项目/, 当前项目 = {project_hint})\n'
-            f'     · 命中后 grep path 含 "{project_repo}" 取项目内结果\n'
+            f'     · 命中后 grep path 含 "{project_repo}" 取项目内结果, 或直接读 `{project_kb_path}` 下文件\n'
             f'   - 步骤 b: 项目内无果, --scope domains 全项目结果照看 (跨项目复用经验)\n'
             f'   - 步骤 c: 仍无果, --scope all 泛搜 知识库/\n'
         )
@@ -133,6 +138,7 @@ if hits:
         )
     msg = (
         f"⚠️ 用户问题含触发词 {shown}。**禁止直接询问用户**, 第一个工具调用**必须先搜**:\n"
+        f"{_kb_line()}"
         f"1. bash ~/.cortex/scripts/memory.sh recall --query <主题> — 召回记忆 (L0-L4)\n"
         f"2. bash ~/.cortex/scripts/search.sh --query <主题> --scope <scope> — 搜知识库\n"
         f"{proj_line}"
@@ -144,10 +150,11 @@ if hits:
         msg += "\n⚡ 含遗忘指令 → bash ~/.cortex/scripts/memory.sh forget --uri <u>。"
 else:
     if len(prompt) > 20:
-        if project_repo:
+        if project_kb_path:
             msg = (
-                f"💡 上下文/记忆查询顺序: search.sh --scope domains --query <主题> "
-                f"(限项目, 过滤 path 含 '{project_repo}') → --scope domains 全项目 → "
+                f"💡 当前项目在知识库: `{project_kb_path}`。"
+                f"查询顺序: search.sh --scope domains --query <主题> "
+                f"(过滤 path 含 '{project_repo}') → --scope domains 全项目 → "
                 f"--scope all 泛搜。记忆走 memory.sh recall。"
             )
         else:
