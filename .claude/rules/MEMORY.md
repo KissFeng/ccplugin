@@ -1,244 +1,75 @@
 # ccplugin 项目记忆索引
 
-> Claude Code 插件市场项目的记忆管理中心。本文件前200行在每个会话启动时自动加载。
+> Claude Code 插件市场项目的记忆管理中心。本文件前 200 行在每个会话启动时自动加载。
 
 ## 项目概述
 
-**项目名称**：ccplugin (CCPlugin Market)
-**项目类型**：Claude Code 插件市场 (Monorepo)
-**技术栈**：Python 3.11+, uv, pytest, ruff
-**核心组件**：
+**ccplugin** = Claude Code 插件市场 (Monorepo, Python 3.11 + uv + pytest + ruff)。
 
-- `plugins/` — 插件实现集合（tools/languages/themes/office）
-- `lib/` — 共享库（独立pyproject）
-- `scripts/` — 根包CLI（clean/update/info/check/install）
+核心组件:
+- `plugins/` — 插件实现 (tools / languages / themes / office)
+- `lib/` — 共享库
+- `scripts/` — 根包 CLI (clean / update / info / check / install)
 - `.claude-plugin/marketplace.json` — 市场注册表
 
-**关键文档**：
-
+关键文档:
 - `README.md` — 项目简介
-- `AGENTS.md` — 结构速览、Agent Teams决策树
-- `CLAUDE.md` — 仓库开发约定（复盘防回归规则、代码质量检查规范）
+- `AGENTS.md` — 结构 + Agent Teams 决策树
+- `CLAUDE.md` — 仓库开发约定
 - `docs/plugin-development.md` — 插件开发指南
 
-## Memory目录索引
+## Memory 索引
 
-`.claude/memory/` 目录存储项目长期记忆：
+`.claude/memory/` 项目长期记忆:
 
-- `project-setup.md` — 项目Memory系统初始化记录（2026-03-27）
-- `desktop-event-driven-architecture.md` — **@desktop 事件驱动架构规范**（2026-04-05）
-  - **核心原则**：Rust 实现业务逻辑，事件驱动前端更新
-  - **事件命名约定**：`<domain>-<entity>-<action>` 格式
-  - **Rust 模式**：Command 立即返回 + 后台任务 + `emit()` 事件
-  - **前端模式**：全局事件监听器 + 状态集中管理 + 无 `await` 调用
-  - **迁移指南**：从 command-and-wait 迁移到事件驱动的步骤和示例
-- `desktop-code-quality-2026-04-05.md` — **@desktop 代码质量审查记录**（2026-04-05）
-  - **已修复问题**：Rust/前端代码复用（减少 110+ 行重复代码）、TOCTOU 反模式
-  - **后续优化目标**：重复子进程调用、增量更新、冗余派生状态、UI 组件重复
-  - **修复模式总结**：提取辅助函数、通用方法、通用执行器
-  - **方法论**：三路并行 Agent 审查（代码复用/质量/效率）
-- `cortex-plugin-2026-05-13.md` — **@cortex 整体重构基线**（2026-05-13）
-  - **单一真相清单**：vault 结构 / 配置 / env var 政策 / slash 形式 / AUTO_MODE persistent / 插件路径硬编码 / MOC 已删
-  - **实际计数**：8 agent · 21 skill · 20 command · 22 wrapper (10 slash + 3 shell + 9 CLI) · 26 lint · 5 hook · 10 CLI 模块
-  - **目录布局**：所有 python/bash 集中 `scripts/`,install.sh 例外;`scripts/cli/` (替 `scripts/mcp/`)
-  - **知识库 4 子目录** (v6 对齐 vault): `项目/<host>/<org>/<repo>/`, `领域/<域>/`, `日记/日/<YYYY-MM>/`, `收件箱/` — 删 来源/反思/实体/概念/问题/临时/日记-周/月/年
-  - **ingest 全局规则**：folder-first + 嵌套 git 独立 + L1-L6 深度 + 评分制度
-  - **嵌套 repo** (v6): 任一子目录有 `.git/` 独立 ingest 到自己 `项目/<host>/<org>/<repo>/`, 父项目排除子 repo
-  - **local 项目相对 $HOME 路径** (v6): `~/persons/lyxamour/ccplugin/` → host=persons/org=lyxamour/repo=ccplugin, 不足 3 段用 `_local` 补齐
-  - **AI 自决域** (v6): `--domain` 可选, 缺时 AI 读 body 自决 6 域 (创作/学习/工作/技术/生活/金融), 不匹配默 `领域/未分类/`
-  - **Digest SKILL.md 单一真相**：L4 单向漏斗 0 残留 + 既有 L0-L3 交叉学习 (update/enrich/conflict)
-  - **Lint 11 规则升级**: fm-{duplicate,banned,missing}-tags + fm-banned-fields + repo-path-deprecated + kb-{reflection,question-fleeting,entity-concept,journal-multi-freq,source-non-repo}-path-deprecated; parse_frontmatter 多行 list bug 修
-  - **Vault root 强制 merge**：实体/概念/领域/来源 等子层名 mv 入 知识库/
-  - **Dashboard 12 seed v4**: view_query 改 dict + view_chart 7 类 + view_kpi 真实表达式 + view_legend, mermaid fallback (heatmap→emoji table, sankey→flowchart LR), 严禁 N/A 占位
-  - **自研 MCP 移除** (v2): `plugin.json:mcpServers` 删 + `scripts/mcp/` → `scripts/cli/` + bash wrappers + install.sh 引导官方 `mcp-obsidian`
-  - **模板重做 v6**: 6 个 (`{_index,dashboard,project,inbox,journal-day,domain-topic}.md`), 全 lint-skip
-  - **测试基线**：python 320 pass, 0 fail; bash 8 files
-
-## Rules文件索引
-
-`.claude/rules/` 目录存储项目特定规则（按需加载）：
-
-- `MEMORY.md` (本文件) — 记忆系统索引
-- _(可扩展：code-quality.md、plugin-development.md、frontend-rules.md等)_
+- `cortex-plugin-2026-05-13.md` — **@cortex 当前真相** (vault 4 子目录 / 7 agent / 21 skill / 22 wrapper / MCP 写契约 / 记忆 L0-L4)
+- `desktop-event-driven-architecture.md` — **@desktop 事件驱动架构** (Rust 业务 + 事件驱动前端 + 单向数据流)
+- `desktop-code-quality-2026-04-05.md` — **@desktop 代码质量** (代码复用 / TOCTOU 反模式 / 三路并行 Agent 审查)
+- `desktop-testing.md` — **@desktop 测试约定**
+- `project-setup.md` — Memory 系统初始化记录
+- `task-execution-log.md` — Task 插件 DAG 执行模型
 
 ## 核心约定
 
-**代码提交规范**：
+**代码提交**: 所有变更自动暂存 (CLAUDE.md §1)。
 
-- 所有变更自动提交到暂存区（CLAUDE.md §1行）
-- Desktop路由变更必须验证hash路由与首屏渲染
-- Tailwind升级后必须验证utilities是否实际生成
+**@desktop 架构**: Rust 业务 + 事件驱动前端, TS 仅 UI 渲染。Rust → Event → Frontend State → UI Render。详见 `.claude/memory/desktop-event-driven-architecture.md`。
 
-**@desktop 架构规范**（2026-04-05）：
+**@cortex 写契约 (硬)**: AI 交互式 vault 写必走 `mcp__obsidian__*`。MCP 未注册 → `AskUserQuestion` 单次授权 (本会话有效不写盘)。未授权前 AI 硬拒 vault 写。例外: Stop/cron/python CLI。详见 `cortex-plugin-2026-05-13.md`。
 
-- **Rust 优先**：所有业务逻辑在 Rust 侧实现，TypeScript 仅负责 UI 渲染
-- **事件驱动**：使用事件系统通知前端状态变化，禁止同步/异步等待结果
-- **单向数据流**：Rust → Event → Frontend State → UI Render
-- **无阻塞 UI**：命令立即返回，后台任务通过事件持续推送进度
-- 详见：`.claude/memory/desktop-event-driven-architecture.md`
+**质量检查**: commands/skills/agents/agent.md 优化后必跑:
+```bash
+claude --settings ~/.claude/settings.glm-4.7-flash.json -p "<待测>" --output-format stream-json | jq -r 'select(.type == "result" and .subtype == "success") | .result'
+```
 
-**质量检查规范**（CLAUDE.md §代码质量检查规范）：
+**复盘防回归** (CLAUDE.md §复盘防回归规则):
+1. Desktop 信息架构: 插件市场页只展示 marketplace; 插件页提供筛选
+2. Desktop 路由变更后验证 hash 路由 + 首屏渲染
+3. Desktop Tailwind 升级后验证 utilities 实际生成
 
-- commands/skills/agents/agent.md优化后必须验证AI理解识别
-- 使用 `claude --settings ~/.claude/settings.glm-4.7-flash.json` 验证
+**GitNexus**:
+- 改代码前必跑 `gitnexus_impact` 分析影响
+- 提交前必跑 `gitnexus_detect_changes` 验证范围
+- HIGH/CRITICAL 风险必报告用户
 
-**复盘防回归规则**（CLAUDE.md §复盘防回归规则）：
+## Agent Teams 决策
 
-1. Desktop信息架构：`插件市场`页面只展示marketplace列表；`插件`页面提供筛选
-2. Desktop路由方案变更后，验证hash路由与首屏渲染
-3. Desktop升级Tailwind构建链后，验证utilities实际生成
+- 优先单 Agent
+- 并发 ≤2, 成员 ≤2
+- 单一职责 → 单 Agent; 有依赖 → 串行; 并行独立 → Team
 
-**GitNexus工具链**：
-
-- 修改代码前必须运行 `gitnexus_impact` 分析影响范围
-- 提交前必须运行 `gitnexus_detect_changes` 验证变更范围
-- 高/严重风险警告必须报告用户
-- 工具参考：`.claude/skills/gitnexus/`
-
-## Agent Teams使用决策
-
-**核心约束**：
-
-- 优先避免使用Agent Teams
-- 并发限制：≤2个
-- 成员限制：≤2个
-
-**决策树**（详见AGENTS.md §Agent Teams使用决策树）：
-
-- 单一职责 → 单Agent
-- 有依赖 → 串行调用
-- 并行且独立 → Agent Teams (≤2成员)
+详细决策树见 `AGENTS.md §Agent Teams 决策树`。
 
 ## 常用命令
 
 ```bash
-# 依赖管理
-uv sync
-
-# 代码质量
-uv run ruff check .
-uv run ruff format .
-
-# 测试
+uv sync                          # 依赖
+uv run ruff check . && uv run ruff format .
 uv run pytest lib/tests
-
-# 版本同步
-uv run scripts/update_version.py
+uv run scripts/update_version.py # 版本同步
 ```
 
-## 相关技能 (Skills)
+## 相关 Skills
 
-- `.claude/skills/plugin-skills/` — 插件开发规范和质量检查
-- `.claude/skills/gitnexus/` — 代码智能工具（exploring/impact-analysis/debugging/refactoring/cli）
-
-## 更新日志
-
-**2026-05-14** (修复批)：install_wrappers.sh bash 3.2 兼容 + ingest wrapper 补 + install.sh MCP 段精简
-
-- `9a1a4471` install.sh MCP 段精简 — 删介绍/尾注, step2 + claude mcp add 合并单行
-- `d0b22973` install_wrappers.sh bash 3.2 兼容 — `declare -A` 改空格分隔字符串 + `case` 边界匹配 (macOS 默认 bash 3.2 不支持 -A)
-- `e2bc30cc` install_wrappers.sh 补 `emit_slash ingest` (commands/ingest.md 合法 `/cortex:ingest`) + `TARGET_DIR` 内非白名单 .sh 自动 rm (清旧 mcp/ 残留)
-- wrapper 总数: 21 → 22 (10 slash + 3 shell + 9 CLI)
-
-**2026-05-13** (晚批 v6)：Cortex 知识库 4 子目录对齐 vault + 嵌套 repo + AI 自决域
-
-- `68d2ab7a` 知识库收紧到 4 子目录 (项目/领域/日记/收件箱), 删 来源/反思/实体/概念/问题/临时/日记-周/月/年
-- save.py kind 路由 11 种: entity/concept → 领域/<域>/, reflection → 日记一项, question/fleeting/inbox → 收件箱, log/journal 仅日, source 严禁 repo host
-- ingest_file 嵌套 repo (`_find_nested_repos`) + 相对 `$HOME` 路径策略 (`_rel_home_to_host_org_repo`, 不足 3 段 `_local` 补齐)
-- Lint 5 新规则: kb-{reflection,question-fleeting,entity-concept,journal-multi-freq,source-non-repo}-path-deprecated
-- AI 自决域: --domain 可选, 缺时读 body 自决 6 域, 不匹配默 `领域/未分类/`
-- 模板重做: 删 5 建 3 (inbox/journal-day/domain-topic), 总 6 个
-- 测试 300 → 320 pass (+15 新 case)
-
-**2026-05-13** (晚批 v5)：Cortex GitHub/GitLab 项目目录 `知识库/项目/<host>/<org>/<repo>/`
-
-- `f76d735c` 路径统一: github/gitlab/local git → 项目/; 来源仅承载非 repo
-- save.py 新 `kind=project`, `kind=domain` 保留 alias, `kind=source` 严禁 repo host
-- ingest_url/ingest_file 自动 host 路由
-- Lint 新规则 `repo-path-deprecated` autofix mv + frontmatter rewrite
-- 模板新 `_templates/project.md`, schema 重写
-
-**2026-05-13** (晚批 v4)：Cortex 仪表盘输出优化
-
-- `12bebfb2` 12 seed 升级: view_query 改 dict + view_chart (7 类) + view_kpi (真实 Bash 表达式) + view_legend, tags ≥10, 仪表盘从 lint exemption 移除
-- SKILL 重写: 8 kind 查询 + 7 chart 渲染模板, mermaid fallback (heatmap→emoji table, sankey→flowchart LR), DASH 区结构 (KPI + chart + Top-N + LEGEND), 严禁 N/A 占位
-- cron/dashboard.sh PROMPT 单行委托
-
-**2026-05-13** (晚批 v3)：Cortex 知识库 md 强制 tags ≥10
-
-- `2e5d53d9` lint `fm-missing-tags` 单规则升级三分支 + autofix 派生器 (读 fm/h1/h2/正文 500 字, 严禁占位符 `<...>`/placeholder/TODO/待填/TBD)
-- `lint-skip: true` frontmatter 短路标志, 31 个 `_templates/*.md` 全加
-- `scripts/cli/save.py` 落档强制 ≥10 (`_derive_tags`)
-- 文档同步: cortex-ingest SKILL / cortex-lint SKILL / commands/ingest "≥3"→"≥10"
-- 测试 286→292 pass (6 新 case), 0 fail
-- 派生维度 12 类: type/topic/stack/lang/source/host/org/repo/score/maturity/created/keyword
-
-**2026-05-13** (晚批 v2)：Cortex 插件**自研 MCP server 完全移除**, 改用官方 mcp-obsidian (可选)
-
-- `015a4a30` Phase 1: `plugin.json:mcpServers.cortex` 删 + `install.sh` 加 `claude mcp add obsidian uvx mcp-obsidian` 引导
-- `7945f42d` Phase 2a: `scripts/mcp/` → `scripts/cli/`, 删 server.py + cortex_mcp.py 协议层 (-1686 行), 113 MCP 测试删, python 算法 100% 保留 (拆 10 CLI 模块 + cli/lib/cortex_common)
-- `214ebefc` Phase 2b-f: install_wrappers.sh 加 9 CLI wrapper (`save/search/deep_search/ingest_url/ingest_file/memory/ledger/session/html_render`), 16 个 agent/skill/command/hook 文件 `mcp__cortex__*` 全改 `bash ~/.cortex/scripts/<name>.sh`, allowed-tools 改 Bash, cortex_stream.py 搬到 cli/, 新加 test_cli_smoke.py
-- wrapper 总数: 17 → 21 (9 slash + 3 shell + 9 CLI)
-- 测试: 286 pass + 9 subtests, 0 fail
-- 用户角度: 装 plugin 不再自动启 MCP server;mcp-obsidian 走 install.sh 末尾引导自行注册
-
-**2026-05-13** (晚批)：Cortex 插件 lint/digest/dashboard 三轨升级
-
-- Lint 4 新规则 + parse_frontmatter 多行 YAML list bug 修 (`332f7a10` / `2492ce47`)
-  - `fm-duplicate-tags` (保序去重)
-  - `fm-banned-tags` (移除 index/meta/template/_index/stub)
-  - `fm-banned-fields` (移除 preset 等)
-  - `fm-missing-tags` (**v3 升级**: 字段缺/非 list/<10 三分支, autofix 读 fm + 正文派生 ≥10, 严禁占位符)
-- Lint root namespace 强制收纳 (`49e3c217`): vault root 上 子层名 (实体/概念/领域/来源/...) autofix mv 入 知识库/<name>/, locale_dirs 改顶层化
-- Lint 自动清 `_meta/version.json:lint_whitelist` 中废弃条目 (log/folds/sessions; `19952bae`)
-- Digest 单一真相搬到 SKILL.md (`7a4573da`); L4 全清漏斗 (`135f497f`); 既有 L0-L3 + 知识库 交叉学习 (`4cc5d8aa`)
-- Dashboard 12 个 seed 体清 100 个 runtime 占位符 (`d7210ffa`), 数据生产权归 cortex-dashboard skill
-- cortex_stream: TodoWrite/Edit/Write 渲染 + 多 bug 修
-
-**2026-05-13**：Cortex 插件整体重构 (25+ commits, 多轮迭代收尾)
-
-- 后续追加 (c8554ef1 之后):
-  - `e5b6e85e` Stop/PostCompact 纯 jsonl copy 到 `记忆/L4-流水账/sessions/<cli>/<YYYY>/<MM>/<DD>/<id>.jsonl`
-  - `ab675e58` install_cron 删尾部 disclaimer
-  - `dce1c41f` install_cron read+compare+conditional-write, 表格始终输出
-  - `2f7ee914` digest 收件箱 ≥30 天强制 classify/archive/delete
-  - `7d90da23` save_session 路径迁移 + digest 加 inbox
-  - `a1fce7ef` install_cron 自动 idempotent (读+去重+写入 crontab/launchd)
-  - `bc13dee2` consolidate → digest, fold 完全移除 (digest 含归档)
-  - `b88a2510` consolidate 升级日处理五阶段单脚本
-  - `a7f87600` install --non-interactive 默认装 cron + 表格输出
-  - `4ba4f2b5` cron dashboard 改 daily 02:30 (was weekly Sun 02:30)
-
-- 前期追加 (32ac08ea 之后):
-  - `192d050b` templates/ → presets/seed/_templates/ (preset 统一提供)
-  - `66dc8d2c` 文档清单加范围列 (全局/当前目录/知识库/记忆层)
-  - `f1fe02a8` 范围标记改文字描述 (禁 emoji)
-
-**2026-05-13**：Cortex 插件首轮重构 (10 commits, 一次性收尾)
-
-- **路径迁移**：wiki/* + 数字前缀 + 记忆体系 → 中文目录 `知识库/{领域,来源,日记,...}` + `记忆/{L0-L4,...}`
-- **AUTO_MODE persistent**：禁询问 ≠ 中止;AI 自决循环修复直至 lint clean
-- **Slash 形式**：`/cortex:<name>` 冒号 (dash 形式 claude 无法解析)
-- **目录集中**：所有 python/bash 移到 `scripts/`,install.sh 例外
-- **MOC 完全删除**：canvas + dashboard 二件套替代
-- **版本号清理**：删 v2 / v1 / legacy / migration 标记
-- **env var 政策**：禁配置类,运行时只读 `~/.cortex/config.json`
-- **插件路径硬编码**：`$HOME/.claude/plugins/marketplaces/...` (env var 解析 bug 规避)
-- **文档分层**：用户文档 `docs/` + 开发者 `docs/_internal/`,计数对齐实际
-- **ingest 全局规则**：folder-first + 嵌套 git 独立 + L1-L6 深度 + 强制 frontmatter + 评分
-- 详见：`memory/cortex-plugin-2026-05-13.md`
-
-**2026-04-08**：Task 插件重大更新
-
-- **DAG 执行模型**：exec 基于 dependencies 动态调度，2个worker协程并发
-- **Align 优化**：合并 prompt-optimizer 的 SMART-V 验收标准原则
-- **实时状态更新**：任务状态变更立即写入 task.json
-- **Plan 验证**：写入前验证 DAG 可用性
-- 详见：`.claude/memory/task-execution-log.md` (统一记录)
-
-**2026-03-27**：Memory系统初始化
-
-- 创建 `.claude/rules/` 和 `.claude/memory/` 目录
-- 生成本索引文件（MEMORY.md）
-- 移除自动记忆禁用配置（CLAUDE_CODE_DISABLE_AUTO_MEMORY）
-- 确保符合Claude Code官方记忆规范
+- `.claude/skills/plugin-skills/` — 插件开发规范 + 质量检查
+- `.claude/skills/gitnexus/` — 代码智能 (exploring / impact / debug / refactor / cli)
