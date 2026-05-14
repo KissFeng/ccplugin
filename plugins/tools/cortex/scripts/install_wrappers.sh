@@ -212,7 +212,7 @@ export CORTEX_JOB_LABEL="cortex-__NAME__"
 
 if [[ $INTERACTIVE -eq 1 ]]; then
   banner "__NAME__ (interactive REPL)"
-  exec claude --settings "$SETTINGS"
+  exec claude --settings "$SETTINGS" "/cortex:__NAME__"
 fi
 
 banner "__NAME__ (slash /cortex:__NAME__)"
