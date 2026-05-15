@@ -197,3 +197,51 @@ cortex-ingest 生成 `.base` 文件时 AI 受 vault md-native 惯性把 `.base` 
 ### 真 vault 验证
 
 跑 `python3 scripts/lint/run.py --vault <user-vault>` 检出 14 个错 `.base` 文件 (markdown header / Dataview TABLE / YAML 解析失败 / 顶层 str), 符合预期。
+
+## P8 — 评分字段强制 + digest 双路 + refresh maturity 重评 (2026-05-15)
+
+### 字段 schema (0.0-10.0 浮点 + 1 enum)
+
+知识库 .md 强制 4: `score` / `confidence` / `source_credibility` / `maturity` (enum: draft|review|stable|deprecated)
+记忆 .md 强制 2: `importance` / `confidence`
+
+### 评分初值 (AI 自评启发式)
+
+- `score`: 6 类抽取覆盖率 × 10
+- `confidence`: tag 完整性 (5) + when_to_read (3) + wikilink (2)
+- `source_credibility`: host 白名单查表 (anthropic.com=10, react.dev=9.5, github.com=7.5, medium.com=5, 未知 4)
+- `maturity`: score<5=draft, <8=review, ≥8=stable
+
+权威: `skills/cortex-ingest/references/extract.md §3.1` + `scripts/cli/lib/remote.py:_HOST_CREDIBILITY`。
+
+### digest 双路 (D4)
+
+- 使用信号: sessions/jsonl 召回 + vault 反向 wikilink → `importance` ↑ (log10(N+M+1) - 0.1 自然衰减)
+- 反馈信号: 用户 "不对/错了" → `confidence -= 1.0`, "对的/正确" → `confidence += 0.5`
+- 实现: `scripts/cli/lib/evolution.py:update_doc_scores`, `digest evolution --update-scores` 默认开
+
+### refresh maturity 重评 (D5)
+
+- hash 变 ≥ 2 + < 30 天 → `draft`
+- 变 1 次 + 旧 `stable` → `review`
+- 不变 ≥ 180 天 → `deprecated`
+- 不变 ≥ 90 天 → `stable`
+- `score` / `confidence` / `source_credibility` 不动
+- 实现: `scripts/cli/refresh_projects.py:revalue_maturity`
+
+### 资产变更
+
+- Lint 规则: 22 → 23 (新 `frontmatter-required-scores` warn + autofix)
+- Python CLI: 11 → 12 (新 `scripts/migrate/migrate_scores_to_v2.py` 一次性, 不进 24 wrapper 集)
+- Wrapper: 24 + 1 一次性 `migrate.sh` (≤ 60 行)
+- 测试基线: 402 → 497 (+95 across PR1-PR6; PR6 +12)
+- 新 `skills/cortex-memory/references/scoring.md`
+- 评分字段: 旧 `score: 1-5 整数` → `0-10 浮点` (migration × 2.0)
+- patterns confidence: `0-1` → `0-10` (migration × 10)
+
+### Migration
+
+一次性: `bash ~/.cortex/scripts/migrate.sh --to=v2`
+自动 backup tar.gz 到 `/tmp/cortex-migration-backup-<YYYYMMDD-HHMMSS>.tar.gz` (用户手动 `tar xzf` 回滚)
+script: `plugins/tools/cortex/scripts/migrate/migrate_scores_to_v2.py` (335 行, ≤ 350)
+wrapper: `plugins/tools/cortex/scripts/migrate.sh` (58 行, ≤ 60)

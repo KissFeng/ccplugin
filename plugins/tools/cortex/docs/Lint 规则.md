@@ -1,11 +1,11 @@
 # Lint 规则
 
-本文回答：cortex-lint 的 22 条 规则各自检查什么、哪些能 autofix、`--fix` 行为是什么。
+本文回答：cortex-lint 的 23 条 规则各自检查什么、哪些能 autofix、`--fix` 行为是什么。
 适用读者：跑 `cortex-lint` 看到 errors/warns 想知道含义的用户、写 cron 自动修复的运维。
 
 ## 总览
 
-定义文件：`scripts/lint/rules.json`。版本 1, 22 条 规则。
+定义文件：`scripts/lint/rules.json`。版本 1, 23 条 规则。
 
 **范围**: 全部规则作用于 知识库 **知识库 (vault)** — 即 `~/.cortex/config.json:.vault` 指向的目录。不影响 全局 全局配置 / 当前目录 / 记忆层 记忆层。
 
@@ -33,8 +33,25 @@
 | 20 | `path-lang-mismatch` | warn | ❌ | vault path segment 不符 vault.lang (豁免 host/org/repo + ASCII 专名 + `path_lang_exempt`) |
 | 21 | `skill-references-exists` | warn | ❌ | SKILL.md / AGENT.md 引用 `references/<x>.md` 目标必须存在 |
 | 22 | `base-format-yaml` | warn | ❌ | `.base` 文件必须顶层 YAML object, 禁 markdown header / 禁 Dataview DQL |
+| 23 | `frontmatter-required-scores` | warn | ✅ | 知识库 .md 必含 4 评分字段, 记忆 .md 必含 2 评分字段, 0.0-10.0 浮点 |
 
-autofix 仅 6 条 (rule 1/2/6/8/9/11)。其余需人工或用 `cortex-refactor` 协助。
+autofix 仅 7 条 (rule 1/2/6/8/9/11/23)。其余需人工或用 `cortex-refactor` 协助。
+
+### rule 23: frontmatter-required-scores
+
+**触发**: 知识库 `.md` (项目/领域/日记, 排除 收件箱) 缺 `score` / `confidence` / `source_credibility` / `maturity` 任一; 记忆 `.md` (L0-L4) 缺 `importance` / `confidence` 任一; 或值类型/范围越界 (非 float 0.0-10.0, maturity 非 4 enum)。
+
+**校验**: 全 0.0-10.0 浮点 (越界 clamp); `maturity` enum: `draft|review|stable|deprecated`。
+
+**Autofix**: 缺字段 → 加 stub `0.0` (maturity → `draft`); 类型错 → coerce float; 越界 → clamp。
+
+**修复方案 (推荐, 历史 vault)**: 跑一次性 `bash ~/.cortex/scripts/migrate.sh --to=v2`, 自动处理旧 `score: 1-5 整数` → `0-10 浮点 × 2.0` 及缺字段加 stub, 比 lint autofix 智能 (含 patterns.md confidence 0-1 → 0-10 迁移)。
+
+**不变量**:
+- `score` / `confidence` / `source_credibility`: float [0, 10]
+- `maturity`: enum
+- `importance`: float [0, 10] (仅记忆)
+- 跳过: `仪表盘/` / `归档/` / `.obsidian/` / `.trash/` / `_meta/` / `_templates/` / `_assets/` / `知识库/收件箱/`
 
 ### rule 22: base-format-yaml
 
