@@ -168,6 +168,32 @@ backlinks 回填: 2 处 ([[obsidian-hooks]] / [[claude-code-plugin]])
 注: 检测到 obsidian-git, 已加 cortex-pending-commit 标记, 不主动 git commit
 ```
 
+## 评分字段 (强制 frontmatter, 落档时 AI 自评)
+
+参考权威定义: [`skills/cortex-ingest/references/extract.md §3`](../cortex-ingest/references/extract.md)
+
+### 知识库落档 (kind=concept|domain|log|reflection|source|project)
+
+强制 4 字段, 全 0.0-10.0 浮点:
+
+- `score`: 内容质量 (覆盖度 / 深度 / 准确性)
+- `confidence`: AI 对内容的把握度
+- `source_credibility`: host 白名单查表 (查 `scripts/cli/lib/remote.py:_HOST_CREDIBILITY`)
+- `maturity`: `draft|review|stable|deprecated` enum
+
+### 记忆落档 (kind=memory, 落 `记忆/L0-L4/`)
+
+强制 2 字段:
+
+- `importance`: 重要程度 (核心约束 = 10, 流水账 = 1-3)
+- `confidence`: 可信度 (用户明确肯定 = 10, AI 推测 = 4-6, 失败 episode = 0-3)
+
+参考: [`skills/cortex-memory/references/scoring.md`](../cortex-memory/references/scoring.md)
+
+### CLI override
+
+`bash ~/.cortex/scripts/save.sh ... --score=N --confidence=N --source-credibility=N --maturity=stable` 覆盖 AI 自评。
+
 ## Frontmatter 规范 (按目标目录)
 
 落档前调 cortex-schema `read <target-path>` 取该目录 schema, 按 required + defaults 自动填 frontmatter 和 tags_required (含 placeholder, 由 lint --fix 后续完善)。例:

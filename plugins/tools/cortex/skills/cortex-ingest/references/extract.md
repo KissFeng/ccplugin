@@ -4,12 +4,13 @@
 
 ---
 
-## 3. 强制 frontmatter (必填字段, 缺字段 = lint fail)
+## 3. 强制 frontmatter (必填字段, 缺字段 = lint warn rule `frontmatter-required-scores`)
 
 ingest 落档**必须**含:
 
 ```yaml
 ---
+# 元数据
 type: <concept|domain|log>
 title: <人类可读标题>
 desc: <1-3 句, 这页讲啥, 用于召回排序>
@@ -19,14 +20,47 @@ tags: [<分类>, <主题>, <技术栈>, ...]   # ≥ 10 个 (严禁 placeholder/
 source_url: <原始 URL — github/gitlab repo url / website url / arxiv url / 本地 git remote / N/A>
 version: <对应原始版本 — git commit sha / git tag / package version / website fetch date>
 when_to_read: <触发条件描述, 给 AI 召回判定用; 例 "当用户问 X / 改 Y / 调试 Z 时">
-score: <1-5>            # 质量评分 (见 references/layout.md §5)
-maturity: <draft|review|stable|deprecated>
+
+# 评分字段 (强制 4, 全 0.0-10.0 浮点, AI 落档时自评)
+score: 7.5              # 内容质量 (覆盖度 + 深度 + 准确性 综合)
+confidence: 8.0         # 内容可信度 (AI 对自己写的有多确定)
+source_credibility: 9.0 # 源可信度 (host 白名单查表)
+maturity: stable        # enum: draft|review|stable|deprecated (内容稳定度)
 ---
 ```
 
 可选: `host` / `org` / `repo` / `aliases` / `authors` / `lang` / `path_lang_exempt`。
 
 `path_lang_exempt: true` 用于豁免 lint rule 20 (`path-lang-mismatch`) 的 vault lang 一致性检查 — 仅在文件名/目录名为不可翻译的专名时填 (项目代号 / 配置文件名 / 协议名 / API 端点等)。默认 `false`, 普通页不需填。
+
+### 3.1 评分字段 AI 自评启发式
+
+| 字段 | 计算源 | 范围 |
+|---|---|---|
+| score | 6 类抽取覆盖率 (API/配置/错误码/测试/功能/常量) × 10 | 0=无覆盖 / 5=半数 / 10=全覆盖 |
+| confidence | tags 完整性 (≥10=5 分) + when_to_read 明确性 (≥30 字=3 分) + 内部 wikilink ≥5 (2 分) | 0=骨架 / 5=合理 / 10=丰满 |
+| source_credibility | host 白名单查表 (见下) | 默认 5.0 (未知 host) |
+| maturity | 启发: score<5 → draft, 5≤s<8 → review, ≥8 → stable; refresh hash 多变退化 | enum |
+
+#### Host credibility 查表 (硬编码 `scripts/cli/lib/remote.py:_HOST_CREDIBILITY`)
+
+| Host pattern | Credibility |
+|---|---|
+| anthropic.com / openai.com / google.com 官方 doc | 10.0 |
+| react.dev / docs.python.org / pytorch.org 等官方 doc | 9.5 |
+| arxiv.org / 顶会论文 | 8.5 |
+| github.com / gitlab.com (含 org 仓库) | 7.5 |
+| stackoverflow.com / 主流技术问答 | 7.0 |
+| medium.com / dev.to / 个人博客 | 5.0 |
+| 未知 host / 匿名来源 | 4.0 (默认低) |
+
+### 3.2 评分字段不变量
+
+- 所有 4 字段**必填**, 缺字段 = lint rule `frontmatter-required-scores` warn
+- 范围严格 [0.0, 10.0], 越界 → autofix clamp
+- `score` / `confidence` / `source_credibility`: float (整数会被 autofix 转 float)
+- `maturity`: 4 enum 之一, 错值 autofix 转 `"draft"`
+- 旧 `score: 1-5` 整数 → 一次性 migration × 2.0 转 0-10 浮点 (见 PR6 `scripts/migrate/migrate_scores_to_v2.py`)
 
 ---
 
