@@ -25,13 +25,13 @@ type: project
 |---|---|---|
 | Agents | 6 | curator / researcher / archivist / cartographer / summarizer / translator (PR4 删 linker: 7→6, 5 个保留含 vs-skill 分工注释) |
 | Skills | 13 | 自动触发 + 显式调 (PR1-4 整改: 21→13 = 删 7 + 合 1; 全部多文件渐进披露, SKILL.md 入口 ≤80 行) |
-| Slash commands | 20 | `/cortex:<name>` 冒号 |
-| Wrappers | 24 | 10 slash + 3 shell + 11 CLI, 装在 `~/.cortex/scripts/*.sh` |
-| Python CLI | 11 | save / search / deep_search / ingest_url / ingest_file / ingest_remote / refresh_projects / memory / ledger / session / html_render |
+| Slash commands | 19 | `/cortex:<name>` 冒号 |
+| Wrappers | 24 | slash 走 stream-json + rich UI, CLI 直 exec python3, 装在 `~/.cortex/scripts/*.sh` |
+| Python CLI | 12 | save / search / deep_search / digest / ingest_url / ingest_file / ingest_remote / refresh_projects / memory / ledger / session / html_render |
 | Migration scripts | 2 | `migrate_scores_to_v2.py` (score 1-5 → 0-10) + `migrate_aliases_keywords_to_v3.py` (老 .md 补 aliases/keywords) — 走 `migrate.sh --to=v2\|v3` |
-| Lint 规则 | 21 | 含 rule 18 `path-lang-mismatch` + rule 19 `skill-references-exists` + rule 20 `base-format-yaml` + rule 21 `frontmatter-required-scores` (4 评分字段+autofix stub) |
+| Lint 规则 | 30 | 含 frontmatter / wikilink / orphan / 命名 / i18n / 评分字段 / .base YAML / skill-references-exists / path-deprecated 等 (autofix 部分子集) |
 | Hooks | 5 | SessionStart / PostCompact / Stop / SubagentStop / UserPromptSubmit |
-| Cron jobs | 9 | lint / dashboard / digest / memory-{promote,forget,compact,warden,archive} + refresh_projects (weekly Mon 03:00) |
+| Cron jobs | 4 | 3 daily (lint 01:00 / dashboard 02:30 / digest 03:00) + 1 weekly (refresh_projects Mon 03:00) |
 | Tests | 548 | `cd plugins/tools/cortex/tests/python && python3 -m pytest -q` |
 
 ## Skill/Agent 整改契约 (PR1-4)

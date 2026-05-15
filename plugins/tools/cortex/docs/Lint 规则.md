@@ -1,11 +1,11 @@
 # Lint 规则
 
-本文回答：cortex-lint 的 23 条 规则各自检查什么、哪些能 autofix、`--fix` 行为是什么。
+本文回答：cortex-lint 的 30 条 规则各自检查什么、哪些能 autofix、`--fix` 行为是什么。
 适用读者：跑 `cortex-lint` 看到 errors/warns 想知道含义的用户、写 cron 自动修复的运维。
 
 ## 总览
 
-定义文件：`scripts/lint/rules.json`。版本 1, 23 条 规则。
+定义文件：`scripts/lint/rules.json`。版本 1, 30 条 规则。
 
 **范围**: 全部规则作用于 知识库 **知识库 (vault)** — 即 `~/.cortex/config.json:.vault` 指向的目录。不影响 全局 全局配置 / 当前目录 / 记忆层 记忆层。
 

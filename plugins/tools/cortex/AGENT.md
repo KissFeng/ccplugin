@@ -53,7 +53,7 @@ cortex 对 ingest/save 流加 3 层过滤:
 
 ## Skills 设计原则
 
-cortex 全部能力以 **13 个 skill** (PR1-4 整改后, 删 7 + 合 1 = 21→13) 暴露, **20 个 slash command** (`/cortex:<name>` 触发 commands/<name>.md, 后者调用对应 skill)。
+cortex 全部能力以 **13 个 skill** (PR1-4 整改后, 删 7 + 合 1 = 21→13) 暴露, **19 个 slash command** (`/cortex:<name>` 触发 commands/<name>.md, 后者调用对应 skill)。
 
 全部 skill 渐进披露 (D2/D3): SKILL.md 入口 ≤ 80 行 (frontmatter + 触发 + 决策树 + AUTO_MODE 分支 + references 指针), 细节迁 `references/<topic>.md` 2-4 子文件按需加载。
 

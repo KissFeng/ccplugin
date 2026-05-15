@@ -1,6 +1,6 @@
 # Slash Commands
 
-cortex 提供 20 个 plugin slash command, 在 Claude Code 任何会话中可直接调用: 输入 `/cortex:<name>` (冒号格式)。
+cortex 提供 19 个 plugin slash command, 在 Claude Code 任何会话中可直接调用: 输入 `/cortex:<name>` (冒号格式)。
 
 所有命令**无入参**, 全自动执行, 不询问用户 (AUTO_MODE persistent)。命令体定义在 `commands/<name>.md`, 触发后 AI 加载对应 SKILL.md 自决执行直至任务完成。
 
@@ -18,7 +18,7 @@ cortex 提供 20 个 plugin slash command, 在 Claude Code 任何会话中可直
 | `/cortex:config` | 全局 | 编辑配置 | 交互式更新 `~/.cortex/config.json` |
 | `/cortex:update` | 全局 | 更新插件 | 拉最新 marketplace + 重生成 wrapper |
 | `/cortex:doctor` | 全局+知识库 | 体检 | 检查 vault 完整性 / 配置正确性 / 依赖可用性 |
-| `/cortex:lint` | 知识库 | 全自动修复 | 跑 21 条 lint 规则 + autofix + 循环修复直至 clean |
+| `/cortex:lint` | 知识库 | 全自动修复 | 跑 30 条 lint 规则 + autofix + 循环修复直至 clean |
 | `/cortex:refactor` | 知识库 | 重构 vault | 改名 / 合并 / 拆分页面, 同步 wikilink |
 | `/cortex:archive` | 知识库 | 归档 | 把过期内容移到 `归档/` |
 | `/cortex:search` | 知识库 | 搜索 | MCP first 四级 (P9): mcp_simple → mcp_complex → search.sh (内部 hot/index/SC/rg) → ripgrep |

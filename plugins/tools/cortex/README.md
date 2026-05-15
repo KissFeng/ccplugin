@@ -12,7 +12,7 @@
 | Slash commands | 19 | `/cortex:<name>` 全自动 AUTO_MODE persistent |
 | Bash wrappers | 24 | `~/.cortex/scripts/*.sh` — slash 走 stream-json + rich UI; CLI 直 exec python3 |
 | Lint 规则 | 30 | autofix 循环至 vault clean |
-| Python CLI | 11 | save / search / deep_search / ingest_url / ingest_file / ingest_remote / refresh_projects / memory / ledger / session / html_render |
+| Python CLI | 12 | save / search / deep_search / digest / ingest_url / ingest_file / ingest_remote / refresh_projects / memory / ledger / session / html_render |
 | Cron 任务 | 4 | 3 daily (lint / dashboard / digest) + 1 weekly (refresh_projects) |
 | Vault 顶层 | 7 | `知识库/` `记忆/` `仪表盘/` `归档/` `_meta/` `_templates/` `_assets/` |
 

@@ -34,7 +34,7 @@ cortex 提供 **13 个 skill** (PR1-4 整改后: 删 7 + 合 1 = 21→13)。skil
 | `cortex-promote` | 记忆层 | "升级记忆" | L2 → L1 / L1 → L0 (经用户审批) | 自动 |
 | `cortex-digest` | 记忆层 | "整合 ledger" / "consolidate 7 天" | 6 阶段 daily pipeline (含反思/连接子流程) | 自动 |
 | `cortex-session` | 知识库 | "导入 session" | jsonl transcript → 知识库 sessions/ | 显式 |
-| `cortex-lint` | 知识库 | "vault 体检" / "lint" | 跑 21 条规则 + autofix 循环修复 | 自动 |
+| `cortex-lint` | 知识库 | "vault 体检" / "lint" | 跑 30 条规则 + autofix 循环修复 | 自动 |
 | `cortex-refactor` | 知识库 | "改名" / "合并 / 拆分" / "evolution-apply" | 改名 / 合并 / 拆分页面 + 同步 wikilink + canvas 子流程 | 显式 |
 | `cortex-dashboard` | 知识库 | "刷新仪表盘" | 重渲 index.md / hot.md / canvas | 显式 |
 | `cortex-html` | 知识库 | "渲染 HTML 卡片" | 把 frontmatter / 数据渲染为 inline HTML | 显式 |
