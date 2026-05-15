@@ -920,6 +920,9 @@ def check_file(
     # rule: skill-references-exists — SKILL/AGENT/agent references/<x>.md 存在性
     findings.extend(check_skill_references_exists(path, rel, text))
 
+    # rule: frontmatter-required-scores — 知识库 4 / 记忆 2 字段强制
+    findings.extend(check_frontmatter_required_scores(rel, text))
+
     return findings
 
 
@@ -1283,6 +1286,199 @@ def check_base_format_yaml(rel: Any, content: str) -> list[dict[str, Any]]:
         )
 
     return findings
+
+
+# ---- rule: frontmatter-required-scores ----
+
+_SCORE_FIELDS_KB = ("score", "confidence", "source_credibility", "maturity")
+_SCORE_FIELDS_MEM = ("importance", "confidence")
+_MATURITY_ENUM = {"draft", "review", "stable", "deprecated"}
+_SCORE_FIELDS_SKIP_PARTS = (
+    "仪表盘/",
+    "归档/",
+    ".obsidian/",
+    ".trash/",
+    "_meta/",
+    "_templates/",
+    "_assets/",
+)
+
+
+def _scores_is_kb_path(rel_str: str) -> bool:
+    """知识库 子树 (项目/领域/日记 — 不含 收件箱)."""
+    return rel_str.startswith("知识库/") and "/收件箱/" not in rel_str
+
+
+def _scores_is_mem_path(rel_str: str) -> bool:
+    """记忆 L0-L4 子树."""
+    return rel_str.startswith("记忆/L")
+
+
+def _scores_coerce_value(val: Any) -> tuple[float, bool]:
+    """Try coerce to float in [0, 10]. Returns (new_value, was_changed).
+
+    bool 也按非法处理 (Python bool 是 int 子类)。
+    """
+    if isinstance(val, bool):
+        return (0.0, True)
+    if isinstance(val, int):
+        v = float(val)
+        if v < 0:
+            return (0.0, True)
+        if v > 10:
+            return (10.0, True)
+        return (v, True)  # int -> float counts as changed
+    if isinstance(val, float):
+        if val < 0:
+            return (0.0, True)
+        if val > 10:
+            return (10.0, True)
+        return (val, False)
+    if isinstance(val, str):
+        try:
+            v = float(val)
+        except (ValueError, TypeError):
+            return (0.0, True)
+        if v < 0:
+            return (0.0, True)
+        if v > 10:
+            return (10.0, True)
+        # NOTE: lint's parse_frontmatter returns all unquoted scalars as str,
+        # so a string like "7.5" is the common-case write format and must NOT
+        # flag as "needs change". Only out-of-range / non-numeric / bool flag.
+        return (v, False)
+    return (0.0, True)
+
+
+def check_frontmatter_required_scores(
+    rel: Any, content: str
+) -> list[dict[str, Any]]:
+    """rule frontmatter-required-scores — 知识库 4 字段 / 记忆 2 字段 强制.
+
+    `rel` 接受 Path 或 str (vault-relative path)。
+    """
+    findings: list[dict[str, Any]] = []
+    rel_path = rel if isinstance(rel, Path) else Path(str(rel))
+    if rel_path.suffix != ".md":
+        return findings
+    rel_str = rel_path.as_posix()
+    if any(p in rel_str for p in _SCORE_FIELDS_SKIP_PARTS):
+        return findings
+    is_kb = _scores_is_kb_path(rel_str)
+    is_mem = _scores_is_mem_path(rel_str)
+    if not (is_kb or is_mem):
+        return findings
+
+    fm, _body_line = parse_frontmatter(content)
+    if not fm:
+        # 无 frontmatter — 其他 rule (fm-missing-type 等) 已覆盖, 这里跳过
+        return findings
+
+    required = _SCORE_FIELDS_KB if is_kb else _SCORE_FIELDS_MEM
+    for field in required:
+        if field not in fm:
+            findings.append(
+                _f(
+                    "frontmatter-required-scores",
+                    "warn",
+                    rel_str,
+                    1,
+                    f".md 缺强制评分字段 `{field}` (knowledge_base={is_kb} memory={is_mem})",
+                    True,
+                )
+            )
+            continue
+        val = fm[field]
+        if field == "maturity":
+            if not isinstance(val, str) or val not in _MATURITY_ENUM:
+                findings.append(
+                    _f(
+                        "frontmatter-required-scores",
+                        "warn",
+                        rel_str,
+                        1,
+                        f"maturity={val!r} 非合法 enum (draft/review/stable/deprecated)",
+                        True,
+                    )
+                )
+        else:
+            new_val, changed = _scores_coerce_value(val)
+            if changed:
+                findings.append(
+                    _f(
+                        "frontmatter-required-scores",
+                        "warn",
+                        rel_str,
+                        1,
+                        f"{field}={val!r} 非合法 0.0-10.0 浮点 (autofix 转 {new_val})",
+                        True,
+                    )
+                )
+    return findings
+
+
+def _rebuild_frontmatter_text(fm: dict[str, Any], rest: str) -> str:
+    """Rebuild text with new frontmatter using yaml.safe_dump."""
+    try:
+        import yaml  # type: ignore
+    except ImportError:
+        return ""
+    new_fm = yaml.safe_dump(fm, allow_unicode=True, sort_keys=False)
+    return f"---\n{new_fm}---\n{rest}"
+
+
+def autofix_frontmatter_required_scores(
+    rel: Any, content: str
+) -> str | None:
+    """rule autofix — 缺字段加 stub 0.0 (maturity=draft); 类型/范围错 coerce.
+
+    返回新 content, 或 None 表示无改动 / 不适用。
+    """
+    rel_path = rel if isinstance(rel, Path) else Path(str(rel))
+    if rel_path.suffix != ".md":
+        return None
+    rel_str = rel_path.as_posix()
+    if any(p in rel_str for p in _SCORE_FIELDS_SKIP_PARTS):
+        return None
+    is_kb = _scores_is_kb_path(rel_str)
+    is_mem = _scores_is_mem_path(rel_str)
+    if not (is_kb or is_mem):
+        return None
+
+    try:
+        import yaml  # type: ignore
+    except ImportError:
+        return None
+    m = re.match(r"^---\n(.*?)\n---\n?(.*)", content, re.S)
+    if not m:
+        return None
+    try:
+        fm = yaml.safe_load(m.group(1)) or {}
+    except yaml.YAMLError:
+        return None
+    if not isinstance(fm, dict):
+        return None
+    rest = m.group(2)
+
+    required = _SCORE_FIELDS_KB if is_kb else _SCORE_FIELDS_MEM
+    changed = False
+    for field in required:
+        if field == "maturity":
+            v = fm.get(field)
+            if not isinstance(v, str) or v not in _MATURITY_ENUM:
+                fm[field] = "draft"
+                changed = True
+        elif field not in fm:
+            fm[field] = 0.0
+            changed = True
+        else:
+            new_val, was_changed = _scores_coerce_value(fm[field])
+            if was_changed:
+                fm[field] = new_val
+                changed = True
+    if not changed:
+        return None
+    return _rebuild_frontmatter_text(fm, rest)
 
 
 # 仅捕获 `(references/<name>.md)` 形式的相对链接 (允许子目录), 跳过 http(s)/绝对/纯锚点
@@ -3035,6 +3231,45 @@ def apply_fixes(
         seen_fm_schema.add(key)
         if _fix_frontmatter_schema(f, vault, plugin_root, backup_dir):
             fixed += 1
+
+    # 1bb) frontmatter-required-scores — dedupe per file (one fix call covers
+    #      all missing/invalid score fields).
+    seen_scores: set[str] = set()
+    for f in findings:
+        if not f.get("fixable"):
+            continue
+        if f["rule"] != "frontmatter-required-scores":
+            continue
+        if (
+            rules_filter is not None
+            and "frontmatter-required-scores" not in rules_filter
+        ):
+            continue
+        key = f["file"]
+        if key in seen_scores:
+            continue
+        seen_scores.add(key)
+        p = vault / key
+        if not p.is_file():
+            continue
+        try:
+            text = p.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            continue
+        new_text = autofix_frontmatter_required_scores(Path(key), text)
+        if new_text is None or new_text == text:
+            continue
+        bak = backup_dir / key
+        bak.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copy2(p, bak)
+        except Exception:
+            pass
+        try:
+            p.write_text(new_text, encoding="utf-8")
+            fixed += 1
+        except Exception:
+            continue
 
     # 1c) dead-wikilink — per-finding fix with shared freq cache + stub counter
     dead_findings = [
