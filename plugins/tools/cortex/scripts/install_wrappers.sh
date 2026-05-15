@@ -2,7 +2,8 @@
 # cortex/scripts/install_wrappers.sh
 #
 # Generates the proxy wrappers under <target-dir> (default ~/.cortex/scripts/).
-# All wrappers route through `claude -p "/cortex-<name>"` over stream-json
+# All wrappers route through `claude -p "/cortex:<name> auto"` over stream-json
+# (auto 后缀触发 skill AUTO_MODE 分支, 跳 AskUserQuestion 走推荐默认值)
 # (via python3 <abs>/cortex_stream.py + cx_filter_stream — rich UI on stderr, only the
 # final result.text reaches stdout). No args, full plugin permissions, no
 # --bare, no --allowed-tools, no --print. Slash commands are
@@ -224,10 +225,10 @@ banner "__NAME__ (slash /cortex:__NAME__)"
 # cx_filter_stream 仅放 final result.text 到 stdout, 防 raw NDJSON 漏到终端.
 STREAM_PY="__INSTALL_PATH__/scripts/cli/cortex_stream.py"
 [[ -f "$STREAM_PY" ]] || err "cortex_stream.py missing: $STREAM_PY" 4
-printf '%s$%s python3 %q --label cortex-__NAME__ --timeout 0 -- claude --settings %q --dangerously-skip-permissions -p "/cortex:__NAME__"\n' \
+printf '%s$%s python3 %q --label cortex-__NAME__ --timeout 0 -- claude --settings %q --dangerously-skip-permissions -p "/cortex:__NAME__ auto"\n' \
   "$_CX_C" "$_CX_0" "$STREAM_PY" "$SETTINGS" >&2
 python3 "$STREAM_PY" --label "cortex-__NAME__" --timeout 0 -- \
-  claude --settings "$SETTINGS" --dangerously-skip-permissions -p "/cortex:__NAME__" \
+  claude --settings "$SETTINGS" --dangerously-skip-permissions -p "/cortex:__NAME__ auto" \
   | cx_filter_stream
 rc=${PIPESTATUS[0]}
 if [[ $rc -eq 0 ]]; then ok "__NAME__ done"; else err "__NAME__ failed code=$rc" "$rc"; fi
