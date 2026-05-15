@@ -78,8 +78,8 @@ class ResolvePathTest(unittest.TestCase):
                 self.now,
             )
 
-    def test_kind_source_routes_to_收件箱(self) -> None:
-        # 非 repo 来源统一落 收件箱/<host>-<slug>.md
+    def test_kind_source_routes_to_项目_site(self) -> None:
+        # 网页/文档统一落 项目/<host>/_site/<slug>/<slug>.md (slug 回退 slugify(title))
         target = save._resolve_path(
             self.vault,
             {"kind": "source", "title": "post", "host": "example.com"},
@@ -87,10 +87,10 @@ class ResolvePathTest(unittest.TestCase):
         )
         self.assertEqual(
             str(target).split("cortex-test-vault/")[-1],
-            "知识库/收件箱/example.com-post.md",
+            "知识库/项目/example.com/_site/post/post.md",
         )
 
-    def test_kind_source_paper_routes_to_收件箱(self) -> None:
+    def test_kind_source_paper_routes_to_项目_site(self) -> None:
         target = save._resolve_path(
             self.vault,
             {"kind": "source", "title": "p", "host": "arxiv.org"},
@@ -98,7 +98,24 @@ class ResolvePathTest(unittest.TestCase):
         )
         self.assertEqual(
             str(target).split("cortex-test-vault/")[-1],
-            "知识库/收件箱/arxiv.org-p.md",
+            "知识库/项目/arxiv.org/_site/p/p.md",
+        )
+
+    def test_kind_source_with_url_path_slug(self) -> None:
+        # caller (ingest_url) 传 url_path_slug → 用它代替 slugify(title) 派生路径
+        target = save._resolve_path(
+            self.vault,
+            {
+                "kind": "source",
+                "title": "Claude Code 概览",  # 真实 title (含 CJK)
+                "host": "code.claude.com",
+                "url_path_slug": "docs-zh-cn-overview",
+            },
+            self.now,
+        )
+        self.assertEqual(
+            str(target).split("cortex-test-vault/")[-1],
+            "知识库/项目/code.claude.com/_site/docs-zh-cn-overview/docs-zh-cn-overview.md",
         )
 
     def test_kind_entity_default_domain_未分类(self) -> None:

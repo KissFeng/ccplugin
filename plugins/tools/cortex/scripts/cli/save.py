@@ -7,7 +7,7 @@ Pipeline (P1):
    - `entity`/`concept`        → `知识库/领域/<domain>/<slug>.md` (--domain 可选, 缺则 `未分类`)
    - `project`/`domain` (alias) → `知识库/项目/<host>/<org>/<repo>/<slug>.md`
      (host/org/repo 接受任意字符串: github.com/gitlab.com 或相对 $HOME 路径段, 不足 3 段补 `_local`)
-   - `source`                   → `知识库/收件箱/<host>-<slug>.md` (repo host 严禁; arxiv/网页/书籍统一落收件箱)
+   - `source`                   → `知识库/项目/<host>/_site/<path-slug>/<path-slug>.md` (网页/arxiv/文档统一落项目, `_site` 占位代替 org; repo host 严禁)
    - `reflection`               → `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>-反思-<slug>.md`
    - `question`/`fleeting`/`inbox` → `知识库/收件箱/<slug>.md`
    - `log`/`journal`            → `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>.md`
@@ -203,8 +203,11 @@ def _resolve_path(vault: Path, args: dict, now: _dt.datetime) -> Path:
                 f"cortex_save: repo host {host!r} should use kind='project', not 'source'"
             )
         host = _safe_segment(host, "host")
-        # 非 repo 来源落 收件箱/<host>-<slug>.md (待 digest 分发)
-        target = vault / "知识库" / "收件箱" / f"{host}-{slug}.md"
+        # 非 repo 来源 (网页/arxiv/文档) 落 项目/<host>/_site/<path-slug>/<path-slug>.md
+        # path_slug 优先 caller 传入 (ingest_url 从 URL path 派生); 否则回退 slugify(title)
+        path_slug = args.get("url_path_slug") or slug
+        path_slug = _safe_segment(path_slug, "url_path_slug")
+        target = vault / "知识库" / "项目" / host / "_site" / path_slug / f"{path_slug}.md"
     elif kind == "reflection":
         ymd = now.strftime("%Y-%m-%d")
         ym = now.strftime("%Y-%m")
@@ -404,6 +407,7 @@ def _save_internal(
     maturity: str | None = None,
     aliases_override: list[str] | None = None,
     keywords_override: list[str] | None = None,
+    url_path_slug: str | None = None,
 ) -> dict:
     """Shared write pipeline reused by handle_save and ingest tools.
 
@@ -436,6 +440,8 @@ def _save_internal(
         args["source_sub"] = source_sub
     if domain is not None:
         args["domain"] = domain
+    if url_path_slug is not None:
+        args["url_path_slug"] = url_path_slug
     target = _resolve_path(vault, args, now)
     target.parent.mkdir(parents=True, exist_ok=True)
 

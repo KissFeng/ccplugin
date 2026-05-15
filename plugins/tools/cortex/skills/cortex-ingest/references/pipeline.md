@@ -48,13 +48,15 @@
 2. **抽要点 (启发式)**: H1 → 标题候选; H2/H3 → 段标题; frontmatter → aliases / sources / authors 直接传递; 命名实体短语 → 候选 entity 页; 段首一句话 → `> [!info]` callout。
 
 3. **选目录** — 路由详见 [layout.md](layout.md) §1.1 + [extract.md](extract.md) §3。速查:
-   - source (URL/文章 非 repo) → `知识库/收件箱/<host>-<slug>.md`
+   - source (URL/文章/arxiv/docs/blog, 非 repo) → `知识库/项目/<host>/_site/<path-slug>/<path-slug>.md` (`_site` 占位代替 org, path-slug 由 URL path 全段连字符化)
    - concept → `知识库/领域/<域>/<kebab>.md` (--domain 或 AI 自决, 缺则 领域/未分类/)
    - entity → 属 repo → 项目/<host>/<org>/<repo>/; 否则 → 领域/<域>/
    - git repo (github/gitlab) → `知识库/项目/<host>/<org>/<repo>/_index.md` + 4 层目录
    - 本地项目 → `知识库/项目/<rel-host>/<rel-org>/<rel-repo>/` (相对 $HOME 拆段, 不足 3 段补 `_local`)
    - reflection → `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>-反思-<slug>.md`
-   - question/fleeting/journal → `知识库/收件箱/` 或 `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>.md`
+   - question/fleeting/journal (纯笔记, 非外部源) → `知识库/收件箱/` 或 `知识库/日记/日/<YYYY-MM>/<YYYY-MM-DD>.md`
+
+   > **收件箱仅留给纯笔记** (fleeting/journal/question/用户随手记), 不再作外部 URL 默认目标。
 
    **AI 自决选域** (entity/concept 缺 --domain 时): 读 title + body 前 500 字, 匹配 6 域 (创作 / 学习 / 工作 / 技术 / 生活 / 金融); 无匹配 → 默认 `领域/未分类/`。允许新建子目录。
 
@@ -75,7 +77,7 @@
 
 8. **更新索引**: `<vault>/index.md` (type 章节加新条目); `<vault>/log/_index.md` 加一条 ingest 记录 (`<UTC> ingested <rel-path> from <src>`); `hot.md ## 最近落档` 段顶部插入。
 
-9. **批量场景 (目录)**: 每文件独立走步骤 2-8; 进度条 `[3/12] 处理 docs/foo.md → 知识库/收件箱/foo.md ✓`; 单文件失败不阻断, 末尾报告失败清单。
+9. **批量场景 (目录)**: 每文件独立走步骤 2-8; 进度条 `[3/12] 处理 docs/foo.md → 知识库/项目/<host>/<org>/<repo>/foo.md ✓`; 单文件失败不阻断, 末尾报告失败清单。
 
 **落档后必跑 self-check**: 详见 [layout.md](layout.md) §1.2 (拒交硬条件) + [extract.md](extract.md) §4.7 (覆盖度 M/R ≥ 0.8) + §7 (6 类抽取必产) + [knowledge-graph.md](knowledge-graph.md) §9 (4 制品)。不达标自决继续补。
 
@@ -85,7 +87,7 @@
 摄取完成: 源 = <path|url>
 
 新建 N 个页面:
-- [[知识库/收件箱/example.com-foo.md]] (inbox / source)
+- [[知识库/项目/example.com/_site/foo/foo.md]] (source / website)
 - [[知识库/领域/技术/bar.md]] (concept, domain=技术)
 
 反向 wikilink: 更新 K 处, 待补 dead link M 条
@@ -100,12 +102,12 @@ dead links (跑 /cortex:lint --fix): [[Nonexistent Page]] (在 [[...]] 提及)
 
 ## Source 类型路由 + Frontmatter
 
-按 URL/file 判定 source_kind: **repo (github/gitlab)** → `知识库/项目/<host>/<org>/<repo>/`;**本地项目** → 相对 `$HOME` 拆段 (不足 3 段补 `_local`), 同样落 项目/;**非 repo 来源 (网页/论文/书籍)** → `知识库/收件箱/<host>-<slug>.md` 等 digest 分发。调 cortex-lint 内联 schema 校验 (PR1: cortex-schema 已合入 cortex-lint) `read <target-path>` 取 schema 填 frontmatter, 加 tags_required。例:
+按 URL/file 判定 source_kind: **repo (github/gitlab)** → `知识库/项目/<host>/<org>/<repo>/`;**本地项目** → 相对 `$HOME` 拆段 (不足 3 段补 `_local`), 同样落 项目/;**非 repo 来源 (网页/论文/书籍)** → `知识库/项目/<host>/_site/<path-slug>/<path-slug>.md` (`_site` 占位代替 org)。调 cortex-lint 内联 schema 校验 (PR1: cortex-schema 已合入 cortex-lint) `read <target-path>` 取 schema 填 frontmatter, 加 tags_required。例:
 
 - GitHub/GitLab URL → 项目/<host>/<org>/<repo>/_index.md, tags: `[type/project, host/<host>, org/<org>, repo/<repo>]`
 - 本地 `~/persons/lyxamour/ccplugin/` → 项目/persons/lyxamour/ccplugin/_index.md, source_url: `file://$HOME/...`
-- 网页 → 收件箱/<host>-<slug>.md, tags: `[type/inbox, source/web, host/<host>]`
-- arxiv/doi → 收件箱/arxiv.org-<slug>.md, tags: `[type/inbox, source/paper, year/<year>]`
+- 网页 → 项目/<host>/_site/<path-slug>/<path-slug>.md, tags: `[type/source, source/web, host/<host>]`
+- arxiv/doi → 项目/arxiv.org/_site/<path-slug>/<path-slug>.md, tags: `[type/source, source/paper, year/<year>]`
 
 schema 缺字段时由 lint `frontmatter-schema-violation` autofix 补 defaults。
 

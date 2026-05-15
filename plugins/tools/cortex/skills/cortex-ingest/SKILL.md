@@ -18,11 +18,14 @@ allowed-tools: Bash Read Write Edit Glob WebFetch mcp__obsidian__obsidian_get_fi
 ## 调用决策树
 
 ```
-源类型 ─┬─ URL (https?://)   → ingest_url.sh (CLI 主路径)
+源类型 ─┬─ URL (https?://)   → ingest_url.sh → 知识库/项目/<host>/_site/<slug>/<slug>.md
+        │                     (网页/arxiv/docs/blog, _site 占位代替 org)
+        ├─ github/gitlab URL → ingest_remote.sh → 知识库/项目/<host>/<org>/<repo>/
         ├─ 本地文件 (md/pdf/epub/docx/txt) → ingest_file.sh
-        ├─ git repo (github/gitlab/本地)   → ingest_remote.sh (4 层目录硬契约)
-        └─ 目录批量 → Glob 收集 → 单文件循环
+        ├─ 本地 git repo    → ingest_remote.sh (相对 $HOME 拆段, 不足 3 段补 _local)
+        └─ 目录批量          → Glob 收集 → 单文件循环
 
+收件箱仅留 fleeting/journal/question 纯笔记, 非外部 URL 默认目标。
 CLI 不可用 fallback: WebFetch + defuddle + 手工调三过滤器
   → P0 三过滤器 (url_security → html_sanitize → masking) 顺序严格, 任一拒绝即终止
 ```

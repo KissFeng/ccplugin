@@ -70,17 +70,38 @@ def _load_module(filename: str, mod_name: str) -> Any:
 _REPO_PATH_RE = re.compile(r"^/+(?P<org>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$")
 
 
+def _derive_url_path_slug(url: str) -> str:
+    """URL path 全段连字符化, 去查询参数 + trailing slash, 限 80 字符.
+
+    e.g. `https://code.claude.com/docs/zh-CN/overview` → `docs-zh-cn-overview`.
+    """
+    parsed = urllib.parse.urlparse(url)
+    raw = (parsed.path or "/").strip("/")
+    if not raw:
+        return "index"
+    slug = re.sub(r"[^a-z0-9\-_.]+", "-", raw.lower())
+    slug = re.sub(r"-+", "-", slug).strip("-")
+    if len(slug) > 80:
+        slug = slug[:80].rstrip("-")
+    return slug or "index"
+
+
 def _route_url(url: str) -> dict:
     """Decide kind + host/org/repo from URL.
 
     GitHub/GitLab/含 gitlab 子串 host → kind=project, 抽 org/repo from path.
-    arxiv.org / 其他 host → kind=inbox (统一落 知识库/收件箱/, 等 digest 分发).
-    host 字段保留用于 _save_internal 生成 收件箱/<host>-<slug>.md.
+    其他 host (网页/arxiv/docs/blog) → kind=source + source_type=website,
+        落 知识库/项目/<host>/_site/<path-slug>/<path-slug>.md (`_site` 占位代替 org).
+    收件箱仅留给纯笔记 (fleeting/journal/question), 非外部 URL 默认目标.
     """
     parsed = urllib.parse.urlparse(url)
     host = (parsed.hostname or "").lower()
     if not host:
-        return {"kind": "inbox", "host": "unknown"}
+        return {
+            "kind": "source",
+            "host": "unknown",
+            "url_path_slug": _derive_url_path_slug(url),
+        }
     if host in ("github.com", "gitlab.com") or "gitlab" in host:
         m = _REPO_PATH_RE.match(parsed.path or "")
         if m:
@@ -90,9 +111,18 @@ def _route_url(url: str) -> dict:
                 "org": m.group("org"),
                 "repo": m.group("repo"),
             }
-        return {"kind": "inbox", "host": host}
-    # arxiv / 其他外站 → 统一落收件箱 (待 digest 分发到 领域/<域> 或 项目/笔记)
-    return {"kind": "inbox", "host": host}
+        # repo host 但 path 不像 org/repo (e.g. gist) → 当 website 处理
+        return {
+            "kind": "source",
+            "host": host,
+            "url_path_slug": _derive_url_path_slug(url),
+        }
+    # 网页/arxiv/docs/blog → 统一落 项目/<host>/_site/<slug>/
+    return {
+        "kind": "source",
+        "host": host,
+        "url_path_slug": _derive_url_path_slug(url),
+    }
 
 
 def _is_pdf(content_type: str, url: str) -> bool:
@@ -120,7 +150,7 @@ def cli_ingest_url(args: dict) -> dict:
         # Auto-route by URL host.
         routed = _route_url(url)
         kind = routed["kind"]
-        for k in ("host", "org", "repo", "source_sub"):
+        for k in ("host", "org", "repo", "source_sub", "url_path_slug"):
             if routed.get(k) and not args.get(k):
                 args[k] = routed[k]
     if kind not in (
@@ -194,6 +224,10 @@ def cli_ingest_url(args: dict) -> dict:
     title = args.get("title") or extracted_title or url
 
     # 5. Save via shared internal (handles masking + write + patch).
+    # source_type=website 让 frontmatter 明确这是网页 ingest (区别于 github/gitlab repo).
+    source_meta = {"url": url, "content_type": content_type}
+    if kind == "source":
+        source_meta["source_type"] = "website"
     save_res = _save_internal(
         kind=kind,
         title=title,
@@ -203,7 +237,9 @@ def cli_ingest_url(args: dict) -> dict:
         org=args.get("org"),
         repo=args.get("repo"),
         source_sub=args.get("source_sub"),
-        source_meta={"url": url, "content_type": content_type},
+        source_meta=source_meta,
+        source_url=url,
+        url_path_slug=args.get("url_path_slug"),
     )
 
     result_obj = {
