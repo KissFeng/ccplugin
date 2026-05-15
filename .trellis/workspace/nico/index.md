@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 86
+- **Total Sessions**: 87
 - **Last Active**: 2026-05-15
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~925 | Active |
+| `journal-2.md` | ~962 | Active |
 | `journal-1.md` | ~1974 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 87 | 2026-05-15 | cortex search MCP first 重排 + 召回率提升 (aliases/keywords) | `3933b9c8`, `d2d3f97b`, `04b49401`, `d89448f7`, `1c5aeb01` | `master` |
 | 86 | 2026-05-15 | cortex 强制评分 frontmatter — 知识库 4 + 记忆 2 + digest 双路 + refresh maturity 重评 | `eab9b252`, `b1d874b4`, `b55ee1e9`, `78141d84`, `909921cf`, `7e2d188c`, `54c7719c` | `master` |
 | 85 | 2026-05-14 | cortex .base 格式硬契约 + lint rule base-format-yaml | `159344ae`, `3d8712bb` | `master` |
 | 84 | 2026-05-14 | cortex 加 2 wrapper — ingest_remote (github/website) + refresh_projects 增量 | `807c3498`, `be9ae225`, `374452c3`, `18708440` | `master` |
