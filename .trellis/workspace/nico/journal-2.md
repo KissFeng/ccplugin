@@ -1128,3 +1128,36 @@ install.sh 加 sync_codex_symlinks: 检测 ~/.codex/ 存在自动软连 13 skill
 ### Next Steps
 
 - None - task complete
+
+
+## Session 93: install.sh opencode 软连同步 + 抽共享
+
+**Date**: 2026-05-15
+**Task**: install.sh opencode 软连同步 + 抽共享
+**Branch**: `master`
+
+### Summary
+
+install.sh 扩展支持 opencode (~/.config/opencode/skills + agents)。重构: _ensure_codex_symlink → _ensure_cli_symlink, sync_codex_symlinks → sync_cli_symlinks <name> <root>, 新增 sync_external_clis 顶层调度。3 flag: --no-codex-sync / --no-opencode-sync / --no-external-sync。codex 行为向后兼容。bash 3.2 兼容。实测两 CLI 各 19 软链全建 + idempotent。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c6379f23` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
