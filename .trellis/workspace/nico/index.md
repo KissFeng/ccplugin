@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 90
+- **Total Sessions**: 91
 - **Last Active**: 2026-05-15
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~1066 | Active |
+| `journal-2.md` | ~1099 | Active |
 | `journal-1.md` | ~1974 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 91 | 2026-05-15 | cortex ingest website 路由修复 | `a37b8a71` | `master` |
 | 90 | 2026-05-15 | cortex README 重写 — 4 大块用户使用说明 | `56f7a089` | `master` |
 | 89 | 2026-05-15 | cortex skills/agents 整改 — 21→13 skill / 7→6 agent / D10 auto | `5b6b8c5d`, `8418e232`, `c1117cd7`, `eac15429` | `master` |
 | 88 | 2026-05-15 | cortex 收尾 — hot.md 项目高分子页 + aliases/keywords migration v3 | `ec9fbf7e`, `2a1b5bbe`, `e2148121` | `master` |
