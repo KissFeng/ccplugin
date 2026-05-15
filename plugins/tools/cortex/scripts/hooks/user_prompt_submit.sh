@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Claude Code UserPromptSubmit hook — 每次用户输入触发
-# 注入触发词检测 + 强制 reminder, 推动 AI 主动调 ~/.cortex/scripts/memory.sh recall / search.sh
+# 每轮注入 MCP first 搜索硬契约 + 触发词额外加项目 hint + memory 指令快捷
 
 set -u
 
@@ -63,14 +63,11 @@ hits = []
 for kw in triggers:
     if kw and kw in prompt_lower:
         hits.append(kw)
-
-# 短列表 cap
 hits = hits[:10]
 
 
 def detect_project_hint() -> tuple[str, str]:
     """推当前项目 host/org/repo + 来源 (git|local|""). 用作搜索 query 收敛词。"""
-    # 1. git remote (github/gitlab)
     try:
         r = subprocess.run(
             ["git", "-C", str(cwd), "remote", "get-url", "origin"],
@@ -95,7 +92,6 @@ def detect_project_hint() -> tuple[str, str]:
                     return f"{parts[0]}/{parts[-2]}/{parts[-1]}", "git"
     except Exception:
         pass
-    # 2. 相对 $HOME 路径策略 (~/persons/<org>/<repo>) → host=最顶段, 不足补 _local
     try:
         home = Path.home()
         rel = cwd.resolve().relative_to(home)
@@ -111,69 +107,58 @@ def detect_project_hint() -> tuple[str, str]:
 
 
 project_hint, project_src = detect_project_hint()
-project_repo = project_hint.split("/")[-1] if project_hint else ""
-project_kb_path = f"知识库/项目/{project_hint}/" if project_hint else ""
-
-def _kb_line() -> str:
-    if not project_kb_path:
-        return ""
-    tag = "git remote" if project_src == "git" else "相对 $HOME"
-    return f"📁 当前项目在知识库: `{project_kb_path}` (来源: {tag})\n"
 
 
-msg = ""
-if hits:
-    shown = hits[:5]
-    if project_hint:
-        proj_line = (
-            f'   - 步骤 a: --scope domains --query "<主题>" (限 知识库/项目/, 当前项目 = {project_hint})\n'
-            f'     · 命中后 grep path 含 "{project_repo}" 取项目内结果, 或直接读 `{project_kb_path}` 下文件\n'
-            f'   - 步骤 b: 项目内无果, --scope domains 全项目结果照看 (跨项目复用经验)\n'
-            f'   - 步骤 c: 仍无果, --scope all 泛搜 知识库/\n'
-        )
-    else:
-        proj_line = (
-            '   - 步骤 a: --scope domains --query "<主题>" (限 知识库/项目/)\n'
-            '   - 步骤 b: 无果, --scope all 泛搜 知识库/\n'
-        )
-    msg = (
-        f"⚠️ 用户问题含触发词 {shown}。**禁止直接询问用户**, 第一个工具调用**必须先搜**:\n"
-        f"{_kb_line()}"
-        f"1. bash ~/.cortex/scripts/memory.sh recall --query <主题> — 召回记忆 (L0-L4)\n"
-        f"2. bash ~/.cortex/scripts/search.sh --query <主题> --scope <scope> — 搜知识库\n"
-        f"{proj_line}"
-        f"3. 仅当全部**无命中**才允许向用户提问 (引用 hits/path 证明搜过)。"
+def build_search_contract_msg() -> str:
+    """每轮注入 MCP first 搜索硬契约 (无触发词限定)."""
+    return (
+        "🔍 cortex 搜索硬契约 (本会话每轮强制):\n"
+        "\n"
+        "非通用问答 (代码改/找文档/排查/项目知识) 前, 第一个工具调用必须是搜索:\n"
+        "\n"
+        "1. **L1 (首选)**: `mcp__obsidian__obsidian_simple_search query=<关键词>` (优先 obsidian, **非 qmd**)\n"
+        "2. **L2 (次选)**: `mcp__obsidian__obsidian_complex_search` (JsonLogic 复杂查询, 如按 tag/path 过滤)\n"
+        "3. **L3 (fallback)**: `bash ~/.cortex/scripts/search.sh --query <q>` (Obsidian MCP 不可达时)\n"
+        "4. **记忆查询**: `mcp__obsidian__obsidian_get_recent_changes` (按时间) 或 `memory.sh recall` (按 URI)\n"
+        "\n"
+        "**禁忌**:\n"
+        "- 跳过搜索直接问用户 (有触发词时)\n"
+        "- 用 qmd MCP 替代 obsidian MCP (qmd 索引不全 cortex vault)\n"
+        "- 用 Bash rg / Grep 替代 MCP search (除非 MCP 不可达 + search.sh 也失败)\n"
+        "\n"
+        "无命中允许问用户, 但提示中引用 hits/path 证明搜过。"
     )
-    if any(k in prompt_lower for k in ["记住", "remember", "别忘了", "永远", "暂时"]):
-        msg += "\n⚡ 含记忆指令 → bash ~/.cortex/scripts/memory.sh write --uri <u> --content <c> --level <l>。"
-    elif any(k in prompt_lower for k in ["忘了", "forget"]):
-        msg += "\n⚡ 含遗忘指令 → bash ~/.cortex/scripts/memory.sh forget --uri <u>。"
-else:
-    if len(prompt) > 20:
-        if project_kb_path:
-            msg = (
-                f"💡 当前项目在知识库: `{project_kb_path}`。"
-                f"查询顺序: search.sh --scope domains --query <主题> "
-                f"(过滤 path 含 '{project_repo}') → --scope domains 全项目 → "
-                f"--scope all 泛搜。记忆走 memory.sh recall。"
-            )
-        else:
-            msg = "💡 如需上下文/记忆, 调 bash ~/.cortex/scripts/memory.sh recall / bash ~/.cortex/scripts/search.sh。"
-    else:
-        msg = ""
 
-# 整体注入 cap (800 + 容差)
-if msg and len(msg) > 800:
-    msg = msg[:797] + "..."
 
-if msg:
-    payload = {
-        "hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": msg,
-        }
+# 主体: 每轮注入硬契约
+msg = build_search_contract_msg()
+
+# 触发词命中 → 额外加项目 hint
+if hits and project_hint:
+    src_tag = "git remote" if project_src == "git" else "相对 $HOME"
+    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` ({src_tag}); 可按 path 过滤 + memory.sh recall 召回。"
+elif hits:
+    msg += f"\n💡 触发词命中 {hits[:3]} — 强制走 L1-L4 搜索, 禁直接问用户。memory.sh recall 召回记忆。"
+elif project_hint:
+    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/`."
+
+# 记忆指令快捷
+if any(k in prompt_lower for k in ["记住", "remember", "别忘了", "永远", "暂时"]):
+    msg += "\n⚡ 含记忆指令 → `memory.sh write --uri <u> --content <c> --level <l>`."
+elif any(k in prompt_lower for k in ["忘了", "forget"]):
+    msg += "\n⚡ 含遗忘指令 → `memory.sh forget --uri <u>`."
+
+# 整体注入 cap (1200 + 容差)
+if len(msg) > 1200:
+    msg = msg[:1197] + "..."
+
+payload = {
+    "hookSpecificOutput": {
+        "hookEventName": "UserPromptSubmit",
+        "additionalContext": msg,
     }
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False))
+}
+sys.stdout.write(json.dumps(payload, ensure_ascii=False))
 PYEOF
 
 exit 0

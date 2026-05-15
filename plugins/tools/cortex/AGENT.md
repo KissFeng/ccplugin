@@ -6,7 +6,23 @@ hot cache: {{HOT_CACHE_PREVIEW}}
 
 ### 协作约定
 
-1. **先搜后问** — 非通用问题先调 `cortex-search` skill 或 `obsidian search:context query=<q> vault=<name>` 搜库 (CLI 不可用时回退 `mcp__obsidian__obsidian_simple_search`), 确认无既有经验再开工。
+1. **先搜后问 (硬契约, hook 每轮强制)** —
+
+   非通用问题前, **第一个工具调用必须是搜索**:
+
+   - **L1 = `mcp__obsidian__obsidian_simple_search`** (强制 first, 优先 obsidian, **非 qmd**)
+   - **L2 = `mcp__obsidian__obsidian_complex_search`** (JsonLogic 高级查询, 按 tag/path 过滤)
+   - **L3 fallback = `bash ~/.cortex/scripts/search.sh --query <q>`** (MCP 不可达时)
+   - **L4 fallback = ripgrep** (search.sh 也失败时)
+
+   **禁忌**:
+   - 跳过 L1 直接问用户 (有触发词时)
+   - 用 qmd MCP 替代 obsidian MCP (qmd 索引不全 cortex vault)
+   - 用 Bash rg / Grep 替代 MCP search (L4 仅最后兜底)
+
+   MCP 未注册时, `AskUserQuestion` 单次授权 (本会话有效) 才走 L3。
+
+   确认无既有经验 (L1-L4 全无命中) 才允许向用户提问, 提问时引用 L1 hits 路径证明搜过。
 2. **落档** — 非平凡发现 (架构决策、疑难 bug、配置技巧、工具经验) 完成后用 `cortex-save` skill 归档:
    - 项目特定 → `知识库/项目/<host>/<org>/<repo>/` (local 项目 → `知识库/项目/local/<basename>/`)
    - 通用概念 → `知识库/领域/`
@@ -132,3 +148,12 @@ vault 是 git repo 时, Stop hook 可选触发 auto-commit (默认完全关闭):
 - P0 masking 不覆盖手写笔记中的 secret, 启 `auto_push` 前自查 vault
 
 详见 `docs/sync-git.md`。
+
+## P9 — search MCP first + 召回率提升 (2026-05-15)
+
+- hook `user_prompt_submit` 每轮强制注入 MCP first 搜索硬契约 (移除触发词限定)
+- AGENT.md §1 升级为硬契约: L1 = `mcp__obsidian__obsidian_simple_search` / L2 = `obsidian_complex_search` / L3 fallback = `search.sh` / L4 = ripgrep
+- cortex-search SKILL 五级 → 四级重排 (MCP first), 砍 Smart Connections 独立段 (保留在 search.sh CLI 内部)
+- frontmatter 加 `aliases` (≥3) + `keywords` (≥5) 召回率字段, `ingest_remote` / `save` 自动启发式抽 (中英对 23 + 缩写 16; path stem / repo meta / 代码标识符 / heading)
+- 软提示 "优先 obsidian, 非 qmd" (D2 不强制禁其他 MCP)
+- 测试基线 497 → 524 (+27)
