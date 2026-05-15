@@ -1,174 +1,53 @@
 ---
 name: cortex-refactor
-description: vault 重构 — rename/merge/split/migrate-locale, --apply 才落盘 backup。仅显式触发。
-argument-hint: "<rename|merge|split|migrate-locale> [args...]"
+description: vault 重构 — rename/merge/split/dedupe/extract/inline/migrate-locale/evolution-apply, --apply 才落盘 backup。仅显式触发。Triggers on "重命名", "rename", "merge", "split", "重构 vault".
 disable-model-invocation: true
-allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir
+allowed-tools: Bash Read Write Edit Glob mcp__obsidian__obsidian_get_file_contents mcp__obsidian__obsidian_list_files_in_dir AskUserQuestion
 ---
 
 # cortex-refactor
 
 vault 大动干戈类操作的统一入口。**全部默认 dry-run**, 用户明确 `--apply` 才改盘。
 
-## 子操作
-
-### rename — 改文件名 + 全 vault wikilink 同步
-
-```bash
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/rename.py \
-  --vault <path> --from <old-rel> --to <new-rel> [--apply]
-```
-
-- 扫全 vault `[[old-stem]]` 与 `![[old-stem]]`, 替换为新 stem
-- 不动 alias 字段 (用户决定是否保留)
-- backup → `_meta/.cortex-backup/refactor-rename/<ts>/`
-
-### merge — 两页合一
-
-```bash
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/merge.py \
-  --vault <path> --from <src> --into <target> [--apply]
-```
-
-- `<src>` 内容 (去 frontmatter) 追加到 `<target>` 末尾, 用 H2 分隔
-- 全 vault 反链 `[[<src-stem>]]` 重定向到 `<target-stem>`
-- `<src>` 移到 `归档/`
-- 时间戳前缀避免 archive 内重名
-
-### split — 一页按 H2 拆多页
-
-```bash
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/split.py \
-  --vault <path> --from <src> [--out-dir <dir>] [--apply]
-```
-
-- 每个 H2 节生成一个新页 `<src-stem>--<slug>.md`
-- 原页保留, 末尾追加 `> [!info] split into:` callout 列出子页
-- 重名不覆盖 (跳过)
-
-### migrate-locale — 切 vault.lang 时一次性 rename 业务目录
-
-```bash
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/migrate_locale.py \
-  --vault <path> --from <lang> --to <lang> [--apply]
-```
-
-- 比对两个 lang 的 `dirs` map, 对每对差异计划 rename
-- git repo 走 `git mv` (保留历史), 否则 `os.rename`
-- 全 vault wikilink 替换 (path-prefixed)
-- 写 `_meta/version.json:.lang = <to>` + `_meta/migrations/<ts>-migrate-locale.json`
-- 默认 dry-run, `--apply` 才落盘
-
 ## 触发场景
 
 - 用户明确说"重命名 X 到 Y / 合并 A B / 把这页拆开 / 整理日志"
 - `/cortex:lint` 命中 `path-naming-violation` / `filename-illegal` 后用户授权修复
+- `/cortex:refactor evolution-apply` 消化 cortex-digest 抽出的 proposal
 
-## AUTO_MODE 探测 (shell wrapper)
+## 子操作矩阵
 
-若 user prompt 含 `[AUTO_MODE:` 或 `non-interactive` 字样 (来自 `~/.cortex/scripts/refactor.sh`), **跳所有 `AskUserQuestion`, 直执行默认动作**:
-
-- 默认 dry-run, 输出 JSON plan, **不询问**是否应用
-- 仅当 args **显式含 `--apply`** 才落盘 (落盘前仍走 backup)
-- ≥3 文件批量改写: 不调 `AskUserQuestion` 列文件路径授权; backup + apply 直接落 (因 args 已显式 `--apply`)
-
-**Interactive 模式** (claude session 内直调 skill): 原有 `AskUserQuestion` 流程不变。
+| 子操作 | 说明 | References |
+|---|---|---|
+| rename | 改文件名 + 全 vault wikilink 同步 | rename-merge.md |
+| merge | 两页合一, src 移到 `归档/` | rename-merge.md |
+| migrate-locale | 切 vault.lang 时一次性 rename 业务目录 | rename-merge.md |
+| dedupe | TF-IDF cosine 找相似页对, `--apply` 调 merge | rename-merge.md |
+| split | 一页按 H2 拆多页, 原页留 callout | split-page.md |
+| extract | 抽 H2 节为独立 concept 页 | split-page.md |
+| inline | 子页内联回父页, 子页归档 | split-page.md |
+| graph-rebalance | orphan/hub 扫, 自动补 link_gaps | split-page.md |
+| evolution-apply | 消化 cortex-digest 写的 proposal, patch SKILL/AGENT | evolution-apply.md |
 
 ## 安全约束
 
 1. 默认 dry-run, 输出 JSON plan
 2. `--apply` 前在 `_meta/.cortex-backup/refactor-<op>/<ts>/` 全量 backup 涉及文件
-3. **不**自动 git commit (与 `cortex` 整体策略一致, OGit 用户依赖外部备份)
+3. **不**自动 git commit (与 cortex 整体策略一致)
 4. rename/merge 永不覆盖已存在的目标
 5. 大批量操作建议先 `--apply` 跑一个文件验证, 再扩大范围
 
-## 输出示例 (rename dry-run)
+## AUTO_MODE (wrapper / cron 传 `auto` 后缀触发)
 
-```json
-{
-	"op": "rename",
-	"from": "知识库/领域/foo.md",
-	"to": "知识库/领域/foo-bar.md",
-	"files_to_update": [
-		{ "file": "log/2026-05/10-1430-design.md", "replacements": 2 },
-		{ "file": "_assets/dashboards/concepts-dashboard.md", "replacements": 1 }
-	],
-	"applied": false
-}
-```
+- 跳 AskUserQuestion, 按默认值执行 (dry-run, 输出 JSON plan; `--apply` 显式时才落盘)
+- persistent: error 自决降级 / 重试, 禁询问, 禁中止
+- ≥3 文件批量改写: 不列文件路径授权; backup + apply 直接落 (args 已显式 `--apply`)
+- **例外**: `evolution-apply` 不接 AUTO_MODE 跳问, 仍走 AskUserQuestion 一条条问 (单条用户授权)
 
-dry-run 结束后, **必须调 `AskUserQuestion`** 工具询问: "已扫描 N 个文件 M 处替换, 是否应用?" options: `应用 (--apply 重跑)` / `取消` / `仅看 diff`; 用户选 `应用` 才加 `--apply` 重跑。
+## References (按需加载)
 
-L3 写盘授权门: 涉及 ≥3 文件批量改写时, `AskUserQuestion` 问题文案需列出受影响文件路径 (per-batch 单次授权); <3 文件 per-file 逐个授权。
-
-### evolution-apply — 消化 evolution proposal (PR4)
-
-**触发**: 用户说 "应用 evolution proposal" / "review patterns" / 调 `bash ~/.cortex/scripts/refactor.sh evolution-apply` / 显式 `/cortex:refactor evolution-apply`
-
-**前置**: `cortex-digest` 跑后, `_assets/evolution-proposals/` 有 pending proposal (PR3 生成)。
-
-**AI 主线串行流程**:
-
-1. 调 `bash ~/.cortex/scripts/refactor.sh evolution-list --json` 取 pending proposal 列表
-2. 列表为空 → 输出 `{"applied":0,"rejected":0,"deferred":0,"safety_blocked":0,"reason":"no pending proposal"}` 结束
-3. 列表非空 → 逐条循环:
-   1. 用 `AskUserQuestion` 单次询问 (header=`Proposal <N/M>`, question 列 path + target_skill + diff_summary, 单选): **接受 / 拒绝 / 推迟**
-   2. **接受**:
-      - `bash ~/.cortex/scripts/refactor.sh evolution-check <proposal_path> --json` 跑 safety gate
-      - safety gate fail → 计 `safety_blocked++`, 输出 message 跳过此条 (不删 proposal)
-      - safety gate ok → 解 JSON `diff` 字段, 用 `Edit` 工具 (或 `mcp__obsidian__obsidian_patch_content`) 应用到 `target_skill`; 落盘后调 `bash ~/.cortex/scripts/refactor.sh evolution-delete <proposal_path>` 清 proposal; 计 `applied++`
-   3. **拒绝**: 调 `evolution-delete` 清 proposal (拒绝即放弃, 避免下次重复问); 计 `rejected++`
-   4. **推迟**: 不动 proposal, 留到下次; 计 `deferred++`
-4. 全部处理完输出 compact JSON: `{"applied":N,"rejected":M,"deferred":K,"safety_blocked":L}`
-
-**Safety gate (python 已实现, AI 不重复判断)**:
-
-| 检查 | 拒绝原因 |
-|------|---------|
-| target_skill 白名单 | `skills/*/SKILL.md` / `skills/*/references/*.md` / `agents/*.md` / `AGENT.md` |
-| target_skill 黑名单 | 命中 `commands/` / `scripts/` / `_meta/` / `_templates/` 拒 |
-| git working tree | `plugins/tools/cortex/` 下必须 clean, dirty 则拒并提示 user 先 commit |
-| proposal 文件存在 | 不存在直接拒 |
-| yaml frontmatter | 解析失败拒 |
-| diff block 存在 | 缺 ` ```diff ` fence 拒 |
-
-**禁忌**:
-- 不批量"全部接受" — 必须一条一问 (AskUserQuestion 单次单条)
-- 不静默删 proposal — 接受/拒绝/推迟必明确告知用户
-- safety_blocked 后**不**自动重试 — 用户先 commit / 改 proposal target / 调白名单后再跑
-
-**AUTO_MODE 例外**: 本子操作走用户**显式**确认每条 proposal, **不**接 wrapper AUTO_MODE 跳问语义。即便从 shell wrapper 进入, AI 仍必须 AskUserQuestion 一条条问 (此处用户授权 = 单条接受, 不是批量授权)。
-
-## 新增子命令 (deep refactor)
-
-下列子命令均默认 dry-run, `--apply` 才落盘; 落盘前会 backup 至 `_meta/.cortex-backup/<op>/<ts>/`。
-
-| 子命令          | 签名                                                                                                 | 说明                                                                     |
-| --------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| dedupe          | `--vault P [--scope all\|concepts\|domains\|log] [--threshold 0.85] [--top-k 20] [--apply]`          | 用 TF-IDF cosine 找 ≥ threshold 的候选页对; `--apply` 调 `merge.py` 合并 |
-| extract         | `extract_inline.py --vault P --page REL --section H2 --direction extract [--out-path REL] [--apply]` | 抽 H2 节为独立 concept 页, 父页留 `![[child-stem]]`                      |
-| inline          | `extract_inline.py --vault P --page REL --child REL --direction inline [--section H2] [--apply]`     | 子页内联回父页, 子页归档, 全 vault wikilink 同步                         |
-| graph-rebalance | `graph_rebalance.py --vault P [--hub-threshold 20] [--scope all] [--apply]`                          | 扫 orphan / hub; `--apply` 仅自动补 link_gaps, hub 拆分仅提示            |
-
-调用模板:
-
-```bash
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/dedupe.py \
-  --vault "$VAULT" --scope concepts --threshold 0.85
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/extract_inline.py \
-  --vault "$VAULT" --page 知识库/领域/parent.md --section "Detail" \
-  --direction extract
-python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/graph_rebalance.py \
-  --vault "$VAULT" --hub-threshold 20
-```
-
-所有新子命令输出 JSON, 字段含 `op / applied`, dry-run 字段视子命令而定 (mv_plan/link_plan/candidates/orphans/hubs/link_gaps)。
-
-## AUTO_MODE 行为 (wrapper 调用)
-
-当 prompt 含 `[AUTO_MODE]` (来自 `~/.cortex/scripts/refactor.sh`):
-
-1. **不调** AskUserQuestion (wrapper allowed-tools 已禁此工具, 强行调用必失败)
-2. 任何需用户决策处 → 走默认值跳过 (≥3 文件批量改写不再列路径授权, 直接 backup + apply)
-3. persistent: 任何 error 自决降级 / 重试 / 换工具, 禁询问, 禁中止
-4. dry-run 默认行为不变; 显式 `--apply` 时直接落, 不再二次确认
+| 文件 | 用途 |
+|---|---|
+| [`references/rename-merge.md`](references/rename-merge.md) | rename / merge / migrate-locale / dedupe 详细命令 + dry-run 输出示例 |
+| [`references/split-page.md`](references/split-page.md) | split / extract / inline / graph-rebalance 详细命令 |
+| [`references/evolution-apply.md`](references/evolution-apply.md) | evolution-apply 串行流程 + safety gate + AskUserQuestion 单条循环 |
