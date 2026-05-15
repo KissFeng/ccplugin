@@ -21,6 +21,7 @@ import subprocess
 import sys
 import tempfile
 import urllib.parse
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -44,8 +45,96 @@ __all__ = [
     "scan_projects",
     "refresh_git_project",
     "refresh_website_project",
+    "revalue_maturity",
     "main",
 ]
+
+
+def revalue_maturity(
+    old_maturity: str,
+    hash_change_count: int,
+    days_since_last_change: int,
+) -> str:
+    """内容 hash 变 → maturity 重评 (D5 锁定: 不动 score/confidence/source_credibility).
+
+    Rules (顺序敏感):
+      - hash_change_count >= 2 且 days < 30 → "draft" (频繁变动)
+      - hash_change_count == 1 且 old == "stable" → "review" (从 stable 回退)
+      - hash_change_count == 0 且 days >= 180 → "deprecated" (极久不变候选)
+      - hash_change_count == 0 且 days >= 90 → "stable" (长期不变)
+      - 其他 → 保持 old_maturity
+    """
+    if hash_change_count >= 2 and days_since_last_change < 30:
+        return "draft"
+    if hash_change_count == 1 and old_maturity == "stable":
+        return "review"
+    if hash_change_count == 0 and days_since_last_change >= 180:
+        return "deprecated"
+    if hash_change_count == 0 and days_since_last_change >= 90:
+        return "stable"
+    return old_maturity
+
+
+def _days_since(iso_str: str | None) -> int:
+    """parse ISO 8601 UTC, 返回距今天数. 解析失败 / 空值返 0."""
+    if not iso_str or not isinstance(iso_str, str):
+        return 0
+    try:
+        s = iso_str.rstrip("Z")
+        dt = datetime.fromisoformat(s)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        delta = datetime.now(timezone.utc) - dt
+        return max(0, delta.days)
+    except (ValueError, TypeError):
+        return 0
+
+
+def _patch_index_maturity(
+    index_md: Path,
+    new_maturity: str,
+) -> None:
+    """Rewrite `_index.md` frontmatter with new maturity + bumped last_ingested_at.
+
+    Uses the same minimal line-based fm parser used elsewhere in this module:
+    preserves unrelated keys verbatim, updates/adds maturity + last_ingested_at.
+    """
+    try:
+        text = index_md.read_text(encoding="utf-8")
+    except OSError:
+        return
+    m = _FM_RE.match(text)
+    if not m:
+        return
+    fm_block = m.group(1)
+    body = text[m.end():]
+    lines = fm_block.splitlines()
+    have_mat = False
+    have_last = False
+    new_iso = utc_now()
+    out: list[str] = []
+    for line in lines:
+        if ":" not in line:
+            out.append(line)
+            continue
+        key = line.split(":", 1)[0].strip()
+        if key == "maturity":
+            out.append(f"maturity: {new_maturity}")
+            have_mat = True
+        elif key == "last_ingested_at":
+            out.append(f"last_ingested_at: {new_iso}")
+            have_last = True
+        else:
+            out.append(line)
+    if not have_mat:
+        out.append(f"maturity: {new_maturity}")
+    if not have_last:
+        out.append(f"last_ingested_at: {new_iso}")
+    new_text = "---\n" + "\n".join(out) + "\n---\n" + body
+    try:
+        index_md.write_text(new_text, encoding="utf-8")
+    except OSError:
+        pass
 
 
 _FM_RE = re.compile(r"^---\n(.*?)\n---\n", re.S)
@@ -213,13 +302,18 @@ def refresh_git_project(project: dict, vault: Path, dry_run: bool) -> dict:
             )
             ingested_n += 1
 
-        # 更新 _index.md sha
+        # 更新 _index.md sha + maturity 重评 (D5: hash 变 → maturity 重评)
         repo_dir.mkdir(parents=True, exist_ok=True)
+        old_idx_fm = _read_fm_from_file(repo_dir / "_index.md")
+        old_maturity = old_idx_fm.get("maturity", "draft") or "draft"
+        days = _days_since(old_idx_fm.get("last_ingested_at"))
+        new_maturity = revalue_maturity(old_maturity, ingested_n, days)
         idx_fm = {
             "source_url": url,
             "source_type": project["source_type"],
             "last_commit_sha": new_sha,
             "last_ingested_at": utc_now(),
+            "maturity": new_maturity,
         }
         _write_index(
             repo_dir,
@@ -227,12 +321,15 @@ def refresh_git_project(project: dict, vault: Path, dry_run: bool) -> dict:
             f"# {project['org']}/{project['repo']}\n\n"
             f"Refreshed at `{utc_now()}` (sha=`{new_sha[:8]}`).\n",
         )
-        return {
+        result: dict = {
             "status": "updated",
             "files_changed": ingested_n,
             "last_commit_sha": new_sha,
             "errors": errors,
         }
+        if new_maturity != old_maturity:
+            result["maturity_changed"] = {"old": old_maturity, "new": new_maturity}
+        return result
     except subprocess.TimeoutExpired:
         return {
             "status": "error",
@@ -315,13 +412,30 @@ def refresh_website_project(project: dict, vault: Path, dry_run: bool) -> dict:
 
     orphans = sorted(set(existing.keys()) - seen_urls)
     status = "updated" if (changed or new) else "skip"
-    return {
+
+    # D5: project-level maturity 重评 (基于本轮 hash 变化总数)
+    hash_change_count = changed + new
+    index_md = repo_dir / "_index.md"
+    maturity_changed = None
+    if index_md.is_file():
+        old_idx_fm = _read_fm_from_file(index_md)
+        old_maturity = old_idx_fm.get("maturity", "draft") or "draft"
+        days = _days_since(old_idx_fm.get("last_ingested_at"))
+        new_maturity = revalue_maturity(old_maturity, hash_change_count, days)
+        if new_maturity != old_maturity:
+            _patch_index_maturity(index_md, new_maturity)
+            maturity_changed = {"old": old_maturity, "new": new_maturity}
+
+    result: dict = {
         "status": status,
         "files_changed": changed,
         "files_new": new,
         "orphans": orphans,
         "errors": errors,
     }
+    if maturity_changed is not None:
+        result["maturity_changed"] = maturity_changed
+    return result
 
 
 def main() -> int:
