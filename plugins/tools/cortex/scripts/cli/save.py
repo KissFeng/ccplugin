@@ -268,6 +268,110 @@ def _patch_index(vault: Path, wikilink: str) -> None:
     idx.write_text(text + sep + line, encoding="utf-8")
 
 
+_HOT_PROJECT_SECTION = "## 项目高分页面"
+_HOT_PROJECT_MAX = 3  # 每项目 ≤ 3 篇
+
+
+def _derive_project_key(path: Path | str) -> str | None:
+    """从 vault 相对路径推 project_key (host/org/repo).
+
+    输入: 知识库/项目/<host>/<org>/<repo>/... → 返 "host/org/repo"
+    非项目路径 → 返 None
+    """
+    parts = str(path).replace("\\", "/").split("/")
+    for i in range(len(parts) - 4):
+        if parts[i] == "知识库" and parts[i + 1] == "项目":
+            host, org, repo = parts[i + 2], parts[i + 3], parts[i + 4]
+            if host and org and repo:
+                return f"{host}/{org}/{repo}"
+    return None
+
+
+def _extract_score_from_line(line: str) -> float:
+    """提 hot.md 子页行内 score 数值. 格式: '- [[wikilink]] (score: 7.5, stable)'."""
+    m = _re.search(r"score:\s*([\d.]+)", line)
+    return float(m.group(1)) if m else 0.0
+
+
+def _patch_hot_project_subpages(
+    vault: Path,
+    project_key: str,
+    wikilink: str,
+    score: float,
+    maturity: str,
+) -> None:
+    """高分子页 (score ≥ 7 + maturity in stable/review) 入 hot.md `## 项目高分页面` 节.
+
+    每项目 ≤ 3 篇, 按 score desc 保留 top.
+    """
+    if score < 7.0 or maturity not in {"stable", "review"}:
+        return
+
+    hot = vault / "hot.md"
+    if not hot.is_file():
+        return  # 无 hot.md, 跳过 (_patch_hot 已建主结构, 这里防御)
+
+    text = hot.read_text(encoding="utf-8")
+    lines = text.split("\n")
+
+    # 找 / 建 ## 项目高分页面 节
+    if _HOT_PROJECT_SECTION not in text:
+        if lines and lines[-1] != "":
+            lines.append("")
+        lines.extend([_HOT_PROJECT_SECTION, ""])
+
+    sect_start = None
+    for i, ln in enumerate(lines):
+        if ln.strip() == _HOT_PROJECT_SECTION:
+            sect_start = i
+            break
+    if sect_start is None:
+        return
+
+    sect_end = len(lines)
+    for j in range(sect_start + 1, len(lines)):
+        if lines[j].startswith("## ") and lines[j].strip() != _HOT_PROJECT_SECTION:
+            sect_end = j
+            break
+
+    # 找项目子段 `### <host/org/repo>`
+    project_heading = f"### {project_key}"
+    proj_start = None
+    proj_end = None
+    for k in range(sect_start + 1, sect_end):
+        if lines[k].strip() == project_heading:
+            proj_start = k
+            proj_end = sect_end
+            for mm in range(k + 1, sect_end):
+                if lines[mm].startswith("###") or lines[mm].startswith("##"):
+                    proj_end = mm
+                    break
+            break
+
+    new_entry = f"- {wikilink} (score: {score:.1f}, {maturity})"
+
+    if proj_start is None:
+        # 项目子段不存在 → 在节末添加
+        insert_at = sect_end
+        new_block = [project_heading, "", new_entry, ""]
+        lines = lines[:insert_at] + new_block + lines[insert_at:]
+    else:
+        existing = []
+        for ln in lines[proj_start + 1 : proj_end]:
+            stripped = ln.strip()
+            if stripped.startswith("- "):
+                if wikilink in stripped:
+                    continue
+                existing.append(ln)
+        existing.append(new_entry)
+        existing.sort(key=lambda ln: _extract_score_from_line(ln), reverse=True)
+        existing = existing[:_HOT_PROJECT_MAX]
+        new_proj_lines = [project_heading, "", *existing, ""]
+        lines = lines[:proj_start] + new_proj_lines + lines[proj_end:]
+
+    hot.write_text("\n".join(lines), encoding="utf-8")
+
+
 def _wikilink_for(path: Path, vault: Path) -> str:
     try:
         rel = path.relative_to(vault).with_suffix("")
@@ -432,6 +536,29 @@ def _save_internal(
     wikilink = _wikilink_for(target, vault)
     _patch_hot(vault, wikilink)
     _patch_index(vault, wikilink)
+
+    # 高分子页维护 (P10 R1): score ≥ 7 + maturity in stable/review + 项目路径
+    fm_score = fm.get("score")
+    fm_maturity = fm.get("maturity")
+    if (
+        kind in _KB_KINDS
+        and isinstance(fm_score, (int, float))
+        and isinstance(fm_maturity, str)
+    ):
+        try:
+            rel = target.relative_to(vault)
+        except ValueError:
+            rel = None
+        if rel is not None:
+            project_key = _derive_project_key(rel)
+            if project_key:
+                _patch_hot_project_subpages(
+                    vault,
+                    project_key,
+                    wikilink,
+                    float(fm_score),
+                    str(fm_maturity),
+                )
 
     return {
         "path": str(target),
