@@ -68,6 +68,8 @@ FLAGS:
   --use-source              用 install.sh 所在源码目录, 不主动 marketplace/plugin update
                             (开发场景; 默认会走 bootstrap 拿最新)
   --no-codex-sync           跳过 ~/.codex/skills + agents 软连同步 (等价 NO_CODEX_SYNC=1)
+  --no-opencode-sync        跳过 ~/.config/opencode/skills + agents 软连同步 (等价 NO_OPENCODE_SYNC=1)
+  --no-external-sync        跳过所有外部 CLI 同步 (codex + opencode; 等价 NO_EXTERNAL_SYNC=1)
   -h, --help                显示本帮助
 
 EXAMPLES:
@@ -98,6 +100,8 @@ while [[ $# -gt 0 ]]; do
     --reinstall) REINSTALL=1; shift ;;
     --use-source) USE_SOURCE=1; shift ;;
     --no-codex-sync) NO_CODEX_SYNC=1; shift ;;
+    --no-opencode-sync) NO_OPENCODE_SYNC=1; shift ;;
+    --no-external-sync) NO_EXTERNAL_SYNC=1; shift ;;
     -h|--help) print_help; exit 0 ;;
     *) log_error "unknown arg: $1"; exit 2 ;;
   esac
@@ -530,11 +534,14 @@ if [[ "$do_cron" == "1" ]]; then
   }
 fi
 
-# ── codex 跨 CLI 兼容: 软连 cortex skills/agents 到 ~/.codex/ ───────
-# 仅当 ~/.codex/ 存在时执行 (codex 用户才需要); 否则静默跳过.
+# ── 外部 CLI 兼容: 软连 cortex skills/agents 到 ~/.codex/ + ~/.config/opencode/ ───
+# 仅当对应 root 目录存在时执行 (该 CLI 用户才需要); 否则静默跳过.
 # 仅管 cortex-* 前缀; 用户其他 symlink/文件不动.
-# escape hatch: --no-codex-sync flag 或 NO_CODEX_SYNC=1 env.
-_ensure_codex_symlink() {
+# escape hatch:
+#   --no-codex-sync     / NO_CODEX_SYNC=1     (skip codex)
+#   --no-opencode-sync  / NO_OPENCODE_SYNC=1  (skip opencode)
+#   --no-external-sync  / NO_EXTERNAL_SYNC=1  (skip 全部)
+_ensure_cli_symlink() {
   local dst="$1" src="$2"
   local name
   name="$(basename "$dst")"
@@ -551,20 +558,22 @@ _ensure_codex_symlink() {
   fi
 }
 
-sync_codex_symlinks() {
-  if [[ ! -d "$HOME/.codex" ]]; then
-    log_info "~/.codex 不存在, 跳过 codex 同步"
+sync_cli_symlinks() {
+  local cli_name="$1" root_dir="$2"
+  if [[ ! -d "$root_dir" ]]; then
+    log_info "$cli_name 不存在 ($root_dir), 跳过"
     return 0
   fi
-  if [[ "${NO_CODEX_SYNC:-}" == "1" ]]; then
-    log_info "NO_CODEX_SYNC=1, 跳过 codex 同步"
-    return 0
-  fi
+  # bash 3.2 兼容: case 路由 env 检查 (避免 ${var^^})
+  case "$cli_name" in
+    codex)    [[ "${NO_CODEX_SYNC:-}" == "1" ]] && { log_info "NO_CODEX_SYNC=1, 跳过 codex 同步"; return 0; } ;;
+    opencode) [[ "${NO_OPENCODE_SYNC:-}" == "1" ]] && { log_info "NO_OPENCODE_SYNC=1, 跳过 opencode 同步"; return 0; } ;;
+  esac
 
   local kind src_dir dst_dir path name link expected
   for kind in skills agents; do
     src_dir="$INSTALL_PATH/$kind"
-    dst_dir="$HOME/.codex/$kind"
+    dst_dir="$root_dir/$kind"
     [[ -d "$src_dir" ]] || continue
     mkdir -p "$dst_dir"
 
@@ -576,7 +585,7 @@ sync_codex_symlinks() {
       # agents 是 .md 单文件, 软链名去 .md 后缀 (= claude code 调用标识); skills 是目录, name 不变
       [[ "$kind" == "agents" ]] && name="${name%.md}"
       expected="$expected $name"
-      _ensure_codex_symlink "$dst_dir/$name" "$path"
+      _ensure_cli_symlink "$dst_dir/$name" "$path"
     done
 
     # 扫废: dst 中 cortex-* 不在 expected 集 → 删 (仅 symlink)
@@ -585,15 +594,21 @@ sync_codex_symlinks() {
       name="$(basename "$link")"
       case " $expected " in
         *" $name "*) ;;
-        *) rm "$link" && log_step "- unlink $kind/$name (已删)" ;;
+        *) rm "$link" && log_step "- unlink $cli_name/$kind/$name (已删)" ;;
       esac
     done
     shopt -u nullglob
   done
 }
 
-log_step "同步 codex skills/agents 软连接"
-sync_codex_symlinks || log_warn "codex 同步部分失败 (继续)"
+sync_external_clis() {
+  [[ "${NO_EXTERNAL_SYNC:-}" == "1" ]] && { log_info "NO_EXTERNAL_SYNC=1, 跳过所有外部 CLI 同步"; return 0; }
+  sync_cli_symlinks codex "$HOME/.codex"
+  sync_cli_symlinks opencode "$HOME/.config/opencode"
+}
+
+log_step "同步外部 CLI (codex + opencode) skills/agents 软连接"
+sync_external_clis || log_warn "外部 CLI 同步部分失败 (继续)"
 
 printf '\n'
 printf '%s %s✓ cortex 安装完成%s\n'           "$(_tag)" "$C_GREEN$C_BOLD" "$C_RESET" >&2
