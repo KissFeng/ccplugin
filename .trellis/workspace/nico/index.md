@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 88
+- **Total Sessions**: 89
 - **Last Active**: 2026-05-15
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~997 | Active |
+| `journal-2.md` | ~1033 | Active |
 | `journal-1.md` | ~1974 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 89 | 2026-05-15 | cortex skills/agents 整改 — 21→13 skill / 7→6 agent / D10 auto | `5b6b8c5d`, `8418e232`, `c1117cd7`, `eac15429` | `master` |
 | 88 | 2026-05-15 | cortex 收尾 — hot.md 项目高分子页 + aliases/keywords migration v3 | `ec9fbf7e`, `2a1b5bbe`, `e2148121` | `master` |
 | 87 | 2026-05-15 | cortex search MCP first 重排 + 召回率提升 (aliases/keywords) | `3933b9c8`, `d2d3f97b`, `04b49401`, `d89448f7`, `1c5aeb01` | `master` |
 | 86 | 2026-05-15 | cortex 强制评分 frontmatter — 知识库 4 + 记忆 2 + digest 双路 + refresh maturity 重评 | `eab9b252`, `b1d874b4`, `b55ee1e9`, `78141d84`, `909921cf`, `7e2d188c`, `54c7719c` | `master` |

@@ -995,3 +995,39 @@ cortex 现有 ingest 缺 (1) 远程整 repo/整站入口 (2) 批量增量更新�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 89: cortex skills/agents 整改 — 21→13 skill / 7→6 agent / D10 auto
+
+**Date**: 2026-05-15
+**Task**: cortex skills/agents 整改 — 21→13 skill / 7→6 agent / D10 auto
+**Branch**: `master`
+
+### Summary
+
+4 PR 整改: PR1 删 7 skill (canvas/new/reflect/ingest-bulk/schema/locale/forget) + 合 recall→search; PR2 拆 4 大 skill (dashboard/install/save/lint) 入口 ≤80 + references/ + install_wrappers.sh D10 auto 后缀; PR3 拆 7 中短 skill 入口 ≤80 + 14 references; PR4 拆 digest/ingest + 删 linker agent + 6 agent vs-skill 分工注 + 文档计数同步。终态: 13/13 skill 全合规 (入口 ≤80 + refs ≥2 + AUTO_MODE 分支) + 6 agent (含边界注)。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5b6b8c5d` | (see git log) |
+| `8418e232` | (see git log) |
+| `c1117cd7` | (see git log) |
+| `eac15429` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
