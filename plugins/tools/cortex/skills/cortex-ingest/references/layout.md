@@ -71,11 +71,13 @@ SYM_N=$(find "$ROOT/符号/api/" -name '*.md' 2>/dev/null | wc -l)
 
 | 维度 | 取值 | 规则 |
 |------|------|------|
-| `score` (质量) | 1-5 | 5=权威官方 / 高 star (>10k) / 主流标准; 4=活跃维护 / >1k star; 3=有维护 / 普通; 2=个人项目 / 实验性; 1=废弃 / 不推荐 |
-| `maturity` | draft / review / stable / deprecated | 按上游 release 状态或 README 标注判定; 含 `pre-alpha` / `WIP` → draft; 有 release / 有版本号 → stable; archived → deprecated |
-| `tags[关注度]` | freq/<high\|mid\|low> | 自动: 含 README badges (CI/coverage/downloads) + commit 近 30 天频率, 按 `bash ~/.cortex/scripts/search.sh` 命中次数定 |
+| `score` (质量) | 0.0-10.0 浮点 (P8 升级) | 10=权威官方 / 高 star (>10k) / 主流标准; 8=活跃维护 / >1k star; 6=有维护 / 普通; 4=个人项目 / 实验性; 2=废弃 / 不推荐 (旧 1-5 整数 → migrate.sh --to=v2 × 2.0 迁移) |
+| `confidence` (P8 新) | 0.0-10.0 浮点 | AI 对内容把握度; tags 完整性 (≥10=5) + when_to_read (≥30字=3) + wikilink ≥5 (2) |
+| `source_credibility` (P8 新) | 0.0-10.0 浮点 | host 白名单查表 (anthropic.com=10, react.dev=9.5, github.com=7.5, medium.com=5, 未知 4) — 见 `scripts/cli/lib/remote.py:_HOST_CREDIBILITY` |
+| `maturity` | draft / review / stable / deprecated | 按上游 release 状态或 README 标注判定; pre-alpha/WIP → draft; 有 release → stable; archived → deprecated; refresh hash 变可重评 |
+| `tags[关注度]` | freq/<high\|mid\|low> | 自动: README badges + commit 近 30 天频率 + search.sh 命中次数 |
 
-`score` + `maturity` 写入 frontmatter; freq tag 自动追加。lint 规则 `frontmatter-schema-violation` 强制存在性 (缺即 error)。
+4 评分字段全 frontmatter **强制** (lint rule 21 `frontmatter-required-scores` 校验); freq tag 自动追加。AI 自评启发式见 `references/extract.md §3.1`。
 
 ---
 

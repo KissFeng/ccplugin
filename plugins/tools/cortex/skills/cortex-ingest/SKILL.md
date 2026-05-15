@@ -176,7 +176,7 @@ prompt 含 `[AUTO_MODE]` (来自 `~/.cortex/scripts/ingest.sh`): **不调** AskU
 ### 3. 强制 frontmatter / 深度处理 / 覆盖度 / 6 类抽取 / 知识图谱
 
 - §3 frontmatter schema + §4 深度处理 L1-L6 + §4.7 覆盖度 M/R ≥ 0.8 + §7 6 类抽取维度 — 详见 [references/extract.md](references/extract.md)
-- §5 分级评分 (score 1-5 / maturity / freq tag) — 详见 [references/layout.md](references/layout.md) §5
+- §5 分级评分 (score 0-10 浮点 / maturity / freq tag, P8 升级) — 详见 [references/layout.md](references/layout.md) §5
 - §8 强制排除清单 — 详见 [references/exclude.md](references/exclude.md)
 - §9 知识图谱 4 制品 (Bases / Canvas / Wikilink / websearch) — 详见 [references/knowledge-graph.md](references/knowledge-graph.md)
 

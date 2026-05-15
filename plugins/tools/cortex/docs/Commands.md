@@ -18,10 +18,10 @@ cortex 提供 20 个 plugin slash command, 在 Claude Code 任何会话中可直
 | `/cortex:config` | 全局 | 编辑配置 | 交互式更新 `~/.cortex/config.json` |
 | `/cortex:update` | 全局 | 更新插件 | 拉最新 marketplace + 重生成 wrapper |
 | `/cortex:doctor` | 全局+知识库 | 体检 | 检查 vault 完整性 / 配置正确性 / 依赖可用性 |
-| `/cortex:lint` | 知识库 | 全自动修复 | 跑 17 条 lint 规则 + autofix + 循环修复直至 clean |
+| `/cortex:lint` | 知识库 | 全自动修复 | 跑 21 条 lint 规则 + autofix + 循环修复直至 clean |
 | `/cortex:refactor` | 知识库 | 重构 vault | 改名 / 合并 / 拆分页面, 同步 wikilink |
 | `/cortex:archive` | 知识库 | 归档 | 把过期内容移到 `归档/` |
-| `/cortex:search` | 知识库 | 搜索 | 多级回退: hot → index → Smart Connections → ripgrep |
+| `/cortex:search` | 知识库 | 搜索 | MCP first 四级 (P9): mcp_simple → mcp_complex → search.sh (内部 hot/index/SC/rg) → ripgrep |
 | `/cortex:save` | 知识库 | 落档 | 写一篇新笔记 (concept / domain / log 三类) |
 | `/cortex:ingest` | 当前目录+知识库 | 深度摄取 | 深度分析**当前目录** / URL / 文件 → 知识库 |
 | `/cortex:recall` | 知识库 | 召回记忆 | 多级语义搜索 vault + 记忆层 |
