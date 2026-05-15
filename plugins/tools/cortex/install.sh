@@ -67,6 +67,7 @@ FLAGS:
   --reinstall               跳过 prompt, 强制覆盖 config + wrappers
   --use-source              用 install.sh 所在源码目录, 不主动 marketplace/plugin update
                             (开发场景; 默认会走 bootstrap 拿最新)
+  --no-codex-sync           跳过 ~/.codex/skills + agents 软连同步 (等价 NO_CODEX_SYNC=1)
   -h, --help                显示本帮助
 
 EXAMPLES:
@@ -96,6 +97,7 @@ while [[ $# -gt 0 ]]; do
     --non-interactive) NON_INTERACTIVE=1; shift ;;
     --reinstall) REINSTALL=1; shift ;;
     --use-source) USE_SOURCE=1; shift ;;
+    --no-codex-sync) NO_CODEX_SYNC=1; shift ;;
     -h|--help) print_help; exit 0 ;;
     *) log_error "unknown arg: $1"; exit 2 ;;
   esac
@@ -527,6 +529,71 @@ if [[ "$do_cron" == "1" ]]; then
     log_warn "install_cron.sh 退出非零, 跳过 (cron 仍可手动跑)"
   }
 fi
+
+# ── codex 跨 CLI 兼容: 软连 cortex skills/agents 到 ~/.codex/ ───────
+# 仅当 ~/.codex/ 存在时执行 (codex 用户才需要); 否则静默跳过.
+# 仅管 cortex-* 前缀; 用户其他 symlink/文件不动.
+# escape hatch: --no-codex-sync flag 或 NO_CODEX_SYNC=1 env.
+_ensure_codex_symlink() {
+  local dst="$1" src="$2"
+  local name
+  name="$(basename "$dst")"
+  if [[ -L "$dst" ]]; then
+    if [[ "$(readlink "$dst")" == "$src" ]]; then
+      log_info "= keep $name"
+    else
+      rm "$dst" && ln -s "$src" "$dst" && log_step "↻ relink $name"
+    fi
+  elif [[ -e "$dst" ]]; then
+    log_warn "$dst 是真实文件/目录 (非软链), 跳过 (避免覆盖用户手动)"
+  else
+    ln -s "$src" "$dst" && log_step "+ link $name"
+  fi
+}
+
+sync_codex_symlinks() {
+  if [[ ! -d "$HOME/.codex" ]]; then
+    log_info "~/.codex 不存在, 跳过 codex 同步"
+    return 0
+  fi
+  if [[ "${NO_CODEX_SYNC:-}" == "1" ]]; then
+    log_info "NO_CODEX_SYNC=1, 跳过 codex 同步"
+    return 0
+  fi
+
+  local kind src_dir dst_dir path name link expected
+  for kind in skills agents; do
+    src_dir="$INSTALL_PATH/$kind"
+    dst_dir="$HOME/.codex/$kind"
+    [[ -d "$src_dir" ]] || continue
+    mkdir -p "$dst_dir"
+
+    expected=""
+    shopt -s nullglob
+    for path in "$src_dir"/cortex-*; do
+      [[ -e "$path" ]] || continue
+      name="$(basename "$path")"
+      # agents 是 .md 单文件, 软链名去 .md 后缀 (= claude code 调用标识); skills 是目录, name 不变
+      [[ "$kind" == "agents" ]] && name="${name%.md}"
+      expected="$expected $name"
+      _ensure_codex_symlink "$dst_dir/$name" "$path"
+    done
+
+    # 扫废: dst 中 cortex-* 不在 expected 集 → 删 (仅 symlink)
+    for link in "$dst_dir"/cortex-*; do
+      [[ -L "$link" ]] || continue
+      name="$(basename "$link")"
+      case " $expected " in
+        *" $name "*) ;;
+        *) rm "$link" && log_step "- unlink $kind/$name (已删)" ;;
+      esac
+    done
+    shopt -u nullglob
+  done
+}
+
+log_step "同步 codex skills/agents 软连接"
+sync_codex_symlinks || log_warn "codex 同步部分失败 (继续)"
 
 printf '\n'
 printf '%s %s✓ cortex 安装完成%s\n'           "$(_tag)" "$C_GREEN$C_BOLD" "$C_RESET" >&2
