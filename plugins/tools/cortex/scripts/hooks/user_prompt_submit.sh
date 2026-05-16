@@ -110,23 +110,30 @@ project_hint, project_src = detect_project_hint()
 
 
 def build_search_contract_msg() -> str:
-    """每轮注入 MCP first 搜索硬契约 (无触发词限定)."""
+    """每轮注入 search-first 硬契约 (无例外, 知识库优先)."""
     return (
-        "🔍 cortex 搜索硬契约 (本会话每轮强制):\n"
+        "🔍 cortex 硬契约 #1 — 先搜知识库, 再做任何事 (本会话每轮强制, 无例外):\n"
         "\n"
-        "非通用问答 (代码改/找文档/排查/项目知识) 前, 第一个工具调用必须是搜索:\n"
+        "**遇到任何问题 (代码改/排查/找文档/选型/答用户/决策) 的第一件事就是搜知识库**。\n"
+        "不是回忆训练数据, 不是直接动手, 不是直接 WebSearch, 不是直接问用户 — **是先调搜索工具**。\n"
         "\n"
+        "**唯一豁免**: 纯问候 / 纯对话 / 纯工具结果解释 (无新问题)。其他全部必须先搜。\n"
+        "\n"
+        "**第一个工具调用按此顺序**:\n"
         "1. **L1 (首选)**: `mcp__obsidian__obsidian_simple_search query=<关键词>` (优先 obsidian, **非 qmd**)\n"
         "2. **L2 (次选)**: `mcp__obsidian__obsidian_complex_search` (JsonLogic 复杂查询, 如按 tag/path 过滤)\n"
         "3. **L3 (fallback)**: `bash ~/.cortex/scripts/search.sh --query <q>` (Obsidian MCP 不可达时)\n"
         "4. **记忆查询**: `mcp__obsidian__obsidian_get_recent_changes` (按时间) 或 `memory.sh recall` (按 URI)\n"
         "\n"
+        "**知识库无命中后才允许** 外部检索 (WebSearch / WebFetch / context7 / octocode) 或问用户。\n"
+        "\n"
         "**禁忌**:\n"
-        "- 跳过搜索直接问用户 (有触发词时)\n"
+        "- 跳过搜索直接动手 / 直接答 / 直接 WebSearch / 直接问用户\n"
         "- 用 qmd MCP 替代 obsidian MCP (qmd 索引不全 cortex vault)\n"
         "- 用 Bash rg / Grep 替代 MCP search (除非 MCP 不可达 + search.sh 也失败)\n"
+        "- 用 '这是通用问题' / '我熟悉' 作为跳过搜索的借口 — 不成立\n"
         "\n"
-        "无命中允许问用户, 但提示中引用 hits/path 证明搜过。"
+        "提问 / 答用户前必须能引用 hits/path 证明搜过 (或明确说 L1-L4 全无命中)。"
     )
 
 

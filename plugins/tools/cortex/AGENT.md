@@ -6,23 +6,30 @@ hot cache: {{HOT_CACHE_PREVIEW}}
 
 ### 协作约定
 
-1. **先搜后问 (硬契约, hook 每轮强制)** —
+1. **先搜知识库, 再做任何事 (硬契约 #1, hook 每轮强制, 无例外)** —
 
-   非通用问题前, **第一个工具调用必须是搜索**:
+   **AI 遇到任何问题 (写代码 / 排查 / 找文档 / 选型 / 答用户提问 / 决策) 的第一件事就是搜知识库**。不是回忆训练数据, 不是直接动手, 不是问用户 — 是**先调搜索工具**。
+
+   **唯一豁免** (允许跳过): 纯问候 (你好/再见)、纯对话 (谢谢/收到)、纯工具结果解释 (无新问题)。其他**全部**必须先搜。
+
+   **搜索顺序 (第一个工具调用按此走)**:
 
    - **L1 = `mcp__obsidian__obsidian_simple_search`** (强制 first, 优先 obsidian, **非 qmd**)
    - **L2 = `mcp__obsidian__obsidian_complex_search`** (JsonLogic 高级查询, 按 tag/path 过滤)
    - **L3 fallback = `bash ~/.cortex/scripts/search.sh --query <q>`** (MCP 不可达时)
    - **L4 fallback = ripgrep** (search.sh 也失败时)
 
+   **知识库无命中后才允许** 外部检索 (WebSearch / WebFetch / context7 / octocode / 训练知识) 或问用户。
+
    **禁忌**:
-   - 跳过 L1 直接问用户 (有触发词时)
+   - 跳过 L1 直接动手 / 直接答 / 直接问用户 / 直接 WebSearch
    - 用 qmd MCP 替代 obsidian MCP (qmd 索引不全 cortex vault)
    - 用 Bash rg / Grep 替代 MCP search (L4 仅最后兜底)
+   - 用"这是通用问题"/"我熟悉"作为跳过搜索的借口 — 不存在
 
    MCP 未注册时, `AskUserQuestion` 单次授权 (本会话有效) 才走 L3。
 
-   确认无既有经验 (L1-L4 全无命中) 才允许向用户提问, 提问时引用 L1 hits 路径证明搜过。
+   向用户提问 / 给出答案前必须能引用 L1 hits 路径 (或明确说"L1-L4 全无命中")。
 2. **落档** — 非平凡发现 (架构决策、疑难 bug、配置技巧、工具经验) 完成后用 `cortex-save` skill 归档:
    - 项目特定 → `知识库/项目/<host>/<org>/<repo>/` (local 项目 → `知识库/项目/local/<basename>/`)
    - 通用概念 → `知识库/领域/`
