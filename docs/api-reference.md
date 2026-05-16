@@ -10,8 +10,7 @@
 4. [Skills API](#skills-api)
 5. [Hooks API](#hooks-api)
 6. [MCP Servers API](#mcp-servers-api)
-7. [LSP Servers API](#lsp-servers-api)
-8. [marketplace.json API](#marketplace-json-api)
+7. [marketplace.json API](#marketplace-json-api)
 
 ## plugin.json API
 
@@ -40,7 +39,6 @@ interface PluginJson {
   hooks?: string | HookConfig;      // 钩子配置
   mcpServers?: string | MCPServerConfig;
   outputStyles?: string | string[];
-  lspServers?: string | LSPServerConfig;
 }
 
 interface AuthorInfo {
@@ -64,7 +62,6 @@ interface AuthorInfo {
 | `skills` | string/array | 否 | 技能目录路径 |
 | `hooks` | string/object | 否 | 钩子配置 |
 | `mcpServers` | string/object | 否 | MCP 服务器配置 |
-| `lspServers` | string/object | 否 | LSP 服务器配置 |
 
 ### 完整示例
 
@@ -528,50 +525,6 @@ interface MCPServer {
       "env": {
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
-    }
-  }
-}
-```
-
-## LSP Servers API
-
-Language Server Protocol 服务器配置。
-
-### 配置文件 (.lsp.json)
-
-```typescript
-interface LSPConfig {
-  lspServers: {
-    [name: string]: LSPServer;
-  };
-}
-
-interface LSPServer {
-  command: string;           // 启动命令
-  args?: string[];           // 命令参数
-  filePatterns?: string[];   // 文件匹配模式
-}
-```
-
-### 示例
-
-```json
-{
-  "lspServers": {
-    "gopls": {
-      "command": "gopls",
-      "args": ["serve"],
-      "filePatterns": ["**/*.go"]
-    },
-    "pyright": {
-      "command": "pyright-langserver",
-      "args": ["--stdio"],
-      "filePatterns": ["**/*.py"]
-    },
-    "typescript-language-server": {
-      "command": "typescript-language-server",
-      "args": ["--stdio"],
-      "filePatterns": ["**/*.ts", "**/*.tsx"]
     }
   }
 }

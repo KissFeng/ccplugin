@@ -356,24 +356,6 @@ Model Context Protocol 服务器，提供外部工具集成。
 }
 ```
 
-### 7. LSP Servers
-
-Language Server Protocol 服务器，提供代码智能支持。
-
-**配置文件** (`.lsp.json`)：
-
-```json
-{
-  "lspServers": {
-    "gopls": {
-      "command": "gopls",
-      "args": ["serve"],
-      "filePatterns": ["**/*.go"]
-    }
-  }
-}
-```
-
 ## 开发流程
 
 ### 1. 规划设计

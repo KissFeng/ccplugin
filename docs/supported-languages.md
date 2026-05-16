@@ -88,7 +88,6 @@ allowed-tools: Bash, Read
 | `hooks.json` | 钩子配置 |
 | `marketplace.json` | 市场清单 |
 | `.mcp.json` | MCP 服务器配置 |
-| `.lsp.json` | LSP 服务器配置 |
 
 **示例**：
 

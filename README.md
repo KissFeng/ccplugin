@@ -61,14 +61,14 @@ claude plugin install <插件名>@ccplugin-market
 
 | 插件名称 | 描述 | 关键词 |
 |---------|------|--------|
-| `python` | Python 开发插件 - 提供 Python 开发规范、最佳实践和代码智能支持 | python, pep8, type-hints, testing |
-| `golang` | Golang 开发插件 - 提供 Golang 开发规范、最佳实践和 LSP 支持 | golang, go, gopls, best-practices |
+| `python` | Python 开发插件 - Python 3.13/3.14 规范 (uv/ruff/ty/pytest)、async、FastAPI | python, pep8, uv, ruff, async |
+| `golang` | Golang 开发插件 - Go 1.26 规范、lazygophers 生态、并发与现代化 | golang, go, generics, concurrency |
 | `typescript` | TypeScript / JavaScript 开发插件 - TS 6.0+ 严格模式与 ES2025-2026 规范，React 19 / Vue 3.5 / Node 22-24 全栈，JS 项目 JSDoc + checkJs 兜底 | typescript, ts, javascript, js, type-safety, strict-mode, react, vue |
-| `rust` | Rust 开发插件 - 提供 Rust 开发规范和所有权系统指导 | rust, ownership, async, memory-safety |
-| `java` | Java 开发插件 - 提供 Java 21+ 开发规范和 Spring Boot 指导 | java, spring-boot, jvm, performance |
-| `c` | C 开发插件 - 提供 C11/C17 开发规范和系统编程指导 | c, c11, system-programming, posix |
-| `cpp` | C++ 开发插件 - 提供 C++17/23 开发规范和现代 C++ 指导 | cpp, c++17, stl, concurrency |
-| `csharp` | C# 开发插件 - 提供 C# 12/.NET 8 开发规范 | csharp, .net8, linq, async-await |
+| `rust` | Rust 开发插件 - Edition 2024 / Rust 1.85+ 规范、所有权、async、unsafe | rust, ownership, async, memory-safety |
+| `java` | Java 开发插件 - Java 21/25 LTS 规范、Virtual Threads、Spring Boot 3.4+ | java, spring-boot, jvm, concurrency |
+| `c` | C 开发插件 - C11/17/23 规范、POSIX、嵌入式、内存与并发 | c, c23, posix, embedded |
+| `cpp` | C++ 开发插件 - C++17/20/23 + C++26 进展 (reflection/contracts) | cpp, c++23, modules, stl |
+| `csharp` | C# 开发插件 - C# 14 / .NET 10 LTS 规范、async、Source Gen、AOT | csharp, dotnet, linq, aot |
 | `flutter` | Flutter 开发插件 - 提供 Flutter 应用开发规范和状态管理指导 | flutter, dart, mobile, state-management |
 | `markdown` | Markdown 开发插件 - 提供 Markdown 编写规范和技术文档指导 | markdown, documentation, technical-writing |
 | `naming` | 命名规范插件 - 提供跨编程语言的统一命名规范指南 | naming, conventions, code-style |

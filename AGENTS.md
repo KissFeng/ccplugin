@@ -26,7 +26,7 @@
 | 目标 | 位置 | 说明 |
 |---|---|---|
 | 新增/维护插件清单 | `.claude-plugin/marketplace.json` | `pluginRoot=./plugins`，每个条目有 `name/source/version/...` |
-| 插件元数据/组件入口 | `plugins/**/.claude-plugin/plugin.json` | 每个插件的命令/agents/skills/hooks/lsp/mcp 都在这里声明 |
+| 插件元数据/组件入口 | `plugins/**/.claude-plugin/plugin.json` | 每个插件的 agents/skills/hooks/mcp 都在这里声明 |
 | 共享库能力 | `lib/` | 插件复用：日志、hooks、环境等（另有 `lib/llms.txt`） |
 | 根命令（发布物） | `scripts/` + `pyproject.toml` | 根包仅包含 `scripts*`（`exclude = ["plugins*", "lib*"]`） |
 | 插件开发规范 | `docs/` + `CLAUDE.md` | 开发流程、API schema、最佳实践 |
