@@ -9,17 +9,6 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/rust",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/rust",
   "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "rust",
-    "rust-lang",
-    "development",
-    "coding-style",
-    "best-practices",
-    "ownership",
-    "async",
-    "lsp",
-    "rust-analyzer"
-  ],
   "agents": [
     "./agents/dev.md",
     "./agents/test.md",
@@ -27,11 +16,19 @@
     "./agents/perf.md"
   ],
   "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/memory/SKILL.md",
-    "./skills/async/SKILL.md",
-    "./skills/unsafe/SKILL.md",
-    "./skills/macros/SKILL.md"
+    "./skills/core",
+    "./skills/memory",
+    "./skills/async",
+    "./skills/unsafe",
+    "./skills/macros"
   ],
-  "lspServers": "./.lsp.json"
+  "keywords": [
+    "rust",
+    "rust-lang",
+    "development",
+    "coding-style",
+    "best-practices",
+    "ownership",
+    "async"
+  ]
 }

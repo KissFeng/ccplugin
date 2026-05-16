@@ -9,19 +9,16 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/markdown",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/markdown",
   "license": "AGPL-3.0-or-later",
+  "skills": [
+    "./skills/core",
+    "./skills/mermaid"
+  ],
   "keywords": [
     "markdown",
     "md",
     "documentation",
     "writing",
     "technical-writing",
-    "best-practices",
-    "lsp",
-    "marksman"
-  ],
-  "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/mermaid/SKILL.md"
-  ],
-  "lspServers": "./.lsp.json"
+    "best-practices"
+  ]
 }

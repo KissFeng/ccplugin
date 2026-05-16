@@ -9,6 +9,9 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/naming",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/naming",
   "license": "AGPL-3.0-or-later",
+  "skills": [
+    "./skills/core"
+  ],
   "keywords": [
     "naming",
     "conventions",
@@ -16,8 +19,5 @@
     "code-style",
     "standards",
     "cross-language"
-  ],
-  "skills": [
-    "./skills/core/SKILL.md"
   ]
 }

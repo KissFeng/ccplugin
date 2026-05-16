@@ -3,14 +3,12 @@
     "git@ccplugin-market": true,
     "notify@ccplugin-market": true,
     "naming@ccplugin-market": true,
-    "deepresearch@ccplugin-market": true,
     "version@ccplugin-market": true,
     "claude-md-management@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "agent-sdk-dev@claude-plugins-official": true,
     "mcp-server-dev@claude-plugins-official": true
   },
   "env": {
@@ -82,6 +80,5 @@
         ]
       }
     ]
-  },
-  "enabledPlugins": {}
+  }
 }

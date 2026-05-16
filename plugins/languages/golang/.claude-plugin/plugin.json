@@ -9,16 +9,6 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/golang",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/golang",
   "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "golang",
-    "go",
-    "development",
-    "coding-style",
-    "best-practices",
-    "lazygophers",
-    "lsp",
-    "gopls"
-  ],
   "agents": [
     "./agents/dev.md",
     "./agents/test.md",
@@ -26,15 +16,22 @@
     "./agents/perf.md"
   ],
   "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/error/SKILL.md",
-    "./skills/libs/SKILL.md",
-    "./skills/naming/SKILL.md",
-    "./skills/structure/SKILL.md",
-    "./skills/testing/SKILL.md",
-    "./skills/concurrency/SKILL.md",
-    "./skills/lint/SKILL.md",
-    "./skills/tooling/SKILL.md"
+    "./skills/core",
+    "./skills/error",
+    "./skills/libs",
+    "./skills/naming",
+    "./skills/structure",
+    "./skills/testing",
+    "./skills/concurrency",
+    "./skills/lint",
+    "./skills/tooling"
   ],
-  "lspServers": "./.lsp.json"
+  "keywords": [
+    "golang",
+    "go",
+    "development",
+    "coding-style",
+    "best-practices",
+    "lazygophers"
+  ]
 }

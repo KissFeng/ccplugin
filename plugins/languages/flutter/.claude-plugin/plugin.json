@@ -9,14 +9,6 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/flutter",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/flutter",
   "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "flutter",
-    "dart",
-    "mobile-development",
-    "ui-development",
-    "state-management",
-    "lsp"
-  ],
   "agents": [
     "./agents/dev.md",
     "./agents/test.md",
@@ -24,12 +16,18 @@
     "./agents/perf.md"
   ],
   "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/state/SKILL.md",
-    "./skills/ui/SKILL.md",
-    "./skills/android/SKILL.md",
-    "./skills/ios/SKILL.md",
-    "./skills/web/SKILL.md"
+    "./skills/core",
+    "./skills/state",
+    "./skills/ui",
+    "./skills/android",
+    "./skills/ios",
+    "./skills/web"
   ],
-  "lspServers": "./.lsp.json"
+  "keywords": [
+    "flutter",
+    "dart",
+    "mobile-development",
+    "ui-development",
+    "state-management"
+  ]
 }

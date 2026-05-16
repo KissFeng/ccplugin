@@ -9,15 +9,6 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/java",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/java",
   "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "java",
-    "jdk",
-    "development",
-    "coding-style",
-    "best-practices",
-    "spring-boot",
-    "lsp"
-  ],
   "agents": [
     "./agents/dev.md",
     "./agents/test.md",
@@ -25,11 +16,18 @@
     "./agents/perf.md"
   ],
   "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/error/SKILL.md",
-    "./skills/concurrency/SKILL.md",
-    "./skills/spring/SKILL.md",
-    "./skills/performance/SKILL.md"
+    "./skills/core",
+    "./skills/error",
+    "./skills/concurrency",
+    "./skills/spring",
+    "./skills/performance"
   ],
-  "lspServers": "./.lsp.json"
+  "keywords": [
+    "java",
+    "jdk",
+    "development",
+    "coding-style",
+    "best-practices",
+    "spring-boot"
+  ]
 }

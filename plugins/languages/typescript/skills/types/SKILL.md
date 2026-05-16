@@ -1,12 +1,14 @@
 ---
 name: typescript-types
-description: TypeScript 高级类型系统规范，覆盖 discriminated unions、模板字面量类型、条件 / mapped types、类型守卫（TS 5.5 inferred predicates）、branded types、satisfies 与 Zod 4 / Valibot 运行时验证。Use when 设计复杂类型、类型体操、API 类型契约、运行时校验，或用户提到 "类型系统"、"discriminated union"、"Zod schema"、"类型守卫"、"branded type"。
+description: TypeScript 高级类型系统规范，覆盖 discriminated unions、模板字面量类型、条件 / mapped types、TS 5.5 inferred predicates 类型守卫、branded types、satisfies、Zod 4 / Valibot 运行时验证。同时给出 JS-only 项目通过 JSDoc + tsc --checkJs 获得类型保护的方案。Use when 设计复杂类型、类型体操、API 类型契约、运行时校验、JS 项目加类型保护，或用户提到 "类型系统"、"discriminated union"、"Zod schema"、"类型守卫"、"branded type"、"JSDoc 类型"。
 user-invocable: true
 ---
 
 # TypeScript 类型系统规范
 
-类型系统两大用途：建模业务状态（discriminated unions / branded types）+ 验证外部输入（Zod / Valibot）。
+本 skill 同时覆盖 JavaScript 项目；JS 项目用 JSDoc + `tsc --checkJs` 获得 80% 类型保护，见末尾兜底章节。
+
+类型系统两大用途：建模业务状态 (discriminated unions / branded types) + 验证外部输入 (Zod / Valibot)。
 
 ## 类型命名
 
@@ -19,7 +21,7 @@ type Status = "active" | "inactive" | "pending";
 // type IUser = {};
 ```
 
-## Discriminated Unions（状态机首选）
+## Discriminated Unions (状态机首选)
 
 ```typescript
 type AsyncState<T> =
@@ -42,7 +44,7 @@ function render<T>(state: AsyncState<T>): string {
 }
 ```
 
-## Const Type Parameters（TS 5.0+）
+## Const Type Parameters (TS 5.0+)
 
 ```typescript
 function createConfig<const T extends Record<string, unknown>>(c: T): T {
@@ -61,7 +63,7 @@ type Endpoint = `${HTTPMethod} ${APIRoute}`;
 type EventName = `on${Capitalize<string>}`;
 ```
 
-## 类型守卫（TS 5.5 inferred predicates）
+## 类型守卫 (TS 5.5 inferred predicates)
 
 ```typescript
 // TS 5.5+: 推断类型谓词
@@ -78,7 +80,7 @@ function isUser(v: unknown): v is User {
 }
 ```
 
-## Zod 4 运行时验证（推荐）
+## Zod 4 运行时验证 (推荐)
 
 ```typescript
 import { z } from "zod";
@@ -102,9 +104,9 @@ const CreateUserSchema = UserSchema.omit({ id: true }).extend({
 });
 ```
 
-替代选择：**Valibot**（更小 bundle，函数式 API，<2KB），用于体积敏感场景。
+替代选择：**Valibot** (更小 bundle，函数式 API，<2KB)，用于体积敏感场景。
 
-## Branded Types（编译期区分语义）
+## Branded Types (编译期区分语义)
 
 ```typescript
 type Brand<T, B extends string> = T & { readonly __brand: B };
@@ -116,7 +118,7 @@ function getUser(id: UserId): Promise<User> { /* ... */ }
 // getUser("123" as PostId); // Error
 ```
 
-## satisfies（TS 4.9+，保留字面量）
+## satisfies (TS 4.9+，保留字面量)
 
 ```typescript
 const routes = {
@@ -124,7 +126,7 @@ const routes = {
   about: "/about",
   user: "/user/:id",
 } satisfies Record<string, string>;
-// typeof routes.home = "/"（非 string）
+// typeof routes.home = "/" (非 string)
 ```
 
 ## 工具类型常用
@@ -138,24 +140,77 @@ type ExtractPromise<T> = T extends Promise<infer U> ? U : T;
 type DeepReadonly<T> = { readonly [K in keyof T]: DeepReadonly<T[K]> };
 ```
 
+## JS-only 兜底：JSDoc + checkJs
+
+JS 项目无需切 TS 也能获得 80% 类型保护：
+
+```jsonc
+// jsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2025",
+    "module": "NodeNext",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+```js
+// JSDoc 类型定义
+/**
+ * @typedef {Object} User
+ * @property {string} id
+ * @property {string} name
+ * @property {'admin' | 'user' | 'guest'} role
+ */
+
+/** @typedef {{ status: 'idle' } | { status: 'loading' } | { status: 'success'; data: User } | { status: 'error'; error: Error }} AsyncState */
+
+/**
+ * @param {string} id
+ * @returns {Promise<User>}
+ */
+export async function getUser(id) {
+  const r = await fetch(`/api/users/${id}`);
+  return /** @type {User} */ (await r.json());
+}
+
+// Zod 在 JS 同样可用，z.infer 通过 JSDoc 桥接
+import { z } from 'zod';
+const UserSchema = z.object({ id: z.uuid(), name: z.string() });
+/** @typedef {z.infer<typeof UserSchema>} User */
+```
+
+```bash
+pnpm tsc --noEmit          # 当 linter 跑
+```
+
+**渐进迁移**：JSDoc → 文件级 `.ts` → 局部启 `strict` → 全量 strict。
+
 ## Red Flags
 
 | 现象 | 问题 | 严重 |
 |------|------|------|
 | `any` | 用 `unknown` + 守卫 | 高 |
 | 未穷举的 switch | DU 遗漏分支 | 高 |
-| `as` 强转 | 可能隐藏错误（仅边界用） | 中 |
+| `as` 强转 | 可能隐藏错误 (仅边界用) | 中 |
 | 外部数据无 Zod | 运行时类型不安全 | 高 |
 | 递归类型 > 5 层 | 编译性能 | 中 |
 | `I` 前缀 | C# 约定 | 低 |
 | `enum` | tree-shake 不友好 | 中 |
+| JS 项目无 `checkJs` | 失去类型保护 | 中 |
 
 ## 检查清单
 
 - [ ] 无 `any`，外部数据 Zod / Valibot 验证
 - [ ] discriminated unions 有 `never` 穷举
-- [ ] `import type` 分离类型
+- [ ] `import type` 分离类型 (TS)
 - [ ] 泛型有 `extends` 约束
 - [ ] 复杂常量用 `satisfies`
 - [ ] 语义相同 string/number 用 branded type
 - [ ] 类型 PascalCase，无 `I` 前缀
+- [ ] JS 项目：jsconfig + `checkJs: true` + JSDoc

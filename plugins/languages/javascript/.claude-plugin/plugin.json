@@ -9,16 +9,6 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/javascript",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/javascript",
   "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "javascript",
-    "js",
-    "development",
-    "coding-style",
-    "best-practices",
-    "react",
-    "vue",
-    "lsp"
-  ],
   "agents": [
     "./agents/dev.md",
     "./agents/test.md",
@@ -26,11 +16,19 @@
     "./agents/perf.md"
   ],
   "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/async/SKILL.md",
-    "./skills/react/SKILL.md",
-    "./skills/vue/SKILL.md",
-    "./skills/security/SKILL.md"
+    "./skills/core",
+    "./skills/async",
+    "./skills/react",
+    "./skills/vue",
+    "./skills/security"
   ],
-  "lspServers": "./.lsp.json"
+  "keywords": [
+    "javascript",
+    "js",
+    "development",
+    "coding-style",
+    "best-practices",
+    "react",
+    "vue"
+  ]
 }

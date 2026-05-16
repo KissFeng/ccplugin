@@ -9,6 +9,20 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/typescript",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/typescript",
   "license": "AGPL-3.0-or-later",
+  "agents": [
+    "./agents/dev.md",
+    "./agents/test.md",
+    "./agents/debug.md",
+    "./agents/perf.md"
+  ],
+  "skills": [
+    "./skills/core",
+    "./skills/types",
+    "./skills/async",
+    "./skills/react",
+    "./skills/nodejs",
+    "./skills/security"
+  ],
   "keywords": [
     "typescript",
     "ts",
@@ -19,20 +33,5 @@
     "pnpm",
     "coding-style",
     "best-practices"
-  ],
-  "agents": [
-    "./agents/dev.md",
-    "./agents/test.md",
-    "./agents/debug.md",
-    "./agents/perf.md"
-  ],
-  "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/types/SKILL.md",
-    "./skills/async/SKILL.md",
-    "./skills/react/SKILL.md",
-    "./skills/nodejs/SKILL.md",
-    "./skills/security/SKILL.md"
-  ],
-  "lspServers": "./.lsp.json"
+  ]
 }

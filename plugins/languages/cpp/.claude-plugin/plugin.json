@@ -9,6 +9,20 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/cpp",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/cpp",
   "license": "AGPL-3.0-or-later",
+  "agents": [
+    "./agents/dev.md",
+    "./agents/test.md",
+    "./agents/debug.md",
+    "./agents/perf.md"
+  ],
+  "skills": [
+    "./skills/core",
+    "./skills/memory",
+    "./skills/concurrency",
+    "./skills/template",
+    "./skills/performance",
+    "./skills/tooling"
+  ],
   "keywords": [
     "cpp",
     "c++",
@@ -17,23 +31,6 @@
     "c++23",
     "development",
     "coding-style",
-    "best-practices",
-    "lsp",
-    "clangd"
-  ],
-  "agents": [
-    "./agents/dev.md",
-    "./agents/test.md",
-    "./agents/debug.md",
-    "./agents/perf.md"
-  ],
-  "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/memory/SKILL.md",
-    "./skills/concurrency/SKILL.md",
-    "./skills/template/SKILL.md",
-    "./skills/performance/SKILL.md",
-    "./skills/tooling/SKILL.md"
-  ],
-  "lspServers": "./.lsp.json"
+    "best-practices"
+  ]
 }

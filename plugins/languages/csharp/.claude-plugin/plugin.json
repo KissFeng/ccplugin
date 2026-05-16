@@ -9,17 +9,6 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/csharp",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/csharp",
   "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "csharp",
-    "c#",
-    "dotnet",
-    ".net",
-    "development",
-    "coding-style",
-    "best-practices",
-    "lsp",
-    "omnisharp"
-  ],
   "agents": [
     "./agents/dev.md",
     "./agents/test.md",
@@ -27,12 +16,20 @@
     "./agents/perf.md"
   ],
   "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/async/SKILL.md",
-    "./skills/linq/SKILL.md",
-    "./skills/web/SKILL.md",
-    "./skills/desktop/SKILL.md",
-    "./skills/data/SKILL.md"
+    "./skills/core",
+    "./skills/async",
+    "./skills/linq",
+    "./skills/web",
+    "./skills/desktop",
+    "./skills/data"
   ],
-  "lspServers": "./.lsp.json"
+  "keywords": [
+    "csharp",
+    "c#",
+    "dotnet",
+    ".net",
+    "development",
+    "coding-style",
+    "best-practices"
+  ]
 }

@@ -9,6 +9,20 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/python",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/python",
   "license": "AGPL-3.0-or-later",
+  "agents": [
+    "./agents/dev.md",
+    "./agents/test.md",
+    "./agents/debug.md",
+    "./agents/perf.md"
+  ],
+  "skills": [
+    "./skills/core",
+    "./skills/error",
+    "./skills/types",
+    "./skills/testing",
+    "./skills/async",
+    "./skills/web"
+  ],
   "keywords": [
     "python",
     "py",
@@ -18,20 +32,5 @@
     "pep8",
     "type-hints",
     "testing"
-  ],
-  "agents": [
-    "./agents/dev.md",
-    "./agents/test.md",
-    "./agents/debug.md",
-    "./agents/perf.md"
-  ],
-  "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/error/SKILL.md",
-    "./skills/types/SKILL.md",
-    "./skills/testing/SKILL.md",
-    "./skills/async/SKILL.md",
-    "./skills/web/SKILL.md"
-  ],
-  "lspServers": "./.lsp.json"
+  ]
 }

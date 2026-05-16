@@ -9,16 +9,6 @@
   "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/c",
   "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/c",
   "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "c",
-    "c11",
-    "c17",
-    "development",
-    "coding-style",
-    "best-practices",
-    "lsp",
-    "clangd"
-  ],
   "agents": [
     "./agents/dev.md",
     "./agents/test.md",
@@ -26,12 +16,19 @@
     "./agents/perf.md"
   ],
   "skills": [
-    "./skills/core/SKILL.md",
-    "./skills/memory/SKILL.md",
-    "./skills/concurrency/SKILL.md",
-    "./skills/posix/SKILL.md",
-    "./skills/embedded/SKILL.md",
-    "./skills/error/SKILL.md"
+    "./skills/core",
+    "./skills/memory",
+    "./skills/concurrency",
+    "./skills/posix",
+    "./skills/embedded",
+    "./skills/error"
   ],
-  "lspServers": "./.lsp.json"
+  "keywords": [
+    "c",
+    "c11",
+    "c17",
+    "development",
+    "coding-style",
+    "best-practices"
+  ]
 }
