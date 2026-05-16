@@ -46,7 +46,12 @@ _WIKILINK_RE = re.compile(
 _FORWARD_RE = re.compile(r"\[\[([^\[\]\n|#^]+)")
 _TOKEN_RE = re.compile(r"[A-Za-z0-9一-鿿]+")
 
-_EXCLUDE_DIRS = {"_meta", ".obsidian", ".trash", ".git"}
+_EXCLUDE_DIRS = {
+    "_meta", ".obsidian", ".trash", ".git",
+    ".claude", ".claude-plugin", ".codex", ".opencode", ".cursor",
+    ".continue", ".windsurf", ".trae", ".copilot", ".sourcegraph",
+    ".tabnine", ".sweep", ".trellis",
+}
 
 
 def _iter_md_files(vault: Path):

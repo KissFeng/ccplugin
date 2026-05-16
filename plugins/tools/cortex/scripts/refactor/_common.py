@@ -9,7 +9,12 @@ from pathlib import Path
 WIKILINK_RE = re.compile(r"(?<!\!)\[\[([^\[\]\n|#^]+)((?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?)\]\]")
 TRANSCLUSION_RE = re.compile(r"(?<!\\)!\[\[([^\[\]\n|#^]+)((?:[#^][^\[\]\n|]*)?(?:\|[^\[\]\n]*)?)\]\]")
 
-EXCLUDE_DIRS = {"_meta", ".obsidian", ".trash", ".git"}
+EXCLUDE_DIRS = {
+    "_meta", ".obsidian", ".trash", ".git",
+    ".claude", ".claude-plugin", ".codex", ".opencode", ".cursor",
+    ".continue", ".windsurf", ".trae", ".copilot", ".sourcegraph",
+    ".tabnine", ".sweep", ".trellis",
+}
 
 
 def iter_md_files(vault: Path):

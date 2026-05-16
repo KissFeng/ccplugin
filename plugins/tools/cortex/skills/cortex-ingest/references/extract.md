@@ -116,11 +116,16 @@ ingest 必须**深度**, 不允许只读 README 草草交差:
 ingest 完跑覆盖度核算, 不达标继续补:
 
 ```bash
-# R 必先剔除 references/exclude.md 排除清单 (node_modules/vendor/dist/build/lock/binary/.git/.venv/临时 等), 再算覆盖率
+# R 必先剔除 references/exclude.md 排除清单 (build 产物/lock/binary/.git/.venv/AI 工具配置/临时 等), 再算覆盖率
 R=$(find <repo> -type f \
      -not -path "*/.git/*" -not -path "*/node_modules/*" -not -path "*/vendor/*" \
      -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/__pycache__/*" \
      -not -path "*/target/*" -not -path "*/.venv/*" -not -path "*/.next/*" \
+     -not -path "*/.claude/*" -not -path "*/.claude-plugin/*" \
+     -not -path "*/.codex/*" -not -path "*/.opencode/*" -not -path "*/.cursor/*" \
+     -not -path "*/.continue/*" -not -path "*/.windsurf/*" -not -path "*/.trae/*" \
+     -not -path "*/.copilot/*" -not -path "*/.sourcegraph/*" -not -path "*/.tabnine/*" \
+     -not -path "*/.sweep/*" -not -path "*/.trellis/*" \
      -not -name '*.lock' -not -name 'package-lock.json' -not -name 'yarn.lock' \
      -not -name 'pnpm-lock.yaml' -not -name 'go.sum' -not -name 'Cargo.lock' \
      -not -name 'Pipfile.lock' -not -name 'poetry.lock' \
@@ -130,7 +135,8 @@ R=$(find <repo> -type f \
      -not -name '*.ttf' -not -name '*.woff*' -not -name '*.eot' -not -name '*.otf' \
      -not -name '*.zip' -not -name '*.tar' -not -name '*.gz' -not -name '*.tgz' \
      -not -name '*.bak' -not -name '*.swp' -not -name '*.tmp' -not -name '*.old' \
-     -not -name '.DS_Store' \
+     -not -name '.DS_Store' -not -name '.cursorrules' -not -name '.cursorignore' \
+     -not -name '.windsurfrules' -not -name '.aider.conf.yml' \
      | wc -l)
 M=$(grep -rhoE '`[^`]+\.[a-zA-Z0-9]+`|\[\[[^]]+\]\]' "知识库/项目/<host>/<org>/<repo>/" | sort -u | wc -l)  # 落档主体引用文件数 (粗估)
 ```

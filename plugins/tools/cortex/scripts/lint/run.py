@@ -82,7 +82,13 @@ CALLOUT_WHITELIST = {
     "cite",
 }
 
-EXCLUDE_DIRS = {"_meta", ".obsidian", ".trash", ".git"}
+EXCLUDE_DIRS = {
+    "_meta", ".obsidian", ".trash", ".git",
+    # AI 工具配置目录 (会话 / 缓存 / 工具私有状态), 不参与 lint
+    ".claude", ".claude-plugin", ".codex", ".opencode", ".cursor",
+    ".continue", ".windsurf", ".trae", ".copilot", ".sourcegraph",
+    ".tabnine", ".sweep", ".trellis",
+}
 
 # ---- path-lang-mismatch (rule 18) ----
 # CJK Unified Ideographs basic block; sufficient for zh-CN segment 判定
