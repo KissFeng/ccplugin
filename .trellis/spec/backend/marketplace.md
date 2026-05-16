@@ -109,21 +109,6 @@ The same constraint applies to the per-plugin `plugin.json`. Marketplace entries
 
 ---
 
-## Case Study: Office Plugin Naming
-
-Historically the office plugins (`docx`, `pptx`, `xlsx`) had inconsistent `name` values between their directory leaf, `plugin.json`, and `marketplace.json` entry, which broke install commands. The convention now enforced:
-
-- Directory: `plugins/office/<format>/` (e.g. `plugins/office/xlsx/`)
-- `plugin.json:name`: `office-<format>` (e.g. `office-xlsx`) — disambiguates against any other `xlsx` package
-- `marketplace.json[i].name`: same as `plugin.json:name`
-- `marketplace.json[i].source`: `./office/<format>`
-
-Triple-equality on `name` is preserved because both the manifest and the marketplace entry use the prefixed form. The directory leaf is the only odd one out, and that is acceptable as long as `source` resolves correctly.
-
-If you create new office plugins, follow this exact pattern. Do not bare-name them as `xlsx`/`docx`/`pptx`.
-
----
-
 ## Forbidden Patterns
 
 ```jsonc
@@ -153,7 +138,6 @@ plugins/tools/git/marketplace.json    // there can be only ONE
 | Install fails with "plugin not found" | Check `source` resolves relative to `pluginRoot`; it's `./<category>/<dir>`, not `./plugins/<category>/<dir>` |
 | User sees stale version after release | Run `uv run scripts/update_version.py`; commit the regenerated `marketplace.json` |
 | Two plugins both named `cli` | `name` MUST be globally unique within `plugins[]` |
-| Office plugin clashes with another `xlsx` | Use the `office-<format>` naming convention (see case study) |
 | Forgot to register a new plugin | If it's not in `marketplace.json`, it's invisible — reviewers should reject the PR |
 
 ---

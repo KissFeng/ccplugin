@@ -10,7 +10,6 @@
 │   ├── tools/               # 工具类插件（git/deepresearch/version/env/notify/...）
 │   ├── languages/           # 语言规范类插件（python/typescript/.../markdown）
 │   ├── themes/              # 主题/设计规范插件集合
-│   ├── office/              # Office 文件插件（docx/pptx/xlsx）
 │   └── ...
 ├── lib/                     # 共享库（独立 pyproject；作为根包依赖引入）
 ├── scripts/                 # 根包 CLI（clean/update/info/check/install）

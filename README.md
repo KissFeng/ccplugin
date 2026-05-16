@@ -73,15 +73,6 @@ claude plugin install <插件名>@ccplugin-market
 | `markdown` | Markdown 开发插件 - 提供 Markdown 编写规范和技术文档指导 | markdown, documentation, technical-writing |
 | `naming` | 命名规范插件 - 提供跨编程语言的统一命名规范指南 | naming, conventions, code-style |
 
-### Office 插件
-
-| 插件名称 | 描述 | 关键词 |
-|---------|------|--------|
-| `xlsx` | Excel 插件 - 提供 xlsx 文件读写、数据分析功能 | xlsx, excel, spreadsheet, mcp |
-| `docx` | Word 插件 - 提供 docx 文件读写、段落格式化功能 | docx, word, document, mcp |
-| `pptx` | PowerPoint 插件 - 提供 pptx 文件读写、幻灯片操作功能 | pptx, powerpoint, presentation, mcp |
-| `pdf` | PDF 文件读取和内容提取插件 | pdf, document, reader, text-extraction |
-
 ### 其他插件
 
 | 插件名称 | 描述 | 关键词 |
@@ -118,19 +109,6 @@ uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygo
 
 # 智能记忆
 uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin memory@ccplugin-market
-```
-
-### 安装 Office 插件
-
-```bash
-# Excel 操作
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin xlsx@ccplugin-market
-
-# Word 操作
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin docx@ccplugin-market
-
-# PowerPoint 操作
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin pptx@ccplugin-market
 ```
 
 ## 环境要求
