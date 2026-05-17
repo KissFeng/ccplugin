@@ -30,7 +30,7 @@ cortex 提供 **13 个 skill** (PR1-4 整改后: 删 7 + 合 1 = 21→13)。skil
 | `cortex-save` | 知识库 | "落档 X" / "save this" | 写新笔记 (frontmatter + block-id, 含 new 子流程) | 自动 |
 | `cortex-ingest` | 当前目录+知识库 | "ingest <url>" / "深度分析当前目录" | URL / 文件 / git repo / 项目目录 → 知识库 (含 bulk 子流程) | 自动 |
 | `cortex-search` | 知识库+记忆层 | "搜知识库 X" / "想起 X" / "回忆" | MCP 4 级 + vault + 记忆层语义搜索 (recall 合入) | 自动 |
-| `cortex-memory` | 记忆层 | "查我的记忆" / "忘了 X" | 列出 / 查看 / 修改 / 删除 L0-L4 记忆条目 (含 forget 子流程) | 自动 |
+| `cortex-memory` | 记忆层 | "整理记忆" / "维护记忆" / "查我的记忆" / "忘了 X" | 默认: 维护扫 5 阶段 (整理 / 升级候选 / 补充 / forget 标记 / 评分); 有 verb: URI CRUD (read/write/update/delete) | 自动 |
 | `cortex-promote` | 记忆层 | "升级记忆" | L2 → L1 / L1 → L0 (经用户审批) | 自动 |
 | `cortex-digest` | 记忆层 | "整合 ledger" / "consolidate 7 天" | 6 阶段 daily pipeline (含反思/连接子流程) | 自动 |
 | `cortex-session` | 知识库 | "导入 session" | jsonl transcript → 知识库 sessions/ | 显式 |

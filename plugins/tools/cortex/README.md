@@ -197,7 +197,7 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 | `cortex-save` | "save this" / "归档" / "落档" / "save 笔记" | 选目录 + 模板 + 4 评分字段 + block-id + index/hot 同步 | 📚 |
 | `cortex-ingest` | "ingest" / "摄取" | 文件 / URL / 目录摄取, 抽实体 + wikilink 回填; URL 走 defuddle | 📁 + 📚 |
 | `cortex-search` | "查知识库" / "搜知识库" / "recall" / "想想" / "记得" | MCP first 四级 (simple → complex → search.sh → rg) + 记忆召回 | 📚 + 记忆层 |
-| `cortex-memory` | "记忆写入" / "memory write/read" / "forget" / "遗忘" | URI 寻址 CRUD + frontmatter 版本控制 + 遗忘子流程 | 记忆层 |
+| `cortex-memory` | "整理记忆" / "维护记忆" / "记忆体检" / "记忆写入" / "memory write/read" / "forget" / "遗忘" | 记忆生命周期管理 — 默认跑维护扫 (整理/升级候选/补充/forget 标记/评分); 有 verb 走 URI CRUD | 记忆层 |
 | `cortex-promote` | "promote memory" / "晋级" / "审批候选" | L4→L3/...→L1→L0 (L1→L0 强制人工二次确认) | 记忆层 |
 | `cortex-digest` | "digest" / "巩固记忆" / daily cron 03:00 | 6 阶段 pipeline (读+析+处+更新+清理+evolution 抽取) | 记忆层 |
 | `cortex-session` | "import session" / "导入会话" / Stop hook | transcript → `记忆/L4-流水账/sessions/` 摘要 + ledger append | 📚 |
