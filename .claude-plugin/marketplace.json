@@ -206,6 +206,34 @@
       ]
     },
     {
+      "name": "powershell",
+      "source": "./plugins/languages/powershell",
+      "description": "PowerShell 开发插件 - 提供 PowerShell 7.4 LTS 跨平台与 5.1 Windows 内置版开发规范、最佳实践和脚本智能支持。包括 cmdlet Verb-Noun 命名、pipeline、PSStyle ANSI、Pester 5.x 测试、PSScriptAnalyzer、ErrorActionPreference、PSResourceGet 模块管理;并覆盖 cmd.exe + 批处理 (.bat/.cmd) 兼容子集",
+      "author": {
+        "name": "lazygophers",
+        "email": "admin@lazygophers.dev"
+      },
+      "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/powershell",
+      "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/powershell",
+      "license": "AGPL-3.0-or-later",
+      "keywords": [
+        "powershell",
+        "pwsh",
+        "windows",
+        "scripting",
+        "cmdlet",
+        "pester",
+        "psscriptanalyzer",
+        "psresourceget",
+        "cmd",
+        "batch",
+        "automation",
+        "cross-platform",
+        "coding-style",
+        "best-practices"
+      ]
+    },
+    {
       "name": "cpp",
       "source": "./plugins/languages/cpp",
       "description": "C++ 开发插件 - 提供 C++17/23 开发规范、最佳实践和代码智能支持。包括现代 C++ 标准、STL、内存管理、模板元编程和并发编程指导",

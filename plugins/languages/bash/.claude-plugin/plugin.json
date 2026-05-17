@@ -19,7 +19,8 @@
     "./skills/error",
     "./skills/posix",
     "./skills/testing",
-    "./skills/tooling"
+    "./skills/tooling",
+    "./skills/build"
   ],
   "keywords": [
     "bash",
@@ -33,6 +34,10 @@
     "strict-mode",
     "automation",
     "best-practices",
-    "coding-style"
+    "coding-style",
+    "make",
+    "cmake",
+    "ninja",
+    "build-system"
   ]
 }

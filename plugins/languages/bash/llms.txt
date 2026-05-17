@@ -21,7 +21,8 @@ bash/
 │   ├── error/SKILL.md      # bash-error: 错误处理 / trap
 │   ├── posix/SKILL.md      # bash-posix: POSIX 兼容
 │   ├── testing/SKILL.md    # bash-testing: bats-core
-│   └── tooling/SKILL.md    # bash-tooling: shellcheck / shfmt
+│   ├── tooling/SKILL.md    # bash-tooling: shellcheck / shfmt
+│   └── build/SKILL.md      # bash-build: make / cmake / ninja
 ├── README.md
 ├── GUIDELINES.md
 └── llms.txt
@@ -42,6 +43,7 @@ bash/
 - `bash-posix` — POSIX 兼容：dash/ash/busybox/macOS bash 3.2 降级
 - `bash-testing` — 测试：bats-core、bats-assert、mock、kcov 覆盖率
 - `bash-tooling` — 工具链：shellcheck、shfmt、bash-language-server、pre-commit
+- `bash-build` — 构建脚本：GNU make 4.x、CMake 3.30+、Ninja、autotools 现状
 
 ## 相关文档
 

@@ -4,5 +4,6 @@
 - Skill(bash-posix) - POSIX 兼容规范：dash / ash / macOS bash 3.2 降级
 - Skill(bash-testing) - 测试规范：bats-core、mock、kcov 覆盖率
 - Skill(bash-tooling) - 工具链规范：shellcheck、shfmt、pre-commit、CI
+- Skill(bash-build) - 构建脚本规范：GNU make 4.x、CMake 3.30+、Ninja、autotools
 
 每一个 `*.sh` / `*.bash` / `*.bats` 文件都不得超过 600 行，推荐 200~400 行。

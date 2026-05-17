@@ -48,6 +48,7 @@ claude plugin install bash@ccplugin-market
 | Skill | `bash-posix` | POSIX sh 兼容与降级 |
 | Skill | `bash-testing` | bats-core 测试框架 |
 | Skill | `bash-tooling` | shellcheck / shfmt / pre-commit |
+| Skill | `bash-build` | GNU make / CMake / Ninja 构建脚本 |
 
 ## 前置工具
 

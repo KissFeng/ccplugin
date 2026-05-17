@@ -67,7 +67,8 @@ claude plugin install <插件名>@ccplugin-market
 | `rust` | Rust 开发插件 - Edition 2024 / Rust 1.85+ 规范、所有权、async、unsafe | rust, ownership, async, memory-safety |
 | `java` | Java 开发插件 - Java 21/25 LTS 规范、Virtual Threads、Spring Boot 3.4+ | java, spring-boot, jvm, concurrency |
 | `c` | C 开发插件 - C11/17/23 规范、POSIX、嵌入式、内存与并发 | c, c23, posix, embedded |
-| `bash` | Bash / Shell 开发插件 - Bash 5.2+ 与 POSIX sh 规范、strict mode、shellcheck/shfmt、bats 测试 | bash, shell, posix, shellcheck, bats |
+| `bash` | Bash / Shell 开发插件 - Bash 5.2+ 与 POSIX sh 规范、strict mode、shellcheck/shfmt、bats 测试、make/cmake 构建脚本 | bash, shell, posix, shellcheck, bats, make, cmake |
+| `powershell` | PowerShell 开发插件 - PowerShell 7.4 LTS 跨平台与 5.1、Verb-Noun cmdlet、Pester 5、PSResourceGet 模块发布、cmd/batch 兼容 | powershell, pwsh, windows, pester, psscriptanalyzer, cmd, batch |
 | `cpp` | C++ 开发插件 - C++17/20/23 + C++26 进展 (reflection/contracts) | cpp, c++23, modules, stl |
 | `csharp` | C# 开发插件 - C# 14 / .NET 10 LTS 规范、async、Source Gen、AOT | csharp, dotnet, linq, aot |
 | `flutter` | Flutter 开发插件 - 提供 Flutter 应用开发规范和状态管理指导 | flutter, dart, mobile, state-management |
