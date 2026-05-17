@@ -17,7 +17,7 @@ allowed-tools: Bash Read Glob mcp__obsidian__obsidian_simple_search mcp__obsidia
 
 ## 关键决策树
 
-非通用问答前, **第一个工具调用必须按 L1 → L4 顺序尝试**, MCP first 不可跳过:
+遇到任何问题 (代码改/排查/找文档/选型/答用户/决策) 前, **第一个工具调用必须按 L1 → L4 顺序尝试**, MCP first 不可跳过 (唯一豁免: 纯问候/纯对话/纯工具结果解释):
 
 ```
 L1 mcp__obsidian__obsidian_simple_search  ← 默认首选
