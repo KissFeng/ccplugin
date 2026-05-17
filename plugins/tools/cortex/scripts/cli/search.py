@@ -179,20 +179,238 @@ def _ripgrep(vault: Path, scope_dir: str, query: str) -> list[dict[str, Any]]:
     return hits
 
 
-def _dedup(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    seen: set[tuple[str, str]] = set()
-    out: list[dict[str, Any]] = []
-    for h in hits:
-        key = (h.get("path", ""), h.get("snippet", "")[:80])
-        if key in seen:
+def _load_local_rest_api_creds(vault: Path) -> tuple[str, str] | None:
+    """Read Obsidian Local REST API plugin config.
+
+    Returns (base_url, api_key) or None if plugin absent / config invalid.
+    Prefers insecure HTTP port (no cert verification overhead) since this
+    is localhost-only.
+    """
+    cfg = vault / ".obsidian" / "plugins" / "obsidian-local-rest-api" / "data.json"
+    if not cfg.is_file():
+        return None
+    try:
+        data = json.loads(cfg.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    key = data.get("apiKey")
+    if not isinstance(key, str) or not key:
+        return None
+    port = data.get("insecurePort") if data.get("enableInsecureServer") else None
+    if port:
+        return (f"http://127.0.0.1:{int(port)}", key)
+    sec_port = data.get("port") if data.get("enableSecureServer") else None
+    if sec_port:
+        return (f"https://127.0.0.1:{int(sec_port)}", key)
+    return None
+
+
+def _local_rest_api_search(
+    query: str, limit: int, vault: Path
+) -> list[dict[str, Any]] | None:
+    """Obsidian Local REST API POST /search/simple/?query=<q>.
+
+    Returns None if plugin unreachable / not configured. Empty list if
+    reachable but 0 hits (caller should NOT fall back further on empty —
+    means Obsidian's own search index found nothing).
+    """
+    creds = _load_local_rest_api_creds(vault)
+    if not creds:
+        return None
+    base, key = creds
+    import ssl  # noqa: PLC0415
+    from urllib.parse import quote  # noqa: PLC0415
+    url = f"{base}/search/simple/?query={quote(query)}&contextLength=120"
+    req = urllib.request.Request(  # noqa: S310
+        url,
+        method="POST",
+        headers={"Authorization": f"Bearer {key}", "Accept": "application/json"},
+    )
+    ctx = ssl._create_unverified_context() if base.startswith("https") else None
+    try:
+        resp = urllib.request.urlopen(req, timeout=3.0, context=ctx).read()  # noqa: S310
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, TimeoutError):
+        return None
+    try:
+        data = json.loads(resp.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, list):
+        return []
+    hits: list[dict[str, Any]] = []
+    for item in data[:limit * 3]:  # over-fetch for rerank
+        if not isinstance(item, dict):
             continue
-        seen.add(key)
-        out.append(h)
+        filename = item.get("filename") or ""
+        if not filename:
+            continue
+        matches = item.get("matches") or []
+        snippet = ""
+        if matches and isinstance(matches[0], dict):
+            snippet = (matches[0].get("context") or "")[:240]
+        path = vault / filename
+        hits.append(
+            {
+                "path": str(path),
+                "title": _title_from(path) if path.is_file() else Path(filename).stem,
+                "snippet": snippet,
+                "score": float(item.get("score") or 1.5),  # Obsidian's own = high
+                "source": "obsidian-rest",
+            }
+        )
+    return hits
+
+
+def _omnisearch_search(
+    query: str, limit: int, vault: Path
+) -> list[dict[str, Any]] | None:
+    """Omnisearch plugin HTTP API (if installed + REST API configured).
+
+    Omnisearch exposes results via Local REST API plugin's `/omnisearch`
+    endpoint when both plugins present.
+    """
+    creds = _load_local_rest_api_creds(vault)
+    if not creds:
+        return None
+    base, key = creds
+    om_dir = vault / ".obsidian" / "plugins" / "omnisearch"
+    if not om_dir.is_dir():
+        return None
+    import ssl  # noqa: PLC0415
+    from urllib.parse import quote  # noqa: PLC0415
+    url = f"{base}/search/omnisearch?query={quote(query)}"
+    req = urllib.request.Request(  # noqa: S310
+        url,
+        headers={"Authorization": f"Bearer {key}", "Accept": "application/json"},
+    )
+    ctx = ssl._create_unverified_context() if base.startswith("https") else None
+    try:
+        resp = urllib.request.urlopen(req, timeout=3.0, context=ctx).read()  # noqa: S310
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, TimeoutError):
+        return None
+    try:
+        data = json.loads(resp.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    items = data if isinstance(data, list) else (data.get("results") or [])
+    hits: list[dict[str, Any]] = []
+    for item in items[:limit * 3]:
+        if not isinstance(item, dict):
+            continue
+        path_rel = item.get("path") or item.get("filename") or ""
+        if not path_rel:
+            continue
+        path = vault / path_rel
+        hits.append(
+            {
+                "path": str(path),
+                "title": item.get("basename") or _title_from(path) if path.is_file() else Path(path_rel).stem,
+                "snippet": (item.get("excerpt") or "")[:240],
+                "score": float(item.get("score") or 2.0),  # Omnisearch BM25-like = highest
+                "source": "omnisearch",
+            }
+        )
+    return hits
+
+
+_STOPWORDS_ZH = {"的", "了", "是", "在", "和", "与", "或", "及", "等", "怎么", "如何", "什么", "为什么"}
+_STOPWORDS_EN = {"the", "a", "an", "is", "are", "of", "to", "in", "on", "for", "and", "or", "how", "what", "why"}
+
+
+def _tokenize(query: str) -> list[str]:
+    """Split query into search-worthy tokens.
+
+    Keep tokens ≥ 2 chars (zh) / ≥ 3 chars (en); drop stopwords.
+    Result preserves order, deduplicated.
+    """
+    raw = re.split(r"[\s,;:/，、；：·]+", query.strip())
+    seen: set[str] = set()
+    out: list[str] = []
+    for t in raw:
+        t = t.strip("()[]{}\"'.,!?。，！？")
+        if not t:
+            continue
+        low = t.lower()
+        if low in _STOPWORDS_EN or t in _STOPWORDS_ZH:
+            continue
+        # zh: keep len>=2; en/digit: keep len>=3
+        has_cjk = any("一" <= ch <= "鿿" for ch in t)
+        if has_cjk and len(t) < 2:
+            continue
+        if not has_cjk and len(t) < 3:
+            continue
+        if low in seen:
+            continue
+        seen.add(low)
+        out.append(t)
     return out
 
 
+def _dedup(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Dedupe by path; keep best score across sources; merge sources list."""
+    by_path: dict[str, dict[str, Any]] = {}
+    for h in hits:
+        path = h.get("path", "")
+        if not path:
+            continue
+        # collect this hit's sources (prefer pre-set `sources` list, fall back to single `source`)
+        h_srcs = h.get("sources") or ([h.get("source", "?")] if h.get("source") else [])
+        prev = by_path.get(path)
+        if prev is None:
+            new = dict(h)
+            new["sources"] = list(h_srcs)
+            by_path[path] = new
+            continue
+        # merge: max score, append source
+        if float(h.get("score", 0)) > float(prev.get("score", 0)):
+            prev["score"] = h["score"]
+            if h.get("snippet"):
+                prev["snippet"] = h["snippet"]
+        srcs = prev.setdefault("sources", [])
+        for s in h_srcs:
+            if s and s not in srcs:
+                srcs.append(s)
+    return sorted(by_path.values(), key=lambda x: -float(x.get("score", 0)))
+
+
+def _run_all_layers(
+    query: str, limit: int, scope: str, vault: Path
+) -> list[dict[str, Any]]:
+    """Invoke all search layers for a single query, return merged hits.
+
+    Layers (each independent, all errors swallowed to empty):
+    1. Omnisearch (HTTP, BM25-like) — highest base score
+    2. Obsidian Local REST API simple search (HTTP) — high base
+    3. hot.md grep (cached recent)
+    4. index.md grep (canonical entries)
+    5. Smart Connections REST (semantic, optional)
+    6. ripgrep (cap 50)
+    """
+    hits: list[dict[str, Any]] = []
+    om = _omnisearch_search(query, limit, vault)
+    if om:
+        hits.extend(om)
+    rest = _local_rest_api_search(query, limit, vault)
+    if rest:
+        hits.extend(rest)
+    if scope == "all":
+        hits.extend(_grep_file(vault, "hot.md", query, "hot"))
+    hits.extend(_grep_file(vault, "index.md", query, "index"))
+    sc_base = os.environ.get("CORTEX_SC_URL", "http://127.0.0.1:27123")
+    sc_hits = _smart_connections(query, limit, sc_base)
+    if sc_hits:
+        hits.extend(sc_hits)
+    hits.extend(_ripgrep(vault, _SCOPE_GLOB[scope], query))
+    return _dedup(hits)
+
+
 def cli_search(args: dict) -> list[dict[str, Any]]:
-    """CLI entry: returns hits list directly."""
+    """CLI entry: returns hits list (deduped + ranked).
+
+    Strategy: try full query across all layers; if 0 hits, tokenize and
+    retry each token in parallel-spirit (sequential here), merge — aim
+    is "尽可能不返回空".
+    """
     query = (args or {}).get("query")
     if not isinstance(query, str) or not query.strip():
         raise ValueError("cortex_search: 'query' required (non-empty string)")
@@ -202,23 +420,26 @@ def cli_search(args: dict) -> list[dict[str, Any]]:
         raise ValueError(f"cortex_search: invalid scope {scope!r}")
 
     vault = resolve_vault()
-    hits: list[dict[str, Any]] = []
 
-    if scope == "all":
-        hits.extend(_grep_file(vault, "hot.md", query, "hot"))
-    if len(hits) < limit:
-        hits.extend(_grep_file(vault, "index.md", query, "index"))
+    # phase 1: full query across all layers
+    hits = _run_all_layers(query, limit, scope, vault)
+    if hits:
+        return hits[:limit]
 
-    if len(hits) < limit:
-        sc_base = os.environ.get("CORTEX_SC_URL", "http://127.0.0.1:27123")
-        sc_hits = _smart_connections(query, limit, sc_base)
-        if sc_hits:
-            hits.extend(sc_hits)
-
-    if len(hits) < limit:
-        hits.extend(_ripgrep(vault, _SCOPE_GLOB[scope], query))
-
-    return _dedup(hits)[:limit]
+    # phase 2: tokenize + retry each token, merge, score-attenuated
+    tokens = _tokenize(query)
+    if len(tokens) <= 1:
+        return []
+    fallback: list[dict[str, Any]] = []
+    for tok in tokens:
+        sub = _run_all_layers(tok, limit, scope, vault)
+        for h in sub:
+            # attenuate: token match weaker than full-query match
+            h = dict(h)
+            h["score"] = float(h.get("score", 0)) * 0.6
+            h["sources"] = (h.get("sources") or [h.get("source", "?")]) + [f"split:{tok}"]
+            fallback.append(h)
+    return _dedup(fallback)[:limit]
 
 
 def main() -> None:

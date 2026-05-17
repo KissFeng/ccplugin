@@ -34,15 +34,35 @@ mcp__obsidian__obsidian_complex_search(
 
 ## L3 — `bash ~/.cortex/scripts/search.sh` (CLI fallback)
 
-**仅 L1/L2 MCP 不可达时调用**。CLI 内部走 hot.md → index.md → Smart Connections REST → ripgrep 四级 (实现见 `scripts/cli/search.py`):
+**仅 L1/L2 MCP 不可达时调用**。CLI 内部 6 层并行 + 拆词回退 (实现 `scripts/cli/search.py`):
 
 ```bash
 bash ~/.cortex/scripts/search.sh --query "<keyword>" [--scope <all|concepts|domains|log>] [--limit N]
 ```
 
-- scope 默认 `all`; 限项目内: `--scope domains`
-- 输出: 结构化 JSON (stdout), schema `[{path, title, snippet, score, source}, ...]`
-- AI 解析 JSON 后读取 top hits 综合答复
+### 内部并行 6 层 (所有层独立跑, 结果合并 + dedupe + 按 score 排序)
+
+| 层 | 来源 | 实现 | 备注 |
+|---|---|---|---|
+| 1 | **Omnisearch HTTP** | `GET <base>/search/omnisearch?query=` | 若装 omnisearch 插件; BM25-like, 基础分 2.0 |
+| 2 | **Obsidian Local REST API** | `POST <base>/search/simple/?query=` | 凭据 `<vault>/.obsidian/plugins/obsidian-local-rest-api/data.json` (apiKey + insecurePort/port); Obsidian 内置索引; 基础分 1.5 |
+| 3 | hot.md grep | 本地文件扫 | 最近 10 条快速命中 |
+| 4 | index.md grep | 本地文件扫 | 长存条目 |
+| 5 | Smart Connections REST | `POST {CORTEX_SC_URL}/search` | 语义搜索 (若装 SC 插件) |
+| 6 | ripgrep | `rg --json` cap 50 | 全 vault 兜底 |
+
+凭据自动读取: `data.json` 的 `apiKey` + `insecurePort` (default 27123, http) 或 `port` (default 27124, https + 自签证书跳过验证)。无凭据 → HTTP 层静默跳, 走本地 grep + rg。
+
+### 拆词回退 (phase 2)
+
+完整 query 6 层全空 → tokenize (按空白/逗号/中文标点拆 + 停用词过滤, zh ≥ 2 字 / en ≥ 3 字) → 每 token 跑一次 6 层, 结果 score × 0.6 衰减后合并。目标: **尽可能不返回空**。
+
+```bash
+# 输出: 结构化 JSON (stdout), schema:
+# [{path, title, snippet, score, source, sources: [str]}, ...]
+# - score 高者排前; source 单值兼容; sources 列所有命中来源
+# - phase 2 命中: sources 末尾含 "split:<token>" 标记
+```
 
 ## L4 — `ripgrep` (最后兜底)
 
