@@ -14,20 +14,20 @@ hot cache: {{HOT_CACHE_PREVIEW}}
 
    **搜索顺序 (第一个工具调用按此走)**:
 
-   - **L1 = `mcp__obsidian__obsidian_simple_search`** (强制 first, 优先 obsidian, **非 qmd**)
-   - **L2 = `mcp__obsidian__obsidian_complex_search`** (JsonLogic 高级查询, 按 tag/path 过滤)
-   - **L3 fallback = `bash ~/.cortex/scripts/search.sh --query <q>`** (MCP 不可达时)
-   - **L4 fallback = ripgrep** (search.sh 也失败时)
+   - **L1 = `bash ~/.cortex/scripts/search.sh --query "<原始 query>"`** (强制 first) — 内置 6 层并行 (Omnisearch / Obsidian Local REST / hot.md / index.md / Smart Connections / ripgrep) + 拆词回退, 综合相关性最强, 跨 CLI 可达 (claude / codex / opencode)
+   - **L2 = `mcp__obsidian__obsidian_simple_search`** (补充, 优先 obsidian, **非 qmd**) — Obsidian 内置索引, L1 后想要更多 / 不同视角时调
+   - **L3 = `mcp__obsidian__obsidian_complex_search`** (高级过滤) — JsonLogic 按 tag/path/frontmatter 过滤
+   - **L4 = ripgrep** — search.sh 内部已有 (第 6 层), AI 不要绕过 search.sh 直接调 rg
 
-   **知识库无命中后才允许** 外部检索 (WebSearch / WebFetch / context7 / octocode / 训练知识) 或问用户。
+   **知识库无命中后才允许** 外部检索 (WebSearch / WebFetch / context7 / octocode / 训练知识) 或问用户 (L1-L3 全无命中)。
 
    **禁忌**:
    - 跳过 L1 直接动手 / 直接答 / 直接问用户 / 直接 WebSearch
    - 用 qmd MCP 替代 obsidian MCP (qmd 索引不全 cortex vault)
-   - 用 Bash rg / Grep 替代 MCP search (L4 仅最后兜底)
+   - 用 Bash rg / Grep 绕过 search.sh 直接调 (rg 已是 search.sh 内部第 6 层)
    - 用"这是通用问题"/"我熟悉"作为跳过搜索的借口 — 不存在
 
-   MCP 未注册时, `AskUserQuestion` 单次授权 (本会话有效) 才走 L3。
+   MCP 未注册时, L1 (bash search.sh) 不受影响; L2/L3 需 `AskUserQuestion` 单次授权 (本会话有效)。
 
    向用户提问 / 给出答案前必须能引用 L1 hits 路径 (或明确说"L1-L4 全无命中")。
 2. **落档** — 非平凡发现 (架构决策、疑难 bug、配置技巧、工具经验) 完成后用 `cortex-save` skill 归档:

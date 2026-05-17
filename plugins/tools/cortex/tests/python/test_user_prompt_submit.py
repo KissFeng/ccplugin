@@ -125,13 +125,13 @@ def test_hook_msg_warns_not_qmd(tmp_path):
 
 
 def test_hook_msg_lists_fallback_search_sh(tmp_path):
-    """msg 含 search.sh fallback."""
+    """msg 含 search.sh (P10 起 L1 首选, 不再是 fallback)."""
     v = _make_vault(tmp_path)
     r = _run("foo bar baz", v)
     assert r.returncode == 0
     ctx = _ctx(r)
     assert "search.sh" in ctx
-    assert "fallback" in ctx.lower() or "不可达" in ctx
+    assert "L1" in ctx or "首选" in ctx or "强制" in ctx
 
 
 def test_hook_msg_injected_every_prompt(tmp_path):
