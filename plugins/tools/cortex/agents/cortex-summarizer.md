@@ -13,7 +13,7 @@ tools:
 model: sonnet
 ---
 
-> **分工 vs cortex-digest**: summarizer 受调度产单页/区段长摘要 (无定时, 写 TL;DR callout); cortex-digest 5 阶段 daily cron pipeline (L4 全清 + L0-L4 路由 + 评分双路调)。详见 PRD `.trellis/tasks/05-15-cortex-skills-agents-refactor/prd.md`。
+> **分工 vs cortex-digest**: summarizer 受调度产单页/区段长摘要 (无定时, 写 TL;DR callout); cortex-digest 8 阶段 daily 全量深度 cron pipeline (L4 全清 + L0-L4 路由 + 评分双路调)。详见 PRD `.trellis/tasks/05-15-cortex-skills-agents-refactor/prd.md`。
 
 # cortex-summarizer
 

@@ -37,7 +37,7 @@
 
 **@cortex 写契约 (硬)**: AI 交互式 vault 写必走 `mcp__obsidian__*`。MCP 未注册 → `AskUserQuestion` 单次授权 (本会话有效不写盘)。未授权前 AI 硬拒 vault 写。例外: Stop/cron/python CLI。详见 `cortex-plugin-2026-05-13.md`。
 
-**@cortex 搜索契约 (硬, hook 每轮注入)**: 非通用问答前第一个工具调用必须搜索 — L1 `mcp__obsidian__obsidian_simple_search` (优先 obsidian, **非 qmd**) → L2 `mcp__obsidian__obsidian_complex_search` → L3 `bash ~/.cortex/scripts/search.sh` (MCP 不可达) → L4 ripgrep。
+**@cortex 搜索契约 (硬, hook 每轮注入)**: 遇任何问题前第一个工具调用必须搜索 — L1 `bash ~/.cortex/scripts/search.sh` (强制首选, 内置 6 层并行: Omnisearch/Obsidian REST/hot/index/SC/rg + 拆词回退) → L2 `mcp__obsidian__obsidian_simple_search` (补充, **非 qmd**) → L3 `mcp__obsidian__obsidian_complex_search` (高级过滤)。
 
 **@cortex 评分字段强制 (lint rule 21)**: 知识库 .md 必含 score/confidence/source_credibility/maturity 4 字段, 记忆 .md 必含 importance/confidence 2 字段, 全 0.0-10.0 浮点 (maturity enum)。AI 落档 ingest_remote/save 自动写, digest 双路调 (使用 ↑ importance / 反馈 ↑↓ confidence), refresh 重评 maturity。
 

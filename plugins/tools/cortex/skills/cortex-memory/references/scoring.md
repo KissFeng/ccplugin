@@ -21,7 +21,7 @@ cortex L0-L4 记忆层强制 2 字段, 全 0.0-10.0 浮点。
 
 ## digest 双路更新规则 (P8)
 
-cortex-digest 每天跑 evolution 第 6 阶段时, 双路调整记忆评分:
+cortex-digest 每天跑 evolution 阶段 8a 时, 双路调整记忆评分:
 
 ### 使用信号 → importance ↑
 

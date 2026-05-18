@@ -1,4 +1,4 @@
-# Evolution 抽取 (第 6 阶段)
+# Evolution 抽取 (阶段 8a)
 
 > 借鉴 agent-playbook self-improving-agent 多 memory 架构。cortex 现 episodic (sessions/jsonl) + working (hot.md), 本阶段补 **semantic 层** — 抽复发 pattern → 写 `记忆/L0-核心/patterns.md` → 阈值过线时生 proposal 到 `_assets/evolution-proposals/`, 用户通过 cortex-refactor 单次确认 → patch SKILL/AGENT (PR4)。
 
@@ -147,7 +147,7 @@ PR3 仅生 proposal markdown, **不实际 patch SKILL/AGENT**。PR4 patch 流程
 
 ## 与 4 类抽取的关系
 
-evolution 是 cortex-digest 第 6 阶段, **与 4 类语义抽取 (反思/连接/矛盾/决策, 阶段 2-3 处理) 维度正交**:
+evolution 是 cortex-digest 阶段 8a, **与 4 类语义抽取 (反思/连接/矛盾/决策, 阶段 2-3 处理) 维度正交**:
 
 - 4 类语义抽取关注**内容** → 落知识库 (项目/领域/收件箱)
 - evolution 关注**行为复发** (用户纠正 / skill 失败模式) → 落 semantic 层 (`记忆/L0-核心/patterns.md`) + proposal 队列
