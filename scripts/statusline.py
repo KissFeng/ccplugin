@@ -956,9 +956,9 @@ def ctx_color(pct: float) -> tuple[int, int, int]:
         p = float(pct)
     except Exception:
         p = 0.0
-    if p >= 90:
+    if p > 90:
         return CATPPUCCIN["red"]
-    if p >= 75:
+    if p > 75:
         return CATPPUCCIN["yellow"]
     return CATPPUCCIN["green"]
 
