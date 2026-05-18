@@ -1054,7 +1054,7 @@ def render_statusline(payload: dict) -> str:
     cache_denom = cur_in + cur_cc + cur_cr
     if cache_denom > 0:
         cache_pct = cur_cr / cache_denom * 100.0
-        cache_str = f"{cache_pct:.2f}".rstrip("0").rstrip(".")
+        cache_str = f"{cache_pct:.4f}".rstrip("0").rstrip(".")
         line1_parts.append(style(f"缓存 {cache_str}%", fg=CATPPUCCIN["green"], bold=True))
 
     line1 = fit_segments(line1_parts, sep=major_sep, max_width=cols)
