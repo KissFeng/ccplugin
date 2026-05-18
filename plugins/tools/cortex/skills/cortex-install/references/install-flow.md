@@ -99,10 +99,11 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
 │   ├── consolidate.json       阶段 5 项目→领域 提炼游标
 │   ├── enrich.json            阶段 6 md 图表/tags 已处理 hash 集
 │   └── verify.json            阶段 7 search 验证标记状态
-└── config/                    用户可调配置 (建议 commit)
+└── config/                    用户可调配置 (建议 commit, image-gen.yaml 含密钥时仅 commit api_key_env 写法)
     ├── digest.yaml            各阶段开关 + 增量失效阈值 + 域名映射
     ├── enrich.yaml            mermaid 类型白名单 + 跳过路径
-    └── tags.yaml              tag 命名约定 + alias 同义词表
+    ├── tags.yaml              tag 命名约定 + alias 同义词表
+    └── image-gen.yaml         文生图 provider 列表 + defaults (随机选 / 输出目录)
 ```
 
 ### state JSON 空骨架 (4 文件, 内容相同)
@@ -148,6 +149,24 @@ mermaid_whitelist:
 # 额外跳过路径 (skill 默认已跳 _meta/_templates/_assets/.cortex/归档/.obsidian)
 extra_skip_paths:
   # - 笔记/草稿/
+```
+
+`image-gen.yaml` (空骨架, 用户自填 provider):
+
+```yaml
+# image-gen.yaml — cortex-image / image_gen CLI 配置
+# providers: 多 provider 数组, name 全局唯一; 推荐 api_key_env 而非 inline api_key
+# probe 自动 ping /models 端点; 4xx 且 trusted=false → 自动 disabled
+providers:
+  # - name: openai-dalle3
+  #   endpoint: https://api.openai.com/v1/images/generations
+  #   api_key_env: OPENAI_API_KEY
+  #   model: dall-e-3
+  #   trusted: false
+  #   timeout_seconds: 60
+defaults:
+  random_selection: true       # 无 --config 时随机选 active provider
+  output_dir: _assets/images   # 相对 vault 根
 ```
 
 `tags.yaml`:

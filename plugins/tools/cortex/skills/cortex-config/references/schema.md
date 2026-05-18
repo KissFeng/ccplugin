@@ -73,6 +73,65 @@ tag_naming: kebab-case
 | `alias_synonyms` | map<str,list<str>> | — | `{}` | key 非空, value 列表非空, 元素 str | digest 阶段 6 alias 归一 / lint |
 | `tag_naming` | enum<str> | — | `kebab-case` | `kebab-case` \| `snake_case` | lint tag 命名约定 |
 
+## `<vault>/.cortex/config/image-gen.yaml`
+
+```yaml
+providers:
+  - name: openai-dalle3
+    endpoint: https://api.openai.com/v1/images/generations
+    api_key_env: OPENAI_API_KEY
+    model: dall-e-3
+    trusted: false
+    disabled: false
+    last_check: null
+    last_status: null
+    notes: ""
+    extra_headers: {}
+    extra_body: {}
+    timeout_seconds: 60
+defaults:
+  random_selection: true
+  output_dir: _assets/images
+```
+
+### `providers[]` 字段
+
+| key | type | required | default | range / 约束 | 读取方 |
+|---|---|---|---|---|---|
+| `name` | str | ✓ | — | kebab-case, 全局唯一 | image_gen probe/list/generate |
+| `endpoint` | str | ✓ | — | https:// (http warn; 其他 reject) | image_gen probe (`/models`) / generate POST |
+| `model` | str | ✓ | — | 非空 | request body.model |
+| `api_key_env` | str | (xor api_key) | — | 环境变量名 | os.environ 读 (优先) |
+| `api_key` | str | (xor api_key_env) | — | 字面值, 警告 commit 风险 | inline 兜底 |
+| `trusted` | bool | — | false | — | probe: true → 4xx 也不剔除 |
+| `disabled` | bool | — | false | — | probe 自动写; active 过滤 |
+| `last_check` | str | — | null | UTC ISO | probe 写 |
+| `last_status` | int | — | null | HTTP code | probe 写 |
+| `notes` | str | — | "" | 自由文本 | 用户备注 |
+| `extra_headers` | map<str,str> | — | `{}` | — | request headers 合并 |
+| `extra_body` | map | — | `{}` | — | request body 合并 (size/style/seed) |
+| `timeout_seconds` | int | — | 60 | 1-300 | urllib timeout |
+
+### `defaults` 字段
+
+| key | type | default | range | 读取方 |
+|---|---|---|---|---|
+| `random_selection` | bool | true | — | generate 无 --config 时是否随机选 |
+| `output_dir` | str | `_assets/images` | 相对 vault 根, 非空 | generate 落盘目录 |
+
+### 校验规则 (validate_config.py `validate_image_gen_yaml`)
+
+1. providers 必须 list
+2. 每条必含 name / endpoint / model
+3. name 全局唯一 (重复 → error)
+4. endpoint scheme: https → ok, http → warn, 其他 → error
+5. api_key_env XOR api_key (都缺 → error; 都有 → warn env 生效)
+6. inline api_key → warn (commit 风险)
+7. trusted / disabled bool 类型
+8. timeout_seconds int 1-300
+9. extra_headers / extra_body 必须 mapping
+10. 未知字段 → warn
+
 ## validate_config.py 输出 JSON
 
 ```json

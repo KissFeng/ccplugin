@@ -42,6 +42,13 @@ _MERMAID_TYPES = {
 
 _TAG_NAMING_ENUM = {"kebab-case", "snake_case"}
 
+_IMAGE_GEN_REQUIRED_PROVIDER_KEYS = ("name", "endpoint", "model")
+_IMAGE_GEN_PROVIDER_KEYS = {
+    "name", "endpoint", "api_key_env", "api_key", "model",
+    "trusted", "disabled", "last_check", "last_status", "notes",
+    "extra_headers", "extra_body", "timeout_seconds",
+}
+
 
 # ---------- helpers ----------------------------------------------------------
 
@@ -257,6 +264,102 @@ def validate_tags_yaml(vault: Path, errors: list[dict], warnings: list[dict]) ->
             _warn(warnings, file_label, k, "unknown key")
 
 
+def validate_image_gen_yaml(vault: Path, errors: list[dict], warnings: list[dict]) -> None:
+    path = vault / ".cortex" / "config" / "image-gen.yaml"
+    file_label = "image-gen.yaml"
+    data, err = _load_yaml(path)
+    if err:
+        _err(errors, file_label, "*", err)
+        return
+    if data is None:
+        return  # missing OK
+
+    providers = data.get("providers")
+    seen_names: set[str] = set()
+    if providers is not None:
+        if not isinstance(providers, list):
+            _err(errors, file_label, "providers",
+                 f"expected list, got {type(providers).__name__}")
+        else:
+            for i, p in enumerate(providers):
+                prefix = f"providers[{i}]"
+                if not isinstance(p, dict):
+                    _err(errors, file_label, prefix,
+                         f"expected mapping, got {type(p).__name__}")
+                    continue
+                for rk in _IMAGE_GEN_REQUIRED_PROVIDER_KEYS:
+                    if not p.get(rk):
+                        _err(errors, file_label, f"{prefix}.{rk}",
+                             "required field missing or empty")
+                name = p.get("name")
+                if isinstance(name, str):
+                    if name in seen_names:
+                        _err(errors, file_label, f"{prefix}.name",
+                             f"duplicate provider name '{name}'")
+                    else:
+                        seen_names.add(name)
+                ep = p.get("endpoint")
+                if isinstance(ep, str) and ep:
+                    if ep.startswith("http://"):
+                        _warn(warnings, file_label, f"{prefix}.endpoint",
+                              "http:// is insecure, prefer https://")
+                    elif not ep.startswith("https://"):
+                        _err(errors, file_label, f"{prefix}.endpoint",
+                             "must start with https:// (or http:// with warning)")
+                has_env = bool(p.get("api_key_env"))
+                has_inline = bool(p.get("api_key"))
+                if not (has_env or has_inline):
+                    _err(errors, file_label, f"{prefix}.api_key",
+                         "either api_key_env or api_key required")
+                if has_env and has_inline:
+                    _warn(warnings, file_label, f"{prefix}.api_key",
+                          "both api_key_env and api_key set; env takes precedence")
+                if has_inline:
+                    _warn(warnings, file_label, f"{prefix}.api_key",
+                          "inline api_key is a commit risk; prefer api_key_env")
+                for bk in ("trusted", "disabled"):
+                    if bk in p and not isinstance(p[bk], bool):
+                        _err(errors, file_label, f"{prefix}.{bk}",
+                             f"expected bool, got {type(p[bk]).__name__}")
+                t = p.get("timeout_seconds")
+                if t is not None:
+                    if not isinstance(t, int) or isinstance(t, bool):
+                        _err(errors, file_label, f"{prefix}.timeout_seconds",
+                             f"expected int 1-300, got {type(t).__name__}")
+                    elif not (1 <= t <= 300):
+                        _err(errors, file_label, f"{prefix}.timeout_seconds",
+                             f"out of range 1-300, got {t}")
+                for dk in ("extra_headers", "extra_body"):
+                    if dk in p and p[dk] is not None and not isinstance(p[dk], dict):
+                        _err(errors, file_label, f"{prefix}.{dk}",
+                             f"expected mapping, got {type(p[dk]).__name__}")
+                for k in p:
+                    if k not in _IMAGE_GEN_PROVIDER_KEYS:
+                        _warn(warnings, file_label, f"{prefix}.{k}", "unknown key")
+
+    defaults = data.get("defaults")
+    if defaults is not None:
+        if not isinstance(defaults, dict):
+            _err(errors, file_label, "defaults",
+                 f"expected mapping, got {type(defaults).__name__}")
+        else:
+            rs = defaults.get("random_selection")
+            if rs is not None and not isinstance(rs, bool):
+                _err(errors, file_label, "defaults.random_selection",
+                     f"expected bool, got {type(rs).__name__}")
+            od = defaults.get("output_dir")
+            if od is not None and (not isinstance(od, str) or not od):
+                _err(errors, file_label, "defaults.output_dir",
+                     "expected non-empty str")
+            for k in defaults:
+                if k not in ("random_selection", "output_dir"):
+                    _warn(warnings, file_label, f"defaults.{k}", "unknown key")
+
+    for k in data:
+        if k not in ("providers", "defaults"):
+            _warn(warnings, file_label, k, "unknown key")
+
+
 # ---------- main -------------------------------------------------------------
 
 def main(argv: list[str] | None = None) -> int:
@@ -274,6 +377,7 @@ def main(argv: list[str] | None = None) -> int:
         validate_digest_yaml(vault, errors, warnings)
         validate_enrich_yaml(vault, errors, warnings)
         validate_tags_yaml(vault, errors, warnings)
+        validate_image_gen_yaml(vault, errors, warnings)
 
     result = {
         "ok": len(errors) == 0,

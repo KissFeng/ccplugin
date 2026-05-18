@@ -334,6 +334,7 @@ emit_cli memory
 emit_cli ledger
 emit_cli session
 emit_cli html_render
+emit_cli image_gen
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3 shell-only wrappers (不走 claude, 直接调脚本)
@@ -370,7 +371,7 @@ EXPECTED=(
   install_cron.sh config.sh update.sh
   save.sh search.sh deep_search.sh ingest_url.sh ingest_file.sh ingest_remote.sh
   refresh_projects.sh
-  memory.sh ledger.sh session.sh html_render.sh
+  memory.sh ledger.sh session.sh html_render.sh image_gen.sh
 )
 # 兼容 bash 3.2 (macOS 默认) — 不用 declare -A, 走空格分隔串 + case 匹配
 KEEP_LIST=" "
@@ -387,7 +388,7 @@ for f in "$TARGET_DIR"/*.sh; do
   esac
 done
 
-printf '%s[install_wrappers.sh]%s %s✓%s wrote %s24 wrappers%s to %s%s%s\n' \
+printf '%s[install_wrappers.sh]%s %s✓%s wrote %s25 wrappers%s to %s%s%s\n' \
   "$_C_CYAN" "$_C_RESET" "$_C_GREEN" "$_C_RESET" \
   "$_C_BOLD" "$_C_RESET" "$_C_BOLD" "$TARGET_DIR" "$_C_RESET" >&2
 # 24 wrappers total: 10 slash (lint/dashboard/doctor/init/promote/forget/digest/recall/refactor/ingest)
