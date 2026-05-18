@@ -110,44 +110,38 @@ project_hint, project_src = detect_project_hint()
 
 
 def build_search_contract_msg() -> str:
-    """每轮注入 search-first 硬契约 (无例外, 知识库优先)."""
+    """每轮注入 — 按需检索约定 (KB 作为信息源优先级, 不强制每轮先搜)."""
     return (
-        "🔍 cortex 硬契约 #1 — 先搜知识库, 再做任何事 (本会话每轮强制, 无例外):\n"
+        "🔍 cortex 约定 — 当你**需要查资料**时, 知识库是第一信息源 (非每轮强制):\n"
         "\n"
-        "**遇到任何问题 (代码改/排查/找文档/选型/答用户/决策) 的第一件事就是搜知识库**。\n"
-        "不是回忆训练数据, 不是直接动手, 不是直接 WebSearch, 不是直接问用户 — **是先调搜索工具**。\n"
+        "**触发场景** (需要外部信息时才走): 不熟悉的概念/API/选型, 历史决策/踩坑, 项目专有约定, 用户偏好/记忆, 跨会话上下文。\n"
+        "**无需搜的场景**: 改本地代码逻辑 / 读项目文件 / 执行明确指令 / 写显而易见的代码 / 纯对话。\n"
         "\n"
-        "**唯一豁免**: 纯问候 / 纯对话 / 纯工具结果解释 (无新问题)。其他全部必须先搜。\n"
-        "\n"
-        "**第一个工具调用按此顺序**:\n"
-        "1. **L1 (首选, 强制)**: `bash ~/.cortex/scripts/search.sh --query \"<原始 query>\"` — 内置 6 层并行 (Omnisearch / Obsidian REST / hot / index / SC / rg) + 拆词回退, 综合相关性最强\n"
-        "2. **L2 (补充)**: `mcp__obsidian__obsidian_simple_search query=<关键词>` — Obsidian 内置索引, L1 后想要更多 / 不同视角时调 (优先 obsidian, **非 qmd**)\n"
-        "3. **L3 (高级过滤)**: `mcp__obsidian__obsidian_complex_search` — JsonLogic 按 tag/path/frontmatter 过滤\n"
-        "4. **记忆查询**: `mcp__obsidian__obsidian_get_recent_changes` (按时间) 或 `memory.sh recall` (按 URI)\n"
-        "\n"
-        "**知识库无命中后才允许** 外部检索 (WebSearch / WebFetch / context7 / octocode) 或问用户 (L1-L3 全无命中)。\n"
+        "**需要查时的优先级**:\n"
+        "1. **KB 首选**: `bash ~/.cortex/scripts/search.sh --query \"<词>\"` (6 层并行: Omnisearch / Obsidian REST / hot / index / SC / rg + 拆词)\n"
+        "2. **KB 补充**: `mcp__obsidian__obsidian_simple_search` / `obsidian_complex_search` — 内置索引或 JsonLogic 过滤\n"
+        "3. **记忆**: `mcp__obsidian__obsidian_get_recent_changes` 按时间 / `memory.sh recall` 按 URI\n"
+        "4. **本地代码**: Read / Grep / Glob (KB 无命中且问题是项目内的)\n"
+        "5. **外部**: WebSearch / WebFetch / context7 / octocode (KB + 本地都无命中)\n"
         "\n"
         "**禁忌**:\n"
-        "- 跳过搜索直接动手 / 直接答 / 直接 WebSearch / 直接问用户\n"
-        "- 用 qmd MCP 替代 obsidian MCP (qmd 索引不全 cortex vault)\n"
-        "- 用 Bash rg / Grep 绕过 search.sh 直接调 (rg/grep 是 search.sh 内部第 6 层, AI 不要绕)\n"
-        "- 用 '这是通用问题' / '我熟悉' 作为跳过搜索的借口 — 不成立\n"
-        "\n"
-        "提问 / 答用户前必须能引用 hits/path 证明搜过 (或明确说 L1-L4 全无命中)。"
+        "- 涉及历史决策 / 项目约定 / 用户偏好时直接 WebSearch / 训练记忆答 — 应先 KB\n"
+        "- 用 qmd MCP 替代 obsidian MCP (qmd 索引不全)\n"
+        "- 绕过 search.sh 用 Bash rg / Grep 搜 vault 内容 (rg 是 search.sh 第 6 层)"
     )
 
 
 # 主体: 每轮注入硬契约
 msg = build_search_contract_msg()
 
-# 触发词命中 → 额外加项目 hint
+# 触发词命中 → 额外加项目 hint (仅提示, 不强制)
 if hits and project_hint:
     src_tag = "git remote" if project_src == "git" else "相对 $HOME"
-    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` ({src_tag}); 可按 path 过滤 + memory.sh recall 召回。"
+    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` ({src_tag}); 需查项目历史/约定时可按 path 过滤 + memory.sh recall 召回。"
 elif hits:
-    msg += f"\n💡 触发词命中 {hits[:3]} — 强制走 L1-L4 搜索, 禁直接问用户。memory.sh recall 召回记忆。"
+    msg += f"\n💡 触发词命中 {hits[:3]} — 涉及历史/约定时优先 KB。"
 elif project_hint:
-    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/`."
+    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` (需查项目历史时入口)。"
 
 # 记忆指令快捷
 if any(k in prompt_lower for k in ["记住", "remember", "别忘了", "永远", "暂时"]):

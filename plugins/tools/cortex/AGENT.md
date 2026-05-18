@@ -6,30 +6,24 @@ hot cache: {{HOT_CACHE_PREVIEW}}
 
 ### 协作约定
 
-1. **先搜知识库, 再做任何事 (硬契约 #1, hook 每轮强制, 无例外)** —
+1. **需要查资料时, 知识库优先 (非每轮强制)** —
 
-   **AI 遇到任何问题 (写代码 / 排查 / 找文档 / 选型 / 答用户提问 / 决策) 的第一件事就是搜知识库**。不是回忆训练数据, 不是直接动手, 不是问用户 — 是**先调搜索工具**。
+   **触发场景** (执行过程中遇到需要外部信息时): 不熟悉的概念/API/选型, 历史决策/踩坑, 项目专有约定, 用户偏好/记忆, 跨会话上下文。**无需搜的场景**: 改本地代码 / 读项目文件 / 执行明确指令 / 显而易见的代码 / 纯对话。
 
-   **唯一豁免** (允许跳过): 纯问候 (你好/再见)、纯对话 (谢谢/收到)、纯工具结果解释 (无新问题)。其他**全部**必须先搜。
+   **需查时的优先级**:
 
-   **搜索顺序 (第一个工具调用按此走)**:
-
-   - **L1 = `bash ~/.cortex/scripts/search.sh --query "<原始 query>"`** (强制 first) — 内置 6 层并行 (Omnisearch / Obsidian Local REST / hot.md / index.md / Smart Connections / ripgrep) + 拆词回退, 综合相关性最强, 跨 CLI 可达 (claude / codex / opencode)
-   - **L2 = `mcp__obsidian__obsidian_simple_search`** (补充, 优先 obsidian, **非 qmd**) — Obsidian 内置索引, L1 后想要更多 / 不同视角时调
-   - **L3 = `mcp__obsidian__obsidian_complex_search`** (高级过滤) — JsonLogic 按 tag/path/frontmatter 过滤
-   - **L4 = ripgrep** — search.sh 内部已有 (第 6 层), AI 不要绕过 search.sh 直接调 rg
-
-   **知识库无命中后才允许** 外部检索 (WebSearch / WebFetch / context7 / octocode / 训练知识) 或问用户 (L1-L3 全无命中)。
+   - **L1 = `bash ~/.cortex/scripts/search.sh --query "<词>"`** — 6 层并行 (Omnisearch / Obsidian Local REST / hot / index / SC / rg) + 拆词, 跨 CLI 可达
+   - **L2 = `mcp__obsidian__obsidian_simple_search`** (优先 obsidian, **非 qmd**) — 内置索引补充视角
+   - **L3 = `mcp__obsidian__obsidian_complex_search`** — JsonLogic 按 tag/path/frontmatter 过滤
+   - **本地代码** (KB 无命中且问题在项目内): Read / Grep / Glob
+   - **外部** (KB + 本地均无命中): WebSearch / WebFetch / context7 / octocode
 
    **禁忌**:
-   - 跳过 L1 直接动手 / 直接答 / 直接问用户 / 直接 WebSearch
-   - 用 qmd MCP 替代 obsidian MCP (qmd 索引不全 cortex vault)
-   - 用 Bash rg / Grep 绕过 search.sh 直接调 (rg 已是 search.sh 内部第 6 层)
-   - 用"这是通用问题"/"我熟悉"作为跳过搜索的借口 — 不存在
+   - 涉及历史决策 / 项目约定 / 用户偏好时直接 WebSearch / 训练记忆答
+   - 用 qmd MCP 替代 obsidian MCP (qmd 索引不全)
+   - 绕过 search.sh 用 Bash rg / Grep 搜 vault 内容 (rg 是 search.sh 第 6 层)
 
    MCP 未注册时, L1 (bash search.sh) 不受影响; L2/L3 需 `AskUserQuestion` 单次授权 (本会话有效)。
-
-   向用户提问 / 给出答案前必须能引用 L1 hits 路径 (或明确说"L1-L4 全无命中")。
 2. **落档** — 非平凡发现 (架构决策、疑难 bug、配置技巧、工具经验) 完成后用 `cortex-save` skill 归档:
    - 项目特定 → `知识库/项目/<host>/<org>/<repo>/` (local 项目 → `知识库/项目/local/<basename>/`)
    - 通用概念 → `知识库/领域/`
