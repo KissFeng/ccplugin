@@ -153,63 +153,45 @@ bootstrap_via_claude() {
   }
 
   # 1. marketplace: 已存在 → update, 否则 add
-  local mkt_loc
-  if mkt_loc="$(claude_marketplace_install_location "$CORTEX_MARKETPLACE_NAME")"; then
+  if claude_marketplace_install_location "$CORTEX_MARKETPLACE_NAME" >/dev/null 2>&1; then
     log_step "marketplace 已存在 (${C_BOLD}${CORTEX_MARKETPLACE_NAME}${C_RESET}), 更新中"
-    claude plugins marketplace update "$CORTEX_MARKETPLACE_NAME" >&2 || {
+    claude plugins marketplace update "$CORTEX_MARKETPLACE_NAME" >&2 || \
       log_warn "marketplace update 非零, 继续用本地副本"
-    }
   else
     log_step "添加 marketplace: ${C_BOLD}${CORTEX_MARKETPLACE_SOURCE}${C_RESET}"
     claude plugins marketplace add "$CORTEX_MARKETPLACE_SOURCE" >&2 || return 1
-    mkt_loc="$(claude_marketplace_install_location "$CORTEX_MARKETPLACE_NAME")" || {
-      log_error "marketplace add 后仍找不到 $CORTEX_MARKETPLACE_NAME"
-      return 1
-    }
   fi
 
   # 2. plugin: 已装 → update, 否则 install
   local pid="${CORTEX_PLUGIN_NAME}@${CORTEX_MARKETPLACE_NAME}"
   if claude_plugin_installed "$pid"; then
     log_step "plugin 已装 (${C_BOLD}${pid}${C_RESET}), 更新中"
-    claude plugins update "$pid" >&2 || {
+    claude plugins update "$pid" >&2 || \
       log_warn "plugin update 非零, 继续用本地副本"
-    }
   else
     log_step "安装 plugin: ${C_BOLD}${pid}${C_RESET}"
     claude plugins install "$pid" >&2 || return 1
   fi
 
-  # 3. plugin 源码路径 = marketplace installLocation/plugins/tools/<plugin>
-  local candidate="$mkt_loc/plugins/tools/$CORTEX_PLUGIN_NAME"
-  if [[ -f "$candidate/scripts/cortex_config.py" ]]; then
-    printf '%s' "$candidate"
+  # 3. 验证规范路径下文件存在 — ~/ 字面量, 禁变量/环境变量传递
+  if [[ -f ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py ]]; then
+    printf '%s' ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex
     return 0
   fi
-  log_error "在 $candidate 找不到 scripts/cortex_config.py"
+  log_error "在 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex 找不到 scripts/cortex_config.py (claude CLI 已更新, 可能需重启 Claude Code 让插件文件落盘)"
   return 1
 }
 
-resolve_install_path() {
-  # 强约束: 生成的 ~/.cortex/scripts/*.sh 引用的所有文件必须走 marketplace 规范路径
-  # ~/.claude/plugins/marketplaces/<market>/plugins/tools/<plugin>
-  # 防 wrapper 在用户环境跑时找不到脚本。
-  bootstrap_via_claude
-}
-
-if ! INSTALL_PATH="$(resolve_install_path)"; then
+# 强约束: 所有路径硬编码 ~/.claude/.../cortex 字面量, 禁变量/环境变量传递
+if ! bootstrap_via_claude >/dev/null; then
   log_error "未找到 plugin 树且 claude CLI bootstrap 失败"
   log_hint "手动装: claude plugins marketplace add $CORTEX_MARKETPLACE_SOURCE && claude plugins install ${CORTEX_PLUGIN_NAME}@${CORTEX_MARKETPLACE_NAME}"
   log_hint "claude CLI 必装 — wrapper 引用强制走 marketplace 规范路径"
   exit 2
 fi
 
-if [[ ! -d "$INSTALL_PATH" ]]; then
-  log_error "install-path 不是目录: $INSTALL_PATH"
-  exit 2
-fi
-if [[ ! -f "$INSTALL_PATH/scripts/cortex_config.py" ]]; then
-  log_error "在 $INSTALL_PATH 未找到 scripts/cortex_config.py"
+if [[ ! -f ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py ]]; then
+  log_error "在 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex 未找到 scripts/cortex_config.py"
   exit 2
 fi
 
@@ -388,7 +370,7 @@ if [[ "$OVERWRITE_CONFIG" == "1" ]]; then
   [[ -n "$SETTINGS" ]] && init_args+=(--settings "$SETTINGS")
 
   log_step "写入 ${C_BOLD}~/.cortex/config.json${C_RESET}"
-  python3 "$INSTALL_PATH/scripts/cortex_config.py" init "${init_args[@]}"
+  python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py init "${init_args[@]}"
 else
   log_info "skip config (~/.cortex/config.json 已存在, 保留; --reinstall 强制覆盖)"
 fi
@@ -396,7 +378,7 @@ fi
 # 生成 wrapper
 if should_regen_wrappers; then
   log_step "生成 ${C_BOLD}~/.cortex/scripts/*.sh${C_RESET} wrapper"
-  bash "$INSTALL_PATH/scripts/install_wrappers.sh"
+  bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/install_wrappers.sh
 else
   log_info "skip wrappers (~/.cortex/scripts/*.sh 已存在, 保留; --reinstall 强制重生)"
 fi
@@ -560,7 +542,7 @@ sync_cli_symlinks() {
 
   local kind src_dir dst_dir path name link expected
   for kind in skills agents; do
-    src_dir="$INSTALL_PATH/$kind"
+    src_dir=~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/"$kind"
     dst_dir="$root_dir/$kind"
     [[ -d "$src_dir" ]] || continue
     mkdir -p "$dst_dir"
@@ -596,7 +578,7 @@ cleanup_stale_skill_dirs() {
   # 引发 traceback (issue: scan_aliases 旧版崩溃)。
   local skill stray
   shopt -s nullglob
-  for skill in "$INSTALL_PATH/skills/cortex-"*; do
+  for skill in ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/skills/cortex-*; do
     [[ -d "$skill" ]] || continue
     for stray in scripts cli lint hooks cron refactor migrate; do
       if [[ -e "$skill/$stray" ]]; then
