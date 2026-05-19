@@ -13,29 +13,36 @@
 |---|----|----|---|------|
 | 1 | `fm-missing-type` | error | ✅ | frontmatter 缺 `type` 字段 |
 | 2 | `fm-missing-created` | warn | ✅ | frontmatter 缺 `created` 字段 |
-| 3 | `dead-wikilink` | error | ❌ | wikilink 指向不存在的页 |
-| 4 | `orphan-page` | warn | ❌ | 无入链且无 tag 的孤儿页 |
-| 5 | `duplicate-alias` | error | ❌ | alias 跨页冲突 |
-| 6 | `hot-too-long` | warn | ✅ | hot.md 超 200 行 |
-| 7 | `log-too-long` | warn | ❌ | log 单文件 > 2000 行, 需 fold |
-| 8 | `index-missing-section` | warn | ✅ | index.md 未包含某 知识库 顶级子目录 |
-| 9 | `title-h1-mismatch` | warn | ✅ | H1 与 frontmatter title 不一致 |
-| 10 | `filename-illegal` | error | ❌ | 文件名含非法字符或与 alias 冲突 |
-| 11 | `block-id-duplicate` | error | ✅ | block-id 重复 (`^cortex-<sha8>`) |
-| 12 | `callout-unknown-type` | warn | ❌ | callout 类型不在 13 类白名单 |
-| 13 | `path-naming-violation` | warn | ❌ | 文件路径不符命名规则 (prd §3.2.7) |
-| 14 | `repo-path-deprecated` | warn | ✅ | `知识库/来源/代码仓库/` 路径废弃, mv 到 `知识库/项目/` |
-| 15 | `reflection-path-deprecated` | warn | ✅ | `知识库/反思/` 废弃, mv 到 `知识库/收件箱/` |
-| 16 | `question-fleeting-path-deprecated` | warn | ✅ | `知识库/问题/` 与 `知识库/临时/` 废弃, mv 到 `知识库/收件箱/` |
-| 17 | `entity-concept-path-deprecated` | warn | ✅ | `知识库/实体/` 与 `知识库/概念/` 废弃, autofix mv 到 `知识库/领域/未分类/`; AI 后续可 `cortex_refactor` 改判到 6 域之一 |
-| 18 | `journal-multi-freq-deprecated` | warn | ✅ | `知识库/日记/{周/月/年}/` 废弃, mv 到 `归档/日记/<YYYY-QN>.md` 季度桶 |
-| 19 | `source-non-repo-path-deprecated` | warn | ✅ | `知识库/来源/{网页/论文/书籍}/` 废弃, mv 到 `知识库/收件箱/` |
-| 20 | `path-lang-mismatch` | warn | ❌ | vault path segment 不符 vault.lang (豁免 host/org/repo + ASCII 专名 + `path_lang_exempt`) |
-| 21 | `skill-references-exists` | warn | ❌ | SKILL.md / AGENT.md 引用 `references/<x>.md` 目标必须存在 |
-| 22 | `base-format-yaml` | warn | ❌ | `.base` 文件必须顶层 YAML object, 禁 markdown header / 禁 Dataview DQL |
-| 23 | `frontmatter-required-scores` | warn | ✅ | 知识库 .md 必含 4 评分字段, 记忆 .md 必含 2 评分字段, 0.0-10.0 浮点 |
+| 3 | `fm-duplicate-tags` | warn | ✅ | frontmatter tags 列表内重复 |
+| 4 | `fm-banned-tags` | warn | ✅ | tags 含结构/模板/类型/时间标记 (`index/meta/template/_index/stub` + `type/* template/* created/* date/* time/* year/month/week/day/quarter/*` + 裸 `YYYY[-MM[-DD]]/YYYY-Q[1-4]/YYYY-W##`) |
+| 5 | `fm-banned-fields` | warn | ✅ | frontmatter 含废弃字段 (如 `preset`), autofix pop |
+| 6 | `fm-missing-tags` | warn | ✅ | tags 缺失或数量 < 5; autofix 从正文派生语义 tag (严禁占位符/模板/类型/时间式) |
+| 7 | `dead-wikilink` | error | ✅ | wikilink 指向不存在的页 |
+| 8 | `orphan-page` | warn | ✅ | 无入链且无 tag 的孤儿页 |
+| 9 | `duplicate-alias` | error | ✅ | alias 跨页冲突 |
+| 10 | `hot-too-long` | warn | ✅ | hot.md 超 200 行 |
+| 11 | `index-missing-section` | warn | ✅ | index.md 未包含某 知识库 顶级子目录 |
+| 12 | `title-h1-mismatch` | warn | ✅ | H1 与 frontmatter title 不一致 |
+| 13 | `filename-illegal` | error | ❌ | 文件名含非法字符或与 alias 冲突 |
+| 14 | `block-id-duplicate` | error | ✅ | block-id 重复 (`^cortex-<sha8>`) |
+| 15 | `callout-unknown-type` | warn | ✅ | callout 类型不在 13 类白名单 |
+| 16 | `path-naming-violation` | warn | ✅ | 业务目录命名应来自 vault.lang 的 dirs map |
+| 17 | `i18n-frontmatter-lang-mismatch` | warn | ❌ | 页 frontmatter lang 与 `_meta/version.json:.lang` 不一致 |
+| 18 | `i18n-path-not-in-locale` | warn | ✅ | 业务目录名不在 vault.lang 的 dirs map; autofix slug-safe rename |
+| 19 | `vault-structure-violation` | error | ✅ | vault 根/子目录含非 schema 允许的文件; autofix mv 到 `~/.cache/cortex/lint-backup` |
+| 20 | `vault-misaligned` | warn | ✅ | vault 内 plugin-managed 文件 (seed/_meta/_templates) 偏离源, 强制覆盖头部, `TEMPLATE_END` 后用户内容保留 |
+| 21 | `repo-path-deprecated` | warn | ✅ | `知识库/来源/代码仓库/<host>/<org>/<repo>/` 废弃, mv 到 `知识库/项目/<host>/<org>/<repo>/` |
+| 22 | `reflection-path-deprecated` | warn | ✅ | `知识库/反思/` 废弃, mv 到 `知识库/收件箱/` |
+| 23 | `question-fleeting-path-deprecated` | warn | ✅ | `知识库/问题/` 与 `知识库/临时/` 废弃, mv 到 `知识库/收件箱/` |
+| 24 | `entity-concept-path-deprecated` | warn | ❌ | `知识库/实体/` 与 `知识库/概念/` 废弃, 应迁到 `知识库/领域/<域>/<kebab>.md` (需 AI 选域, lint 不自决) |
+| 25 | `journal-multi-freq-deprecated` | warn | ✅ | `知识库/日记/{周/月/年}/` 废弃, mv 到 `归档/日记/<YYYY-QN>.md` 季度桶 |
+| 26 | `source-non-repo-path-deprecated` | warn | ✅ | `知识库/来源/{网页/论文/书籍}/` 废弃, mv 到 `知识库/收件箱/` |
+| 27 | `path-lang-mismatch` | warn | ❌ | vault path segment 不符 vault.lang (豁免 host/org/repo + ASCII 专名 + `path_lang_exempt`) |
+| 28 | `skill-references-exists` | warn | ❌ | SKILL.md / AGENT.md 引用 `references/<x>.md` 目标必须存在 |
+| 29 | `base-format-yaml` | warn | ❌ | `.base` 文件必须顶层 YAML object, 禁 markdown header / 禁 Dataview DQL |
+| 30 | `frontmatter-required-scores` | warn | ✅ | 知识库 .md 必含 4 评分字段, 记忆 .md 必含 2 评分字段, 0.0-10.0 浮点 |
 
-autofix 仅 7 条 (rule 1/2/6/8/9/11/23)。其余需人工或用 `cortex-refactor` 协助。
+autofix 24 条; 6 条 (rule 13/17/24/27/28/29) 不 autofix, 需人工或用 `cortex-refactor` 协助。
 
 ### rule 23: frontmatter-required-scores
 
