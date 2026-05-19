@@ -110,7 +110,7 @@ project_hint, project_src = detect_project_hint()
 
 
 def build_search_contract_msg() -> str:
-    """每轮注入 — 按需检索约定 (知识库 作为信息源优先级, 不强制每轮先搜)."""
+    """每轮注入 — 按需检索约定 + 主动落档约定."""
     return (
         "🔍 cortex 约定 — 当你**需要查资料**时, 知识库是第一信息源 (非每轮强制):\n"
         "\n"
@@ -118,16 +118,25 @@ def build_search_contract_msg() -> str:
         "**无需搜的场景**: 改本地代码逻辑 / 读项目文件 / 执行明确指令 / 写显而易见的代码 / 纯对话。\n"
         "\n"
         "**需要查时的优先级**:\n"
-        "1. **知识库 首选**: `bash ~/.cortex/scripts/search.sh --query \"<词>\"` (6 层并行: Omnisearch / Obsidian REST / hot / index / SC / rg + 拆词)\n"
-        "2. **知识库 补充**: `mcp__obsidian__obsidian_simple_search` / `obsidian_complex_search` — 内置索引或 JsonLogic 过滤\n"
-        "3. **记忆**: `mcp__obsidian__obsidian_get_recent_changes` 按时间 / `memory.sh recall` 按 URI\n"
-        "4. **本地代码**: Read / Grep / Glob (知识库 无命中且问题是项目内的)\n"
+        "1. **知识库 首选**: `bash ~/.cortex/scripts/search.sh --query \"<词>\"` (6 层并行 + 拆词)\n"
+        "2. **知识库 补充**: `mcp__obsidian__obsidian_simple_search` / `obsidian_complex_search`\n"
+        "3. **记忆**: `mcp__obsidian__obsidian_get_recent_changes` / `memory.sh recall`\n"
+        "4. **本地代码**: Read / Grep / Glob (知识库 无命中且问题在项目内)\n"
         "5. **外部**: WebSearch / WebFetch / context7 / octocode (知识库 + 本地都无命中)\n"
+        "\n"
+        "📝 **主动落档** — 产生**非平凡发现**时, 不等用户提示, 自动调 cortex-save / cortex-ingest 写盘:\n"
+        "- 架构决策 / 踩坑复盘 / 疑难 bug 根因 → 项目页 `知识库/项目/<host>/<org>/<repo>/`\n"
+        "- 技巧 / 选型对比 / 配置秘诀 → 领域页 `知识库/领域/`\n"
+        "- 外部资料综述 / URL 抓取 → `cortex-ingest` (auto defuddle + masking + 4 评分字段)\n"
+        "- 用户明示 \"记住X / 别忘 / 永远\" → `memory.sh write` 落 L0-L1\n"
+        "- 完成跨会话有复用价值的工作后, 主动产笔记 + block-id + wikilink 回填\n"
+        "**不落**: 单次问答 / 通用编程常识 / 当前已有上下文 / 简单 CRUD\n"
         "\n"
         "**禁忌**:\n"
         "- 涉及历史决策 / 项目约定 / 用户偏好时直接 WebSearch / 训练记忆答 — 应先 知识库\n"
         "- 用 qmd MCP 替代 obsidian MCP (qmd 索引不全)\n"
-        "- 绕过 search.sh 用 Bash rg / Grep 搜 vault 内容 (rg 是 search.sh 第 6 层)"
+        "- 绕过 search.sh 用 Bash rg / Grep 搜 vault 内容\n"
+        "- 有非平凡发现但不落档 — 下次会话丢失"
     )
 
 
@@ -149,9 +158,9 @@ if any(k in prompt_lower for k in ["记住", "remember", "别忘了", "永远", 
 elif any(k in prompt_lower for k in ["忘了", "forget"]):
     msg += "\n⚡ 含遗忘指令 → `memory.sh forget --uri <u>`."
 
-# 整体注入 cap (1200 + 容差)
-if len(msg) > 1200:
-    msg = msg[:1197] + "..."
+# 整体注入 cap (1800 + 容差)
+if len(msg) > 1800:
+    msg = msg[:1797] + "..."
 
 payload = {
     "hookSpecificOutput": {
