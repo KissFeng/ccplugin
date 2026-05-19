@@ -3,7 +3,7 @@
 cortex 把 19 个 slash command 中常用的 19 个包装成独立 bash 脚本 + 额外 5 个 CLI 辅助 = 25 wrapper, 部署在 `~/.cortex/scripts/`。slash 模式无入参 (auto), 一行调用。
 
 每个脚本内部:
-1. 读 `~/.cortex/config.json` 拿 `vault` / `settings` / `install_path`
+1. 读 `~/.cortex/config.json` 拿 `vault` / `settings` (plugin 源码路径硬编码字面量 `~/.claude/.../cortex`)
 2. 直接调 `python3 <PLUGIN_ROOT>/scripts/cli/cortex_stream.py --label cortex-<name> --timeout 0 -- claude ...` (rich UI on stderr) + `cx_filter_stream` (final result.text on stdout)
 3. 调 `claude --settings <s> -p "/cortex:<name> auto"` 触发 slash command (D10: wrapper 必传 `auto` 后缀, skill 入 AUTO_MODE 跳 AskUserQuestion 走默认值; 交互会话才省略 `auto`)
 4. 完成后自动 `git commit` vault 变更 (不 push)
@@ -57,7 +57,7 @@ stdout 输出最终 result text, stderr 显示 rich 实时进度。
 | `CORTEX_STREAM_TEE_FILE` | 把 raw NDJSON 同步写到指定文件 (调试用) |
 | `CORTEX_TIMEOUT` | claude 调用超时秒数 (默认 0 = 不超时) |
 
-**禁用** 的配置类 env var: `OBSIDIAN_VAULT` / `CORTEX_VAULT` / `CORTEX_LANG` / `CORTEX_INSTALL_PATH` / `CORTEX_SETTINGS` — 全部从 `~/.cortex/config.json` 读取。
+**禁用** 的配置类 env var: `OBSIDIAN_VAULT` / `CORTEX_VAULT` / `CORTEX_LANG` / `CORTEX_SETTINGS` — 全部从 `~/.cortex/config.json` 读取。`install_path` 完全废弃 (硬编码 `~/.claude/.../cortex` 字面量)。
 
 ## cron / launchd / GitHub Actions
 
@@ -65,4 +65,4 @@ stdout 输出最终 result text, stderr 显示 rich 实时进度。
 
 ## 自定义路径
 
-config.json 可改 `target_dir` (wrapper 部署目录, 默认 `~/.cortex/scripts/`)。`install_path` 自动 resolve 到 marketplace 规范路径 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex`, 不建议手改 (改了 wrapper 会找不到依赖脚本)。
+config.json 可改 `target_dir` (wrapper 部署目录, 默认 `~/.cortex/scripts/`)。plugin 源码路径硬编码 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex` 字面量, 不可配置。
