@@ -110,57 +110,23 @@ project_hint, project_src = detect_project_hint()
 
 
 def build_search_contract_msg() -> str:
-    """每轮注入 — 按需检索约定 + 主动落档约定."""
+    """每轮注入 — 极简约定."""
     return (
-        "🔍 cortex 约定 — 当你**需要查资料**时, 知识库是第一信息源 (非每轮强制):\n"
-        "\n"
-        "**触发场景** (需要外部信息时才走): 不熟悉的概念/API/选型, 历史决策/踩坑, 项目专有约定, 用户偏好/记忆, 跨会话上下文。\n"
-        "**无需搜的场景**: 改本地代码逻辑 / 读项目文件 / 执行明确指令 / 写显而易见的代码 / 纯对话。\n"
-        "\n"
-        "**需要查时的优先级**:\n"
-        "1. **知识库 首选**: `bash ~/.cortex/scripts/search.sh --query \"<词>\"` (6 层并行 + 拆词)\n"
-        "2. **知识库 补充**: `mcp__obsidian__obsidian_simple_search` / `obsidian_complex_search`\n"
-        "3. **记忆**: `mcp__obsidian__obsidian_get_recent_changes` / `memory.sh recall`\n"
-        "4. **本地代码**: Read / Grep / Glob (知识库 无命中且问题在项目内)\n"
-        "5. **外部**: WebSearch / WebFetch / context7 / octocode (知识库 + 本地都无命中)\n"
-        "\n"
-        "📝 **主动落档** — 产生**非平凡发现**时, 不等用户提示, 自动调 cortex-save / cortex-ingest 写盘:\n"
-        "- 架构决策 / 踩坑复盘 / 疑难 bug 根因 → 项目页 `知识库/项目/<host>/<org>/<repo>/`\n"
-        "- 技巧 / 选型对比 / 配置秘诀 → 领域页 `知识库/领域/`\n"
-        "- 外部资料综述 / URL 抓取 → `cortex-ingest` (auto defuddle + masking + 4 评分字段)\n"
-        "- 用户明示 \"记住X / 别忘 / 永远\" → `memory.sh write` 落 L0-L1\n"
-        "- 完成跨会话有复用价值的工作后, 主动产笔记 + block-id + wikilink 回填\n"
-        "**不落**: 单次问答 / 通用编程常识 / 当前已有上下文 / 简单 CRUD\n"
-        "\n"
-        "**禁忌**:\n"
-        "- 涉及历史决策 / 项目约定 / 用户偏好时直接 WebSearch / 训练记忆答 — 应先 知识库\n"
-        "- 用 qmd MCP 替代 obsidian MCP (qmd 索引不全)\n"
-        "- 绕过 search.sh 用 Bash rg / Grep 搜 vault 内容\n"
-        "- 有非平凡发现但不落档 — 下次会话丢失"
+        "🔍 cortex: 需查资料时 → `bash ~/.cortex/scripts/search.sh --query \"<词>\"` 优先, "
+        "次 `mcp__obsidian__*_search`, 再本地 Read/Grep, 最后 WebSearch。\n"
+        "📝 非平凡发现 (架构决策/踩坑/选型/技巧/外部综述) 自动 `cortex-save` 或 `cortex-ingest` 落档, "
+        "用户说\"记住\" → `memory.sh write`。"
     )
 
 
 # 主体: 每轮注入硬契约
 msg = build_search_contract_msg()
 
-# 触发词命中 → 额外加项目 hint (仅提示, 不强制)
-if hits and project_hint:
-    src_tag = "git remote" if project_src == "git" else "相对 $HOME"
-    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` ({src_tag}); 需查项目历史/约定时可按 path 过滤 + memory.sh recall 召回。"
-elif hits:
-    msg += f"\n💡 触发词命中 {hits[:3]} — 涉及历史/约定时优先 知识库。"
-elif project_hint:
-    msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` (需查项目历史时入口)。"
+if project_hint:
+    msg += f"\n💡 `知识库/项目/{project_hint}/`"
 
-# 记忆指令快捷
-if any(k in prompt_lower for k in ["记住", "remember", "别忘了", "永远", "暂时"]):
-    msg += "\n⚡ 含记忆指令 → `memory.sh write --uri <u> --content <c> --level <l>`."
-elif any(k in prompt_lower for k in ["忘了", "forget"]):
-    msg += "\n⚡ 含遗忘指令 → `memory.sh forget --uri <u>`."
-
-# 整体注入 cap (1800 + 容差)
-if len(msg) > 1800:
-    msg = msg[:1797] + "..."
+if len(msg) > 500:
+    msg = msg[:497] + "..."
 
 payload = {
     "hookSpecificOutput": {
