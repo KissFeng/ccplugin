@@ -223,7 +223,7 @@ banner "__NAME__ (slash /cortex:__NAME__)"
 # 直接 python3 <绝对路径>/cortex_stream.py 启 claude (禁包 / 禁 PATH binary).
 # cortex_stream.py 自动注 --output-format stream-json --verbose, 走 rich UI on stderr.
 # cx_filter_stream 仅放 final result.text 到 stdout, 防 raw NDJSON 漏到终端.
-STREAM_PY="__INSTALL_PATH__/scripts/cli/cortex_stream.py"
+STREAM_PY=~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cli/cortex_stream.py
 [[ -f "$STREAM_PY" ]] || err "cortex_stream.py missing: $STREAM_PY" 4
 printf '%s$%s python3 %q --label cortex-__NAME__ --timeout 0 -- claude --settings %q --dangerously-skip-permissions -p "/cortex:__NAME__ auto"\n' \
   "$_CX_C" "$_CX_0" "$STREAM_PY" "$SETTINGS" >&2
@@ -233,9 +233,8 @@ python3 "$STREAM_PY" --label "cortex-__NAME__" --timeout 0 -- \
 rc=${PIPESTATUS[0]}
 if [[ $rc -eq 0 ]]; then ok "__NAME__ done"; else err "__NAME__ failed code=$rc" "$rc"; fi
 EOB_SLASH
-  # Substitute placeholders (use | as sed delimiter since INSTALL_PATH has /).
+  # 仅替换 __NAME__ 占位; INSTALL_PATH 由 WRAPPER_PRELUDE 注入 (~/ 形式)
   body="${body//__NAME__/$name}"
-  body="${body//__INSTALL_PATH__/$INSTALL_PATH}"
   emit "$name.sh" "$body"
 }
 
@@ -261,22 +260,22 @@ emit_slash digest
 EOF_DIGEST_DISPATCH
 } >> "$TARGET_DIR/digest.sh" 2>/dev/null || true
 # 用 sed 在 digest.sh 的 `while` 循环前注入 evolution 短路.
-python3 - "$TARGET_DIR/digest.sh" "$INSTALL_PATH" <<'PYEOF' || true
+python3 - "$TARGET_DIR/digest.sh" <<'PYEOF' || true
 import sys, pathlib
 p = pathlib.Path(sys.argv[1])
-install_path = sys.argv[2]
 if not p.is_file(): sys.exit(0)
 text = p.read_text()
 marker = 'INTERACTIVE=0'
 if 'EVOLUTION_DISPATCH' in text or marker not in text:
     sys.exit(0)
+# 用 wrapper 运行期的 $INSTALL_PATH (由 prelude 定义为 ~/...), 不烧入绝对路径
 inject = (
     '# EVOLUTION_DISPATCH (PR3): evolution 子命令直调 python CLI\n'
-    f'if [[ "${{1:-}}" == "evolution" ]]; then\n'
-    f'  trap - EXIT\n'
-    f'  shift\n'
-    f'  exec python3 "{install_path}/scripts/cli/digest.py" evolution "$@"\n'
-    f'fi\n\n'
+    'if [[ "${1:-}" == "evolution" ]]; then\n'
+    '  trap - EXIT\n'
+    '  shift\n'
+    '  exec python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cli/digest.py evolution "$@"\n'
+    'fi\n\n'
 )
 text = text.replace(marker, inject + marker, 1)
 p.write_text(text)
@@ -285,10 +284,9 @@ emit_slash recall
 emit_slash refactor
 # refactor.sh: 加 evolution-{list,check,delete} 子命令短路, 直调 python CLI
 # (PR4 evolution-apply 工具子命令). 其余 args 走 slash /cortex:refactor.
-python3 - "$TARGET_DIR/refactor.sh" "$INSTALL_PATH" <<'PYEOF' || true
+python3 - "$TARGET_DIR/refactor.sh" <<'PYEOF' || true
 import sys, pathlib
 p = pathlib.Path(sys.argv[1])
-install_path = sys.argv[2]
 if not p.is_file(): sys.exit(0)
 text = p.read_text()
 marker = 'INTERACTIVE=0'
@@ -301,7 +299,7 @@ inject = (
     '    trap - EXIT\n'
     '    sub="${1#evolution-}"\n'
     '    shift\n'
-    f'    exec python3 "{install_path}/scripts/refactor/evolution_apply.py" "$sub" "$@"\n'
+    '    exec python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/refactor/evolution_apply.py "$sub" "$@"\n'
     '    ;;\n'
     'esac\n\n'
 )
@@ -318,7 +316,7 @@ emit_cli() {
   local name="$1"; local module="${2:-$1}"
   emit "$name.sh" "$(cat <<EOB
 export CORTEX_JOB_LABEL="cortex-$name"
-exec python3 "$INSTALL_PATH/scripts/cli/$module.py" "\$@"
+exec python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cli/$module.py "\$@"
 EOB
 )"
 }
@@ -345,14 +343,14 @@ emit_cli image_gen
 emit install_cron.sh "$(cat <<EOB
 export CORTEX_JOB_LABEL="cortex-install_cron"
 banner "install_cron"
-bash "$INSTALL_PATH/scripts/install_cron.sh"
+bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/install_cron.sh
 EOB
 )"
 
 emit config.sh "$(cat <<EOB
 export CORTEX_JOB_LABEL="cortex-config"
 banner "config"
-python3 "$INSTALL_PATH/scripts/cortex_config.py"
+python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py
 EOB
 )"
 
