@@ -251,7 +251,8 @@ def render_row(task: dict, *, max_width: int, now: float, model: str = "",
     parts: list[str] = []
 
     if type_:
-        parts.append(_style(f"[{type_}]", fg=CATPPUCCIN["mauve"], dim=True))
+        type_label = {"local_agent": "Agent"}.get(type_.lower(), type_)
+        parts.append(_style(f"[{type_label}]", fg=CATPPUCCIN["mauve"], dim=True))
 
     parts.append(_style(name, fg=CATPPUCCIN["cyan"], bold=True))
 
