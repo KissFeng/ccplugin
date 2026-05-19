@@ -181,7 +181,7 @@ def _token_rate(samples) -> float | None:
     return None
 
 
-def render_row(task: dict, *, max_width: int, now: float) -> str:
+def render_row(task: dict, *, max_width: int, now: float, model: str = "") -> str:
     name = str(task.get("name") or task.get("label") or task.get("id") or "?").strip()
     type_ = str(task.get("type") or "").strip()
     description = str(task.get("description") or "").strip()
@@ -189,6 +189,14 @@ def render_row(task: dict, *, max_width: int, now: float) -> str:
     samples = task.get("tokenSamples")
     start = _parse_start_time(task.get("startTime"))
     elapsed = (now - start) if start else None
+    # task-level model override > top-level model
+    task_model = ""
+    tm = task.get("model")
+    if isinstance(tm, dict):
+        task_model = str(tm.get("display_name") or tm.get("id") or "").strip()
+    elif isinstance(tm, str):
+        task_model = tm.strip()
+    model_label = task_model or model
 
     sep = _style(" · ", fg=CATPPUCCIN["subtle"], dim=True)
 
@@ -198,6 +206,9 @@ def render_row(task: dict, *, max_width: int, now: float) -> str:
         parts.append(_style(f"[{type_}]", fg=CATPPUCCIN["mauve"], dim=True))
 
     parts.append(_style(name, fg=CATPPUCCIN["cyan"], bold=True))
+
+    if model_label:
+        parts.append(_style(model_label.lower(), fg=CATPPUCCIN["blue"], bold=True))
 
     parts.append(_status_seg(task.get("status", "")))
 
@@ -247,6 +258,11 @@ def main() -> None:
         cols = int(payload.get("columns") or 0)
     except Exception:
         cols = 0
+    model_obj = payload.get("model") or {}
+    if isinstance(model_obj, dict):
+        top_model = str(model_obj.get("display_name") or model_obj.get("id") or "").strip()
+    else:
+        top_model = str(model_obj or "").strip()
     now = time.time()
     out = sys.stdout
     for task in tasks:
@@ -255,7 +271,7 @@ def main() -> None:
         tid = task.get("id")
         if not tid:
             continue
-        content = render_row(task, max_width=cols, now=now)
+        content = render_row(task, max_width=cols, now=now, model=top_model)
         out.write(json.dumps({"id": tid, "content": content}, ensure_ascii=False))
         out.write("\n")
 
