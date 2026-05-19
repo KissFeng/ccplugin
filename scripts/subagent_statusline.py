@@ -111,26 +111,26 @@ def _format_duration(seconds: float) -> str:
     return f"{s}s"
 
 
-# status → (icon, color, label)
+# status → (symbol, color) — 纯几何符号, 非 emoji
 _STATUS_MAP = {
-    "running": ("⟳", CATPPUCCIN["yellow"], "running"),
-    "in_progress": ("⟳", CATPPUCCIN["yellow"], "running"),
-    "pending": ("◌", CATPPUCCIN["subtle"], "pending"),
-    "queued": ("◌", CATPPUCCIN["subtle"], "queued"),
-    "completed": ("✓", CATPPUCCIN["green"], "done"),
-    "succeeded": ("✓", CATPPUCCIN["green"], "done"),
-    "success": ("✓", CATPPUCCIN["green"], "done"),
-    "failed": ("✗", CATPPUCCIN["red"], "failed"),
-    "error": ("✗", CATPPUCCIN["red"], "error"),
-    "cancelled": ("⊘", CATPPUCCIN["subtle"], "cancelled"),
-    "canceled": ("⊘", CATPPUCCIN["subtle"], "cancelled"),
+    "running":     ("●", CATPPUCCIN["yellow"]),
+    "in_progress": ("●", CATPPUCCIN["yellow"]),
+    "pending":     ("○", CATPPUCCIN["subtle"]),
+    "queued":      ("○", CATPPUCCIN["subtle"]),
+    "completed":   ("●", CATPPUCCIN["green"]),
+    "succeeded":   ("●", CATPPUCCIN["green"]),
+    "success":     ("●", CATPPUCCIN["green"]),
+    "failed":      ("●", CATPPUCCIN["red"]),
+    "error":       ("●", CATPPUCCIN["red"]),
+    "cancelled":   ("◌", CATPPUCCIN["subtle"]),
+    "canceled":    ("◌", CATPPUCCIN["subtle"]),
 }
 
 
 def _status_seg(status: str) -> str:
     s = (status or "").strip().lower()
-    _icon, color, label = _STATUS_MAP.get(s, ("", CATPPUCCIN["blue"], s or "unknown"))
-    return _style(label, fg=color, bold=True)
+    symbol, color = _STATUS_MAP.get(s, ("◆", CATPPUCCIN["blue"]))
+    return _style(symbol, fg=color, bold=True)
 
 
 def _parse_start_time(raw) -> float | None:
