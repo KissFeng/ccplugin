@@ -192,12 +192,15 @@ def _ctx_color(pct: float):
 
 
 def _extract_ctx_pct(task: dict, top_ctx: dict | None) -> float | None:
-    """task.context_window.used_percentage 优先, 退而 top-level."""
+    """优先级:
+    1. task.context_window.used_percentage
+    2. top-level context_window.used_percentage
+    3. 由 task.tokenCount / (top_ctx.context_window_size or 200000) 估算
+    """
     for src in (task.get("context_window"), top_ctx):
         if isinstance(src, dict):
             v = src.get("used_percentage")
             if v is None:
-                # 从 total_input_tokens / context_window_size 自算
                 try:
                     used = float(src.get("total_input_tokens") or 0)
                     size = float(src.get("context_window_size") or 0)
@@ -210,6 +213,18 @@ def _extract_ctx_pct(task: dict, top_ctx: dict | None) -> float | None:
                     return float(v)
                 except Exception:
                     pass
+    # fallback: tokenCount / context_window_size
+    try:
+        tok = float(task.get("tokenCount") or 0)
+        size = 0.0
+        if isinstance(top_ctx, dict):
+            size = float(top_ctx.get("context_window_size") or 0)
+        if size <= 0:
+            size = 200000.0
+        if tok > 0:
+            return tok / size * 100.0
+    except Exception:
+        pass
     return None
 
 
@@ -246,7 +261,7 @@ def render_row(task: dict, *, max_width: int, now: float, model: str = "",
     parts.append(_status_seg(task.get("status", "")))
 
     ctx_pct = _extract_ctx_pct(task, top_ctx)
-    if ctx_pct is not None and ctx_pct > 0:
+    if ctx_pct is not None:
         parts.append(_style(f"{ctx_pct:.0f}%", fg=_ctx_color(ctx_pct), bold=True))
 
     if tokens is not None:
@@ -264,11 +279,23 @@ def render_row(task: dict, *, max_width: int, now: float, model: str = "",
     if elapsed is not None and elapsed > 0:
         parts.append(_style(_format_duration(elapsed), fg=CATPPUCCIN["subtle"], dim=True))
 
-    if description:
+    if description and description != name:
         parts.append(_style(description, fg=CATPPUCCIN["subtle"]))
 
     line = sep.join(p for p in parts if p)
     return _truncate(line, max_width) if max_width > 0 else line
+
+
+def _log_raw(raw: str) -> None:
+    """Append raw stdin payload + timestamp to ~/.claude/statusline.log (best-effort)."""
+    try:
+        log_path = os.path.expanduser("~/.claude/statusline.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        ts = time.strftime("%Y-%m-%dT%H:%M:%S")
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"--- {ts} subagent ---\n{raw}\n")
+    except Exception:
+        pass
 
 
 def _read_payload() -> dict:
@@ -281,6 +308,7 @@ def _read_payload() -> dict:
     raw = (raw or "").strip()
     if not raw:
         return {}
+    _log_raw(raw)
     try:
         data = json.loads(raw)
     except Exception:
