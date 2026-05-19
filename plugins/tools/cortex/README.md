@@ -352,8 +352,6 @@ dashboard / digest job 同 schedule 分支即可, 完整 yaml 见 `install_cron.
 
 ## 设计哲学
 
-详见 `.trellis/tasks/05-10-obsidian-kb-plugin/prd.md`。
-
 - **不依赖 `lib/`** — 自包含, 纯 bash + python stdlib
 - **CLI 主, MCP 兜底** — 官方 `obsidian` CLI 覆盖 read/write/list/search/move/property/daily; CLI 无法表达时 (heading/block 锚点 patch / canvas / 非 md) 回退 `mcp__obsidian__*`; 仍不上才直接写文件 (须 AskUserQuestion 授权)
 - **callout 替代 HTML grid** — Obsidian + GitHub 双渲染兼容

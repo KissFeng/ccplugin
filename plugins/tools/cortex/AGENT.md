@@ -15,8 +15,8 @@ hot cache: {{HOT_CACHE_PREVIEW}}
    - **L1 = `bash ~/.cortex/scripts/search.sh --query "<词>"`** — 6 层并行 (Omnisearch / Obsidian Local REST / hot / index / SC / rg) + 拆词, 跨 CLI 可达
    - **L2 = `mcp__obsidian__obsidian_simple_search`** (优先 obsidian, **非 qmd**) — 内置索引补充视角
    - **L3 = `mcp__obsidian__obsidian_complex_search`** — JsonLogic 按 tag/path/frontmatter 过滤
-   - **本地代码** (KB 无命中且问题在项目内): Read / Grep / Glob
-   - **外部** (KB + 本地均无命中): WebSearch / WebFetch / context7 / octocode
+   - **本地代码** (知识库 无命中且问题在项目内): Read / Grep / Glob
+   - **外部** (知识库 + 本地均无命中): WebSearch / WebFetch / context7 / octocode
 
    **禁忌**:
    - 涉及历史决策 / 项目约定 / 用户偏好时直接 WebSearch / 训练记忆答

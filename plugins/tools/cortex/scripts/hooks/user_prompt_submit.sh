@@ -110,7 +110,7 @@ project_hint, project_src = detect_project_hint()
 
 
 def build_search_contract_msg() -> str:
-    """每轮注入 — 按需检索约定 (KB 作为信息源优先级, 不强制每轮先搜)."""
+    """每轮注入 — 按需检索约定 (知识库 作为信息源优先级, 不强制每轮先搜)."""
     return (
         "🔍 cortex 约定 — 当你**需要查资料**时, 知识库是第一信息源 (非每轮强制):\n"
         "\n"
@@ -118,14 +118,14 @@ def build_search_contract_msg() -> str:
         "**无需搜的场景**: 改本地代码逻辑 / 读项目文件 / 执行明确指令 / 写显而易见的代码 / 纯对话。\n"
         "\n"
         "**需要查时的优先级**:\n"
-        "1. **KB 首选**: `bash ~/.cortex/scripts/search.sh --query \"<词>\"` (6 层并行: Omnisearch / Obsidian REST / hot / index / SC / rg + 拆词)\n"
-        "2. **KB 补充**: `mcp__obsidian__obsidian_simple_search` / `obsidian_complex_search` — 内置索引或 JsonLogic 过滤\n"
+        "1. **知识库 首选**: `bash ~/.cortex/scripts/search.sh --query \"<词>\"` (6 层并行: Omnisearch / Obsidian REST / hot / index / SC / rg + 拆词)\n"
+        "2. **知识库 补充**: `mcp__obsidian__obsidian_simple_search` / `obsidian_complex_search` — 内置索引或 JsonLogic 过滤\n"
         "3. **记忆**: `mcp__obsidian__obsidian_get_recent_changes` 按时间 / `memory.sh recall` 按 URI\n"
-        "4. **本地代码**: Read / Grep / Glob (KB 无命中且问题是项目内的)\n"
-        "5. **外部**: WebSearch / WebFetch / context7 / octocode (KB + 本地都无命中)\n"
+        "4. **本地代码**: Read / Grep / Glob (知识库 无命中且问题是项目内的)\n"
+        "5. **外部**: WebSearch / WebFetch / context7 / octocode (知识库 + 本地都无命中)\n"
         "\n"
         "**禁忌**:\n"
-        "- 涉及历史决策 / 项目约定 / 用户偏好时直接 WebSearch / 训练记忆答 — 应先 KB\n"
+        "- 涉及历史决策 / 项目约定 / 用户偏好时直接 WebSearch / 训练记忆答 — 应先 知识库\n"
         "- 用 qmd MCP 替代 obsidian MCP (qmd 索引不全)\n"
         "- 绕过 search.sh 用 Bash rg / Grep 搜 vault 内容 (rg 是 search.sh 第 6 层)"
     )
@@ -139,7 +139,7 @@ if hits and project_hint:
     src_tag = "git remote" if project_src == "git" else "相对 $HOME"
     msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` ({src_tag}); 需查项目历史/约定时可按 path 过滤 + memory.sh recall 召回。"
 elif hits:
-    msg += f"\n💡 触发词命中 {hits[:3]} — 涉及历史/约定时优先 KB。"
+    msg += f"\n💡 触发词命中 {hits[:3]} — 涉及历史/约定时优先 知识库。"
 elif project_hint:
     msg += f"\n💡 项目 = `知识库/项目/{project_hint}/` (需查项目历史时入口)。"
 
