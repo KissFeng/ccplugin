@@ -65,4 +65,4 @@ stdout 输出最终 result text, stderr 显示 rich 实时进度。
 
 ## 自定义路径
 
-config.json 可改 `install_path` (插件源根) + `target_dir` (wrapper 部署目录, 默认 `~/.cortex/scripts/`)。
+config.json 可改 `target_dir` (wrapper 部署目录, 默认 `~/.cortex/scripts/`)。`install_path` 自动 resolve 到 marketplace 规范路径 `~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex`, 不建议手改 (改了 wrapper 会找不到依赖脚本)。
