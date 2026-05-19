@@ -383,7 +383,7 @@ VAULT="${VAULT/#\~/$HOME}"
 
 # 调 cortex_config.py init 写 config
 if [[ "$OVERWRITE_CONFIG" == "1" ]]; then
-  init_args=(--non-interactive --install-path "$INSTALL_PATH" --vault "$VAULT")
+  init_args=(--non-interactive --vault "$VAULT")
   [[ -n "$LANG_CODE" ]] && init_args+=(--lang "$LANG_CODE")
   [[ -n "$SETTINGS" ]] && init_args+=(--settings "$SETTINGS")
 
@@ -396,7 +396,7 @@ fi
 # 生成 wrapper
 if should_regen_wrappers; then
   log_step "生成 ${C_BOLD}~/.cortex/scripts/*.sh${C_RESET} wrapper"
-  bash "$INSTALL_PATH/scripts/install_wrappers.sh" --install-path "$INSTALL_PATH"
+  bash "$INSTALL_PATH/scripts/install_wrappers.sh"
 else
   log_info "skip wrappers (~/.cortex/scripts/*.sh 已存在, 保留; --reinstall 强制重生)"
 fi
@@ -410,6 +410,9 @@ step_python_deps() {
     log_error "python3 未找到, 请先安装 Python 3.10+"
     return 1
   fi
+
+  # 自升 pip (旧 pip 解析 mcp 等新包会失败), 不报致命
+  python3 -m pip install --user --upgrade pip >/dev/null 2>&1 || true
 
   # 检测已装包 (python-docx import name = docx)
   local missing=()
@@ -426,21 +429,27 @@ step_python_deps() {
     log_info "python deps 已装 (${CORTEX_PYTHON_DEPS[*]})"
     if [[ "${REINSTALL:-0}" == "1" ]]; then
       log_step "强制升级 python deps"
-      pip3 install --user --upgrade "${CORTEX_PYTHON_DEPS[@]}" >&2 || {
-        log_warn "pip3 升级失败 (rc=$?), 现有安装不变"
-        return 0
-      }
+      python3 -m pip install --user --upgrade "${CORTEX_PYTHON_DEPS[@]}" >&2 || \
+        log_warn "pip 升级部分包失败, 已装版本不变"
     fi
     return 0
   fi
 
-  log_step "安装 python deps via pip3 --user: ${missing[*]}"
-  if ! pip3 install --user "${missing[@]}" >&2; then
-    log_warn "pip3 install 失败. MCP server / cortex_stream 可能不可用."
-    log_hint "手动: pip3 install --user ${missing[*]}"
-    return 0
+  log_step "安装 python deps: ${missing[*]}"
+  # 逐包独立装, 单包失败不影响其余 (mcp 需 Python ≥3.10, 旧环境可能 skip)
+  local failed=()
+  for pkg in "${missing[@]}"; do
+    if ! python3 -m pip install --user "$pkg" >&2; then
+      failed+=("$pkg")
+    fi
+  done
+
+  if [[ "${#failed[@]}" -gt 0 ]]; then
+    log_warn "部分包装失败: ${failed[*]} (其余已装, 不影响核心功能)"
+  else
+    log_ok "python deps 已装"
   fi
-  log_ok "python deps 已装"
+  return 0
 }
 
 step_python_deps

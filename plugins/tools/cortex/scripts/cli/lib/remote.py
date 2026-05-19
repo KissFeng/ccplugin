@@ -388,17 +388,10 @@ def load_filter_module(filename: str, mod_name: str) -> Any:
     # cli/lib/remote.py -> cli/lib -> cli -> scripts -> scripts/hooks/_lib/<filename>
     candidate = here.parent.parent.parent / "hooks" / "_lib" / filename
     if not candidate.is_file():
-        cfg = Path.home() / ".cortex" / "config.json"
-        hint = None
-        if cfg.is_file():
-            try:
-                hint = json.loads(cfg.read_text(encoding="utf-8")).get("install_path")
-            except Exception:
-                hint = None
-        if hint:
-            candidate = Path(hint).expanduser() / "hooks" / "_lib" / filename
-    if not candidate.is_file():
-        raise RuntimeError(f"{filename} not found at {candidate}")
+        raise RuntimeError(
+            f"{filename} not found at "
+            f"~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/{filename}"
+        )
     spec = importlib.util.spec_from_file_location(mod_name, candidate)
     if spec is None or spec.loader is None:  # pragma: no cover
         raise RuntimeError(f"cannot load {filename}")

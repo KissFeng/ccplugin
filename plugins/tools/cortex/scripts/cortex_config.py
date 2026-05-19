@@ -43,7 +43,7 @@ _config_path = _loader_mod._config_path
 load_config = _loader_mod.load_config
 
 # Subset of KNOWN_KEYS that map to filesystem paths.
-_PATH_KEYS = ("vault", "settings", "install_path")
+_PATH_KEYS = ("vault", "settings")
 _LANG_RE = re.compile(r"^[a-zA-Z]{2,3}(-[A-Z]{2})?$")
 
 
@@ -130,7 +130,6 @@ def cmd_init(args: argparse.Namespace) -> int:
         "vault": args.vault,
         "lang": args.lang,
         "settings": args.settings,
-        "install_path": args.install_path,
     }
 
     try:
@@ -227,7 +226,6 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--vault")
     i.add_argument("--lang")
     i.add_argument("--settings")
-    i.add_argument("--install-path", dest="install_path")
     i.set_defaults(func=cmd_init)
 
     v = sub.add_parser("validate", help="check syntax + field semantics")

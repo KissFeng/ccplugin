@@ -4,9 +4,11 @@ Flat schema (all fields optional):
     {
       "vault": "/abs/path/to/vault",
       "lang": "zh-CN",
-      "settings": "/abs/path/to/claude-settings.json",
-      "install_path": "/abs/path/to/cortex-plugin"
+      "settings": "/abs/path/to/claude-settings.json"
     }
+
+Plugin source path is fixed:
+    ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex
 
 Loader does not validate field semantics (path existence, locale code); that
 is the responsibility of `cortex config validate`. JSON syntax errors are
@@ -23,7 +25,12 @@ from typing import Any
 CONFIG_PATH = Path.home() / ".cortex" / "config.json"
 
 # Flat schema keys; kept here so CLI / doctor can introspect.
-KNOWN_KEYS = ("vault", "lang", "settings", "install_path")
+KNOWN_KEYS = ("vault", "lang", "settings")
+
+# 规范路径常量: marketplace 安装位置, 不存 config 不可覆盖
+# 路径字面量 "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex"
+# 是单一真相; os.path.expanduser 只做 ~ → 用户家展开, 不组装路径
+CORTEX_PLUGIN_ROOT = Path(os.path.expanduser("~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex"))
 
 
 class ConfigSyntaxError(Exception):
@@ -109,8 +116,8 @@ def get_vault() -> Path | None:
 
 
 def get_plugin_root() -> Path | None:
-    p = get_config_value("install_path")
-    return Path(os.path.expanduser(p)) if p else None
+    """Return canonical marketplace install path (env-free, config-free)."""
+    return CORTEX_PLUGIN_ROOT
 
 
 def get_lang(default: str = "zh-CN") -> str:

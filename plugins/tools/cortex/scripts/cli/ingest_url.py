@@ -41,22 +41,10 @@ def _load_module(filename: str, mod_name: str) -> Any:
     # cli/ingest_url.py -> cli/ -> scripts/ -> scripts/hooks/_lib/<filename>
     candidate = here.parent.parent / "hooks" / "_lib" / filename
     if not candidate.is_file():
-        # Consult ~/.cortex/config.json (install_path) — env-free fallback.
-        import json as _json
-
-        cfg = Path.home() / ".cortex" / "config.json"
-        hint = None
-        if cfg.is_file():
-            try:
-                hint = _json.loads(cfg.read_text(encoding="utf-8")).get("install_path")
-            except Exception:
-                hint = None
-        if hint:
-            candidate = Path(hint).expanduser() / "hooks" / "_lib" / filename
-    if not candidate.is_file():
         raise RuntimeError(
-            f"cortex_ingest_url: {filename} not found. "
-            "Set 'install_path' in ~/.cortex/config.json to the cortex plugin directory."
+            f"cortex_ingest_url: {filename} not found at "
+            f"~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/{filename} — "
+            "确认 cortex 插件已通过 marketplace 安装。"
         )
     spec = importlib.util.spec_from_file_location(mod_name, candidate)
     if spec is None or spec.loader is None:  # pragma: no cover

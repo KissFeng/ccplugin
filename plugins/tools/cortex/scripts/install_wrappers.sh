@@ -21,12 +21,14 @@
 #       memory / ledger / session / html_render
 #
 # Usage:
-#   bash install_wrappers.sh --install-path <abs cortex root> [--target-dir <dir>] [--no-overwrite]
+#   bash install_wrappers.sh [--target-dir <dir>] [--no-overwrite]
+#
+# 生成的 wrapper 内所有路径硬编码字面量 ~/.claude/.../cortex/scripts/...
+# 不接受任何 install-path 参数, 单一真相位于 install_wrappers.sh 本身。
 #
 # Exit codes:
 #   0  success
 #   2  bad args
-#   3  install-path missing or not a directory
 
 set -euo pipefail
 
@@ -42,24 +44,20 @@ print_help() {
 install_wrappers.sh — generate ~/.cortex/scripts/*.sh wrappers
 
 USAGE:
-  bash install_wrappers.sh --install-path <abs> [--target-dir <dir>] [--no-overwrite]
+  bash install_wrappers.sh [--target-dir <dir>] [--no-overwrite]
 
 OPTIONS:
-  --install-path <abs>   absolute marketplace cortex root (required)
   --target-dir <dir>     destination dir (default: ~/.cortex/scripts)
   --no-overwrite         skip wrappers that already exist
   --help, -h             this help
 EOF
 }
 
-INSTALL_PATH=""
 TARGET_DIR="$HOME/.cortex/scripts"
 NO_OVERWRITE=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --install-path) INSTALL_PATH="${2:-}"; shift 2 ;;
-    --install-path=*) INSTALL_PATH="${1#*=}"; shift ;;
     --target-dir) TARGET_DIR="${2:-}"; shift 2 ;;
     --target-dir=*) TARGET_DIR="${1#*=}"; shift ;;
     --no-overwrite) NO_OVERWRITE=1; shift ;;
@@ -67,15 +65,6 @@ while [[ $# -gt 0 ]]; do
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
 done
-
-if [[ -z "$INSTALL_PATH" ]]; then
-  echo "[install_wrappers.sh] --install-path is required" >&2
-  exit 2
-fi
-if [[ ! -d "$INSTALL_PATH" ]]; then
-  echo "[install_wrappers.sh] --install-path is not a directory: $INSTALL_PATH" >&2
-  exit 3
-fi
 
 mkdir -p "$TARGET_DIR"
 GENERATED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"

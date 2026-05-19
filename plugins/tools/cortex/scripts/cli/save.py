@@ -129,23 +129,14 @@ def _derive_tags(fm: dict, body: str) -> list[str]:
 
 def _load_masking() -> Any:
     """Import the P0 masking module from `hooks/_lib/masking.py`."""
+    # 走相对路径定位 (此脚本位于 <cortex>/scripts/cli/save.py)
     here = Path(__file__).resolve()
     candidate = here.parent.parent / "hooks" / "_lib" / "masking.py"
     if not candidate.is_file():
-        import json
-
-        cfg = Path.home() / ".cortex" / "config.json"
-        if cfg.is_file():
-            try:
-                hint = json.loads(cfg.read_text(encoding="utf-8")).get("install_path")
-            except Exception:
-                hint = None
-            if hint:
-                candidate = Path(hint).expanduser() / "hooks" / "_lib" / "masking.py"
-    if not candidate.is_file():
         raise RuntimeError(
-            "cortex_save: masking.py not found. "
-            "Set 'install_path' in ~/.cortex/config.json to the cortex plugin directory."
+            "cortex_save: masking.py not found at "
+            "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/hooks/_lib/masking.py — "
+            "确认 cortex 插件已通过 marketplace 安装。"
         )
     spec = importlib.util.spec_from_file_location("cortex_masking", candidate)
     if spec is None or spec.loader is None:  # pragma: no cover - defensive

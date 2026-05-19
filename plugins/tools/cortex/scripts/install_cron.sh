@@ -26,91 +26,17 @@ USAGE:
   bash install_cron.sh --help
 
 OPTIONS:
-  --plugin-root <path>   显式指定 cortex 插件根路径 (优先级最高)
   --help, -h             显示本帮助
 
-PLUGIN_ROOT 解析优先级 (从高到低):
-  1. --plugin-root <path>                  命令行覆盖
-  2. ~/.cortex/config.json .install_path   配置 (env-free per PRD)
-  3. ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex      (主, 默认)
-  4. ~/.config/claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex (XDG 兜底)
-  5. $CLAUDE_PLUGIN_ROOT                   (Claude Code 平台契约, 由主线注入)
-  6. fallback: 脚本所在源码路径 + stderr 警告
-
-snippet 输出: PLUGIN_ROOT 已被解析为绝对路径字符串 (非变量占位), 用户可直接粘贴到 crontab。
-GHA snippet 例外: 使用 \${GITHUB_WORKSPACE} 占位, 由 CI 环境注入。
+PLUGIN_ROOT 强制写死为 marketplace 规范路径:
+  ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex
 EOF
-}
-
-# ----------------------------------------------------------------------
-# resolve_install_path
-#
-# 输出 (stdout): 解析后的绝对路径
-# 副作用 (stderr): fallback 时输出警告
-# 入参:
-#   $1 = override path (来自 --plugin-root, 可空)
-# ----------------------------------------------------------------------
-resolve_install_path() {
-  local override="${1:-}"
-  local script_dir
-  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-  # 1. 命令行覆盖
-  if [[ -n "$override" ]]; then
-    printf '%s\n' "$override"
-    return 0
-  fi
-
-  # 2. ~/.cortex/config.json install_path (env-free per PRD)
-  if [[ -f "$HOME/.cortex/config.json" ]] && command -v jq >/dev/null 2>&1; then
-    local from_cfg
-    from_cfg=$(jq -r '.install_path // empty' "$HOME/.cortex/config.json" 2>/dev/null)
-    if [[ -n "$from_cfg" ]]; then
-      printf '%s\n' "$from_cfg"
-      return 0
-    fi
-  fi
-
-  # 3. 主 marketplace 路径
-  local primary="$HOME/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex"
-  if [[ -d "$primary" ]]; then
-    printf '%s\n' "$primary"
-    return 0
-  fi
-
-  # 4. XDG 兜底
-  local xdg="$HOME/.config/claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex"
-  if [[ -d "$xdg" ]]; then
-    printf '%s\n' "$xdg"
-    return 0
-  fi
-
-  # 5. CLAUDE_PLUGIN_ROOT (CC 主线注入)
-  if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
-    printf '%s\n' "$CLAUDE_PLUGIN_ROOT"
-    return 0
-  fi
-
-  # 6. fallback: 源码路径 + 警告
-  printf '%s\n' "$script_dir"
-  printf '[install_cron.sh] WARNING: 未检测到 marketplace 安装, cron 任务可能因路径无效失败\n' >&2
-  printf '[install_cron.sh] WARNING: fallback 到源码路径 %s\n' "$script_dir" >&2
-  printf '[install_cron.sh] WARNING: 请通过 --plugin-root 或在 ~/.cortex/config.json 设置 install_path 指定 marketplace 安装路径\n' >&2
 }
 
 # -------- 参数解析 --------
 KIND=""
-OVERRIDE_ROOT=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --plugin-root)
-      OVERRIDE_ROOT="${2:-}"
-      shift 2
-      ;;
-    --plugin-root=*)
-      OVERRIDE_ROOT="${1#*=}"
-      shift
-      ;;
     -h|--help)
       print_help
       exit 0
@@ -120,14 +46,15 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "usage: $0 [--plugin-root <path>] [cron|launchd|gha]" >&2
+      echo "usage: $0 [cron|launchd|gha]" >&2
       exit 2
       ;;
   esac
 done
 KIND="${KIND:-cron}"
 
-PLUGIN_ROOT="$(resolve_install_path "$OVERRIDE_ROOT")"
+# 强制 marketplace 规范路径, 字面量 ~/, 不接受任何覆盖
+PLUGIN_ROOT=~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex
 
 # Load ~/.cortex/config.json (env > config > fallback) so the printed snippets
 # default to the user's configured vault/lang/settings. JSON syntax errors

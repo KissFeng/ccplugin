@@ -140,7 +140,8 @@ cx_config_get() {
 }
 
 cx_get_vault()       { cx_config_get vault ""; }
-cx_get_plugin_root() { cx_config_get install_path ""; }
+# plugin root: marketplace 规范路径 (无 env / config 覆盖)
+cx_get_plugin_root() { printf '%s' ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex; }
 cx_get_lang()        { cx_config_get lang "zh-CN"; }
 cx_get_settings()    { cx_config_get settings "$HOME/.claude/settings.json"; }
 cx_get_timeout()     { cx_config_get timeout_default "${1:-300}"; }
