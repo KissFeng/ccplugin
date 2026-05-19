@@ -253,7 +253,7 @@ test_slash_command_mapped_for_dashboard() {
   make_fakebin "$sandbox/bin"
   mkdir -p "$sandbox/h/.cortex"
   cat > "$sandbox/h/.cortex/config.json" <<EOF
-{ "vault": "$sandbox/v", "install_path": "$PLUGIN_ROOT" }
+{ "vault": "$sandbox/v" }
 EOF
   out=$(env -i PATH="$sandbox/bin:$PATH" HOME="$sandbox/h" \
     bash "$RUN_SH" dashboard --settings /dev/null --dry-run -- "x")
@@ -271,7 +271,7 @@ test_skill_not_injected_for_unknown_job() {
   make_fakebin "$sandbox/bin"
   mkdir -p "$sandbox/h/.cortex"
   cat > "$sandbox/h/.cortex/config.json" <<EOF
-{ "vault": "$sandbox/v", "install_path": "$PLUGIN_ROOT" }
+{ "vault": "$sandbox/v" }
 EOF
   out=$(env -i PATH="$sandbox/bin:$PATH" HOME="$sandbox/h" \
     bash "$RUN_SH" custom-job --settings /dev/null --dry-run -- "x")

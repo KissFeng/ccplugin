@@ -132,14 +132,12 @@ class InitCmdTest(_FakeHomeMixin, unittest.TestCase):
             "--vault", str(self.real_dir),
             "--lang", "en",
             "--settings", str(self.real_dir),
-            "--install-path", str(self.real_dir),
         ])
         self.assertEqual(rc, 0)
         data = json.loads(self.cfg_path.read_text())
         self.assertEqual(data["vault"], str(self.real_dir))
         self.assertEqual(data["lang"], "en")
         self.assertEqual(data["settings"], str(self.real_dir))
-        self.assertEqual(data["install_path"], str(self.real_dir))
 
     def test_non_interactive_partial(self):
         rc, _, _ = self.run_cli([

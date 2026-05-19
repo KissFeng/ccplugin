@@ -11,14 +11,7 @@ GEN = PLUGIN_ROOT / "scripts" / "install_wrappers.sh"
 
 def _run_install(target: Path) -> None:
     r = subprocess.run(
-        [
-            "bash",
-            str(GEN),
-            "--install-path",
-            str(PLUGIN_ROOT),
-            "--target-dir",
-            str(target),
-        ],
+        ["bash", str(GEN), "--target-dir", str(target)],
         capture_output=True,
         text=True,
     )

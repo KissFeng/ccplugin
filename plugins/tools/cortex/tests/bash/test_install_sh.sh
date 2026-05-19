@@ -56,7 +56,6 @@ test_non_interactive_full_run_writes_config_and_wrappers() {
   assert_contains "\"vault\": \"$vault\"" "$(cat "$home/.cortex/config.json")"
   assert_contains "\"lang\": \"en-US\"" "$(cat "$home/.cortex/config.json")"
   assert_contains "\"settings\": \"$settings\"" "$(cat "$home/.cortex/config.json")"
-  assert_contains "\"install_path\": \"$PLUGIN_ROOT\"" "$(cat "$home/.cortex/config.json")"
 
   # 七件套全部生成可执行
   local wrappers=(lint.sh dashboard.sh doctor.sh install_cron.sh config.sh update.sh)
@@ -86,21 +85,6 @@ test_idempotent_second_run_overwrites() {
   assert_contains "\"vault\": \"$vault2\"" "$(cat "$home/.cortex/config.json")"
 }
 
-test_install_path_via_env() {
-  local home; home=$(make_tmpdir); trap "rm -rf '$home'" RETURN
-  local vault; vault=$(make_tmpdir)
-  out=$(env -i HOME="$home" PATH="$PATH" CORTEX_INSTALL_PATH="$PLUGIN_ROOT" \
-    bash "$INSTALL_SH" --non-interactive --vault "$vault" --no-cron 2>&1) && rc=$? || rc=$?
-  assert_eq "0" "$rc"
-  assert_contains "\"install_path\": \"$PLUGIN_ROOT\"" "$(cat "$home/.cortex/config.json")"
-}
-
-test_invalid_install_path_exits_2() {
-  out=$(env -i HOME="$(mktemp -d)" PATH="$PATH" CORTEX_INSTALL_PATH=/definitely/not/here \
-    bash "$INSTALL_SH" --non-interactive --vault /tmp 2>&1) && rc=$? || rc=$?
-  assert_eq "2" "$rc"
-}
-
 test_shellcheck_clean() {
   if ! command -v shellcheck >/dev/null 2>&1; then
     _TESTS_RUN=$((_TESTS_RUN + 1))
@@ -123,8 +107,6 @@ run_test test_non_interactive_missing_vault_exits_2      test_non_interactive_mi
 run_test test_non_interactive_full_run_writes_config_and_wrappers \
                                                           test_non_interactive_full_run_writes_config_and_wrappers
 run_test test_idempotent_second_run_overwrites           test_idempotent_second_run_overwrites
-run_test test_install_path_via_env                       test_install_path_via_env
-run_test test_invalid_install_path_exits_2               test_invalid_install_path_exits_2
 run_test test_shellcheck_clean                           test_shellcheck_clean
 
 print_summary

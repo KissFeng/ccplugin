@@ -11,20 +11,9 @@ SCRIPT="$PLUGIN_ROOT/scripts/install_wrappers.sh"
 
 WRAPPERS=(lint.sh dashboard.sh doctor.sh install_cron.sh config.sh update.sh ingest.sh search.sh save.sh refactor.sh init.sh memory.sh recall.sh promote.sh digest.sh forget.sh)
 
-test_missing_install_path_fails() {
-  out=$(bash "$SCRIPT" 2>&1) && rc=$? || rc=$?
-  assert_eq "2" "$rc"
-  assert_contains "required" "$out"
-}
-
-test_nonexistent_install_path_fails() {
-  out=$(bash "$SCRIPT" --install-path /definitely/does/not/exist 2>&1) && rc=$? || rc=$?
-  assert_eq "3" "$rc"
-}
-
 test_generates_all_executable_wrappers() {
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   local f
   for f in "${WRAPPERS[@]}"; do
     if [[ ! -f "$tgt/$f" ]]; then
@@ -45,19 +34,19 @@ test_generates_all_executable_wrappers() {
   done
 }
 
-test_wrappers_embed_absolute_install_path() {
+test_wrappers_embed_marketplace_literal_path() {
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
-  # shell-only wrappers contain absolute install_path
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
+  # wrappers 应含 ~/.claude/.../cortex 字面量, 无 INSTALL_PATH / 绝对路径
   out=$(cat "$tgt/install_cron.sh")
-  assert_contains "$PLUGIN_ROOT/scripts/install_cron.sh" "$out"
+  assert_contains "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/install_cron.sh" "$out"
   out=$(cat "$tgt/config.sh")
-  assert_contains "$PLUGIN_ROOT/scripts/cortex_config.py" "$out"
+  assert_contains "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py" "$out"
 }
 
 test_update_wrapper_contains_two_claude_commands() {
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   out=$(cat "$tgt/update.sh")
   assert_contains "claude plugins marketplace update ccplugin-market" "$out"
   assert_contains "claude plugins update cortex@ccplugin-market" "$out"
@@ -65,7 +54,7 @@ test_update_wrapper_contains_two_claude_commands() {
 
 test_doctor_wrapper_guides_to_skill() {
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   out=$(cat "$tgt/doctor.sh")
   assert_contains "cortex-doctor" "$out"
 }
@@ -74,7 +63,7 @@ test_skill_wrappers_invoke_slash_command() {
   # 新设计: skill wrappers 不再注入 SKILL.md, 而是调 /cortex:<name> slash command.
   # 行为由 commands/<name>.md 定义.
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   local w
   for w in ingest.sh search.sh save.sh refactor.sh; do
     out=$(cat "$tgt/$w")
@@ -87,7 +76,7 @@ test_skill_wrappers_invoke_slash_command() {
 test_save_wrapper_is_no_args_slash_command() {
   # 新设计: save.sh 不接 stdin/args, 调 /cortex:save 处理 inbox 全部 (见 commands/save.md).
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   out=$(cat "$tgt/save.sh")
   assert_contains "/cortex:save" "$out"
   # 不应再含旧 stdin body 读取逻辑
@@ -102,7 +91,7 @@ test_lint_wrapper_calls_slash_command() {
   # 新设计: lint.sh 调 /cortex:lint slash command. 真正的 lint.run python 调用
   # 由 commands/lint.md 内的 Bash 指令触发, 不在 wrapper 内.
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   out=$(cat "$tgt/lint.sh")
   assert_contains "/cortex:lint" "$out"
   assert_contains "cortex-lint" "$out"
@@ -110,7 +99,7 @@ test_lint_wrapper_calls_slash_command() {
 
 test_all_generated_wrappers_pass_bash_n() {
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   local f
   for f in "$tgt"/*.sh; do
     if ! bash -n "$f" 2>/dev/null; then
@@ -125,9 +114,9 @@ test_all_generated_wrappers_pass_bash_n() {
 
 test_overwrite_default_warns_on_stderr() {
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   # second run: existing files trigger "regenerated" stderr lines
-  err=$(bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" 2>&1 >/dev/null)
+  err=$(bash "$SCRIPT" --target-dir "$tgt" 2>&1 >/dev/null)
   assert_contains "regenerated" "$err"
 }
 
@@ -136,7 +125,7 @@ test_no_overwrite_preserves_existing() {
   mkdir -p "$tgt"
   echo 'sentinel' > "$tgt/lint.sh"
   chmod +x "$tgt/lint.sh"
-  err=$(bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" --no-overwrite 2>&1 >/dev/null)
+  err=$(bash "$SCRIPT" --target-dir "$tgt" --no-overwrite 2>&1 >/dev/null)
   assert_contains "skipped" "$err"
   out=$(cat "$tgt/lint.sh")
   assert_eq "sentinel" "$out"
@@ -148,7 +137,7 @@ test_slash_command_invocation_in_claude_wrappers() {
   # (no --bare, no --allowed-tools, no args). AUTO_MODE markers live in
   # commands/<name>.md (loaded by the slash command), not in the wrapper.
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --install-path "$PLUGIN_ROOT" --target-dir "$tgt" >/dev/null 2>&1
+  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
   local w
   for w in doctor.sh lint.sh ingest.sh search.sh save.sh refactor.sh \
            dashboard.sh init.sh promote.sh forget.sh digest.sh \
@@ -183,10 +172,8 @@ test_shellcheck_clean() {
   fi
 }
 
-run_test test_missing_install_path_fails            test_missing_install_path_fails
-run_test test_nonexistent_install_path_fails        test_nonexistent_install_path_fails
 run_test test_generates_all_executable_wrappers     test_generates_all_executable_wrappers
-run_test test_wrappers_embed_absolute_install_path  test_wrappers_embed_absolute_install_path
+run_test test_wrappers_embed_marketplace_literal_path  test_wrappers_embed_marketplace_literal_path
 run_test test_update_wrapper_contains_two_claude_commands test_update_wrapper_contains_two_claude_commands
 run_test test_doctor_wrapper_guides_to_skill        test_doctor_wrapper_guides_to_skill
 run_test test_skill_wrappers_invoke_slash_command   test_skill_wrappers_invoke_slash_command
