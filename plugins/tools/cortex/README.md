@@ -7,9 +7,9 @@
 | 形态 | 数量 | 内容 |
 |------|------|------|
 | Hooks | 5 | `SessionStart` / `PostCompact` / `Stop` / `SubagentStop` / `UserPromptSubmit` |
-| Skills | 15 | 自动 / 显式触发, 全部多文件渐进披露 (入口 SKILL.md ≤ 80 行 + `references/`) |
+| Skills | 15 | 自动 / 显式触发, 渐进披露 (多文件 SKILL.md+`references/`, 或单文件内分层标题) |
 | Agents | 6 | curator / researcher / archivist / cartographer / summarizer / translator |
-| Slash commands | 19 | `/cortex:<name>` 全自动 AUTO_MODE persistent |
+| Slash commands | 18 | `/cortex:<name>` 全自动 AUTO_MODE persistent |
 | Bash wrappers | 25 | `~/.cortex/scripts/*.sh` — slash 走 stream-json + rich UI; CLI 直 exec python3 |
 | Lint 规则 | 30 | autofix 循环至 vault clean |
 | Python CLI | 13 | save / search / deep_search / digest / ingest_url / ingest_file / ingest_remote / refresh_projects / memory / ledger / session / html_render / image_gen |
@@ -177,7 +177,7 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 
 ## 二、Skills 说明 (15 个)
 
-每个 skill 走 Claude Code 标准 SKILL.md 协议, 入口 ≤ 80 行 (frontmatter + 触发词 + 决策树 + AUTO_MODE 分支 + references 指针表), 细节迁 `references/<topic>.md` 按需加载 (L3 on-demand)。
+每个 skill 走 Claude Code 标准 SKILL.md 协议。渐进披露两种形态: **多文件** (入口 SKILL.md ≤80 行 + `references/<topic>.md` 按需加载, 主流) 或 **单文件** (单 SKILL.md 内用 `# / ## / ###` 标题分层, 如 cortex-digest)。
 
 ### 触发分类
 
@@ -210,7 +210,7 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 
 ### 渐进披露架构
 
-L1 always-on (hook 注入) → L2 routing (SKILL.md 骨架 + 指针) → L3 on-demand (`references/<topic>.md` 按需加载)。`skill-references-exists` lint 规则强制 reference 链接真实存在。详见 [Skills 详解](docs/Skills%20详解.md)。
+L1 always-on (hook 注入) → L2 routing (SKILL.md 骨架 + 指针) → L3 on-demand (多文件 skill 走 `references/<topic>.md` 按需加载; 单文件 skill 走标题层级跳转)。`skill-references-exists` lint 规则对多文件 skill 强制 reference 链接真实存在。详见 [Skills 详解](docs/Skills%20详解.md)。
 
 ---
 

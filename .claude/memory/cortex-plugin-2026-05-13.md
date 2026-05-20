@@ -100,12 +100,12 @@ type: project
 
 ## Digest 路由识别
 
-详见 `skills/cortex-digest/SKILL.md` + `references/{pipeline-stages,level-routing,scoring}.md`。要点: 6 信号 repo 归属 (frontmatter > source_url > wikilink > URL > tag > keyword), 反思/连接/矛盾/决策 4 类命中 repo 落 `项目/<...>/笔记/` 否则 `收件箱/`; 第 6 阶段 evolution 抽 patterns → proposal → `cortex-refactor evolution-apply` 用户确认 patch。
+详见 `skills/cortex-digest/SKILL.md` (单文件渐进式披露 815 行, 不再用 references/)。要点: 6 信号 repo 归属 (frontmatter > source_url > wikilink > URL > tag > keyword), 反思/连接/矛盾/决策 4 类命中 repo 落 `项目/<...>/笔记/` 否则 `收件箱/`; **stage 5 双向桥** (5a 项目→领域 / 5b 记忆→KB 晋升 weight≥0.7+recall≥5 / 5c KB→记忆 具化 score≥7+backref≥3 / 5d 双向 backlink + `_meta/bridge.jsonl` 审计); 第 8 阶段 evolution 抽 patterns → proposal → `cortex-refactor evolution-apply` 用户确认 patch。
 
 ## 关键约定
 
 - AUTO_MODE persistent (禁询问 ≠ 中止, AI 自决循环修复至 clean)
-- Frontmatter `tags` ≥10 强制 (lint `fm-missing-tags` autofix 派生 12 维度, 严禁占位符)
+- Frontmatter `tags` 仅校验字段存在 + 类型 list (无数量下限); `fm-banned-tags` 禁裸结构 (`index/meta/template/_index/stub`) + 裸时间 (`YYYY[-MM[-DD]]/YYYY-Q[1-4]/YYYY-W##`), hierarchical `xxx/yyy` 允许; autofix 派生语义 tag 严禁占位符
 - Banned fm fields: `preset` (已废)
 - 路径 lang 校验 (rule `path-lang-mismatch`): vault.lang=zh-CN segment 全 ASCII 或 lang=en segment 含 CJK → warn; 豁免 host/org/repo + ASCII 专名 + frontmatter `path_lang_exempt: true`
 - cortex-refactor 子操作: `rename` / `merge` / `split` / `evolution-apply` (proposal → AskUserQuestion → patch SKILL/AGENT, safety gate: 白名单 skills/agents/AGENT.md, 黑名单 commands/scripts/_meta/_templates)
