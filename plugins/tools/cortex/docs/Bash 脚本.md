@@ -17,7 +17,6 @@ cortex 把 19 个 slash command 中常用的 19 个包装成独立 bash 脚本 +
 | `init.sh` | 全局+知识库 | `/cortex:init` | 初始化 vault (首次安装时跑) |
 | `install_cron.sh` | 全局 | `/cortex:install_cron` | 部署定时任务到 launchd/cron/GHA |
 | `config.sh` | 全局 | `/cortex:config` | 交互式编辑 `~/.cortex/config.json` |
-| `update.sh` | 全局 | `/cortex:update` | 更新插件 (marketplace + wrappers) |
 | `doctor.sh` | 全局+知识库 | `/cortex:doctor` | 体检 vault + 依赖 + 配置 |
 | `lint.sh` | 知识库 | `/cortex:lint` | 全自动 lint 修复至 clean |
 | `refactor.sh` | 知识库 | `/cortex:refactor` | 改名 / 合并 / 拆分 |

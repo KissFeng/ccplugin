@@ -49,7 +49,8 @@ bash ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/install
 升级 (拉最新 marketplace + 重装 cortex):
 
 ```bash
-bash ~/.cortex/scripts/update.sh
+claude plugins marketplace update ccplugin-market \
+  && claude plugins update cortex@ccplugin-market
 ```
 
 `install.sh` 重复执行: 远端态 (marketplace / plugin) 强制升级; 本地态 (`~/.cortex/config.json` + wrapper) 已存在时交互询问 (默认保留)。`--reinstall` 跳询问强覆盖。
@@ -124,7 +125,6 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 | `init.sh` | 🌐 + 📚 | 初始化 vault 骨架 + 默认模板 + 配置 |
 | `install_cron.sh` | 🌐 | 注册 cron / launchd / GHA 定时任务 (本身不调 claude) |
 | `config.sh` | 🌐 | 交互式编辑 `~/.cortex/config.json` (直跑 python) |
-| `update.sh` | 🌐 | 拉最新 marketplace + 升级 cortex (走 `claude plugins update`) |
 | `doctor.sh` | 🌐 + 📚 | vault / obsidian-cli / MCP / lint / locale / config 18 项体检 |
 
 #### 维护 / 重构 (3)
@@ -343,7 +343,6 @@ dashboard / digest job 同 schedule 分支即可, 完整 yaml 见 `install_cron.
 | auto-commit 与 OGit 冲突 | 检测到 `.obsidian/plugins/obsidian-git/` | cortex 自动关闭 auto-commit, OGit 接管 |
 | lint `--fix` 未改盘 | autofix 仅对部分规则生效 | 其他规则用 cortex-refactor 协助 |
 | canvas 文件空 | 官方 obsidian CLI 不支持 .canvas 且 topic 无匹配节点 | 用 cortex-search 先确认 vault 内有相关页 |
-| `update.sh` 失败 | marketplace 路径变更或 claude CLI 缺失 | 重跑 install.sh 或检查 `claude plugins list` |
 | cron 不触发 | macOS SIP 限制 cron / launchd plist 未 load | 改用 launchd, `launchctl list \| grep cortex` 验证 |
 
 详见 [故障排查](docs/故障排查.md)。

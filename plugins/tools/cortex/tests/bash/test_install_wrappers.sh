@@ -9,7 +9,7 @@ source "$DIR/_assert.sh"
 
 SCRIPT="$PLUGIN_ROOT/scripts/install_wrappers.sh"
 
-WRAPPERS=(lint.sh dashboard.sh doctor.sh install_cron.sh config.sh update.sh ingest.sh search.sh save.sh refactor.sh init.sh memory.sh recall.sh promote.sh digest.sh forget.sh)
+WRAPPERS=(lint.sh dashboard.sh doctor.sh install_cron.sh config.sh ingest.sh search.sh save.sh refactor.sh init.sh memory.sh recall.sh promote.sh digest.sh forget.sh)
 
 test_generates_all_executable_wrappers() {
   local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
@@ -42,14 +42,6 @@ test_wrappers_embed_marketplace_literal_path() {
   assert_contains "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/install_cron.sh" "$out"
   out=$(cat "$tgt/config.sh")
   assert_contains "~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scripts/cortex_config.py" "$out"
-}
-
-test_update_wrapper_contains_two_claude_commands() {
-  local tgt; tgt=$(make_tmpdir); trap "rm -rf '$tgt'" RETURN
-  bash "$SCRIPT" --target-dir "$tgt" >/dev/null 2>&1
-  out=$(cat "$tgt/update.sh")
-  assert_contains "claude plugins marketplace update ccplugin-market" "$out"
-  assert_contains "claude plugins update cortex@ccplugin-market" "$out"
 }
 
 test_doctor_wrapper_guides_to_skill() {
@@ -174,7 +166,6 @@ test_shellcheck_clean() {
 
 run_test test_generates_all_executable_wrappers     test_generates_all_executable_wrappers
 run_test test_wrappers_embed_marketplace_literal_path  test_wrappers_embed_marketplace_literal_path
-run_test test_update_wrapper_contains_two_claude_commands test_update_wrapper_contains_two_claude_commands
 run_test test_doctor_wrapper_guides_to_skill        test_doctor_wrapper_guides_to_skill
 run_test test_skill_wrappers_invoke_slash_command   test_skill_wrappers_invoke_slash_command
 run_test test_save_wrapper_is_no_args_slash_command test_save_wrapper_is_no_args_slash_command

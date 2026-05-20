@@ -2,10 +2,10 @@
 
 ## 用户态 wrapper (24 个)
 
-`install_wrappers.sh` 在 `~/.cortex/scripts/` 生成 24 个用户入口:
+`install_wrappers.sh` 在 `~/.cortex/scripts/` 生成 23 个用户入口:
 
 - **slash 委托 (10)**: `lint.sh` / `dashboard.sh` / `doctor.sh` / `init.sh` / `promote.sh` / `forget.sh` / `digest.sh` / `recall.sh` / `refactor.sh` / `ingest.sh`
-- **shell only (3)**: `install_cron.sh` / `config.sh` / `update.sh`
+- **shell only (2)**: `install_cron.sh` / `config.sh`
 - **CLI 直接调 (11)**: `save.sh` / `search.sh` / `deep_search.sh` / `ingest_url.sh` / `ingest_file.sh` / `ingest_remote.sh` / `refresh_projects.sh` / `memory.sh` / `ledger.sh` / `session.sh` / `html_render.sh`
 
 每个 slash wrapper 内部走 `python3 <abs>/cortex_stream.py -- claude --settings ... -p "/cortex:<name> auto"` (`auto` 后缀触发 AUTO_MODE 跳询问)。

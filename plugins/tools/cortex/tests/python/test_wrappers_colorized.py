@@ -27,7 +27,7 @@ def test_install_wrappers_generates_expected_set(tmp_path: Path) -> None:
     for n in ["lint.sh", "digest.sh", "recall.sh", "save.sh", "search.sh",
               "memory.sh", "ingest_url.sh", "ingest_file.sh", "ledger.sh",
               "session.sh", "deep_search.sh", "html_render.sh",
-              "install_cron.sh", "config.sh", "update.sh"]:
+              "install_cron.sh", "config.sh"]:
         assert (tmp_path / n).exists(), f"{n} 未生成"
 
 

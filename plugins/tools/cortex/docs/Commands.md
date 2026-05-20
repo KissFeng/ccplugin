@@ -16,7 +16,6 @@ cortex 提供 19 个 plugin slash command, 在 Claude Code 任何会话中可直
 | `/cortex:init` | 全局+知识库 | 初始化 vault (首次安装) | 创建目录骨架 + 默认模板 + 配置 |
 | `/cortex:install_cron` | 全局 | 安装定时任务 | 部署 launchd / cron / GitHub Actions 触发器 |
 | `/cortex:config` | 全局 | 编辑配置 | 交互式更新 `~/.cortex/config.json` |
-| `/cortex:update` | 全局 | 更新插件 | 拉最新 marketplace + 重生成 wrapper |
 | `/cortex:doctor` | 全局+知识库 | 体检 | 检查 vault 完整性 / 配置正确性 / 依赖可用性 |
 | `/cortex:lint` | 知识库 | 全自动修复 | 跑 30 条 lint 规则 + autofix + 循环修复直至 clean |
 | `/cortex:refactor` | 知识库 | 重构 vault | 改名 / 合并 / 拆分页面, 同步 wikilink |

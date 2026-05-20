@@ -324,10 +324,9 @@ emit_cli html_render
 emit_cli image_gen
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3 shell-only wrappers (不走 claude, 直接调脚本)
+# 2 shell-only wrappers (不走 claude, 直接调脚本)
 #   - install_cron.sh: crontab 注册 (本身不需要 AI)
 #   - config.sh:       config dump (本身不需要 AI)
-#   - update.sh:       plugins update (claude CLI 子命令, 非 -p prompt)
 # ─────────────────────────────────────────────────────────────────────────────
 emit install_cron.sh "$(cat <<EOB
 export CORTEX_JOB_LABEL="cortex-install_cron"
@@ -343,19 +342,11 @@ python3 ~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/scri
 EOB
 )"
 
-emit update.sh "$(cat <<'EOB'
-export CORTEX_JOB_LABEL="cortex-update"
-banner "update"
-claude plugins marketplace update ccplugin-market \
-  && claude plugins update cortex@ccplugin-market
-EOB
-)"
-
 # 清理 TARGET_DIR 内不在白名单的 .sh (避免旧 wrapper 残留, 例如重命名后的废文件)
 EXPECTED=(
   lint.sh dashboard.sh doctor.sh init.sh promote.sh forget.sh
   digest.sh recall.sh refactor.sh ingest.sh
-  install_cron.sh config.sh update.sh
+  install_cron.sh config.sh
   save.sh search.sh deep_search.sh ingest_url.sh ingest_file.sh ingest_remote.sh
   refresh_projects.sh
   memory.sh ledger.sh session.sh html_render.sh image_gen.sh

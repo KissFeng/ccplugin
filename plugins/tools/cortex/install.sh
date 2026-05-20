@@ -606,7 +606,6 @@ printf '%s   %swrappers%s: %s~/.cortex/scripts/%s\n'     "$(_tag)" "$C_DIM" "$C_
 printf '\n'
 printf '%s %sNext:%s\n'                                   "$(_tag)" "$C_CYAN$C_BOLD" "$C_RESET" >&2
 printf '%s   %s~/.cortex/scripts/doctor.sh%s         %s# 健康检查%s\n'      "$(_tag)" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET" >&2
-printf '%s   %s~/.cortex/scripts/update.sh%s         %s# 更新插件%s\n'      "$(_tag)" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET" >&2
 printf '%s   %s~/.cortex/scripts/install_cron.sh%s   %s# 安装周期任务%s\n'  "$(_tag)" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET" >&2
 
 printf '\n'
