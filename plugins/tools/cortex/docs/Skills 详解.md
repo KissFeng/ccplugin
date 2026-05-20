@@ -97,5 +97,5 @@ Safety gate:
 - `scripts/cli/digest.py` (evolution CLI)
 - `scripts/cli/lib/evolution.py` (核心逻辑)
 - `scripts/refactor/evolution_apply.py` (proposal 消化)
-- `skills/cortex-digest/references/evolution.md`
+- `skills/cortex-digest/SKILL.md §阶段 8 · Evolution + 清理`
 - `skills/cortex-refactor/SKILL.md §evolution-apply`
