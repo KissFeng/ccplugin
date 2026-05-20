@@ -7,16 +7,8 @@ captured_at: <YYYY-MM-DDTHH:MM:SSZ>
 maturity: draft
 score: 2
 tags:
-  - type/inbox
-  - source/<host>
-  - lang/<l>
-  - score/2
-  - maturity/draft
-  - captured/<YYYY-MM>
-  - status/待分发
-  - domain/未分类
-  - kind/raw
-  - topic/<slug>
+  - 收件箱
+  - inbox
 template_version: 1
 ---
 

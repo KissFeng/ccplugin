@@ -36,20 +36,11 @@ bash ~/.cortex/scripts/save.sh ... \
 
 ## Frontmatter 规范 (按目标目录)
 
-save.py 落档时 `_derive_tags` 派生**语义** tag (alias + h1/h2 slug + 中文 2-4 字 + 英文 PascalCase 小写化), 严禁占位符 / 裸时间 (`YYYY[-MM]` 等); hierarchical `xxx/yyy` 不主动派生。
+save.py 落档时 `_derive_tags` 派生**语义** tag (alias + h1/h2 slug + 中文 2-4 字 + 英文 PascalCase 小写化), 严禁占位符 / 裸时间 (`YYYY[-MM]` 等)。
 
-目录级**强制** tags_required (hierarchical 形式如 `type/project`, `host/<x>`, `memory/L1`, `memory/procedural`) 由 **cortex-lint 后续**通过 schema 补齐, 不在 save 阶段填:
+**hierarchical 前缀 (`type/x` / `source/x` / `host/x` / `memory/Lx` 等) 不主动派生** — 这些信息已在 frontmatter 字段 (`type`, `host`, `level` 等), 不重复成 tag。schema v2 已移除 `tags_required` 字段, lint 不再 schema-driven 补 hierarchical prefix。详见 [cortex-ingest/references/global-rules.md §6](../../cortex-ingest/references/global-rules.md)。
 
-- schema 源: `<vault>/_meta/frontmatter-schema.yaml` (fallback `plugin/presets/seed/_templates/frontmatter-schema.yaml`)
-- lint rule `frontmatter-schema-violation` 检测缺失 + autofix 按目录 schema `tags_required` 字段补 prefix
-
-```
-save.py: 派生语义 tag → 落档
-  ↓
-cortex-lint --fix: schema-driven 补 tags_required prefix
-  ↓
-最终 frontmatter
-```
+lint `fm-banned-tags` 仍禁裸结构 (`index/meta/template/_index/stub`) + 裸时间; hierarchical lint **不禁** (允许用户手动加), 派生侧不主动生。
 
 ## 套模板
 

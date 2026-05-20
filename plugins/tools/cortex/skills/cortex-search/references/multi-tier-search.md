@@ -102,17 +102,19 @@ bash ~/.cortex/scripts/deep_search.sh --query "<q>" --mode hybrid --iter-max 3 -
 
 回退: MCP 不可达时退回 L1-L4 流程。
 
-## Tag filter
+## Tag / 字段 filter
 
-支持 `tag:<prefix>/<value>` 语法过滤, 利用 schema tags_required 命名约定 (`_meta/frontmatter-schema.yaml`):
+**优先 frontmatter 字段过滤** (cortex 派生不主动生 hierarchical tag, 元信息走字段而非 tag):
 
-- `tag:domain/技术/Go` → 仅返 Go 领域笔记
-- `tag:type/project` → 仅返项目 (git repo + 本地项目)
-- `tag:memory/L1` → 仅返 L1 长期记忆
-- `tag:project/<slug>` → 项目相关
-- 多 tag AND 组合: `tag:type/project tag:host/github.com`
+- `type:project` / `host:github.com` / `level:L1` / `source_kind:web` — 直接匹配 frontmatter 字段
+- 多字段 AND: `type:project host:github.com`
 
-实现走 frontmatter.tags 数组 prefix match, 与 query 文本检索并行交集后返回。
+**tag prefix 过滤** (兼容用户手动加的 hierarchical tag, lint 不禁; 派生侧不生, 但用户/特定场景可用):
+
+- `tag:<prefix>/<value>` — 走 frontmatter.tags 数组 prefix match
+- 多 tag AND: `tag:domain/技术 tag:concept/X`
+
+字段过滤优于 tag 过滤 — 元数据已落字段, 不依赖 tag 命名规范。
 
 ## 不读 (硬性排除)
 

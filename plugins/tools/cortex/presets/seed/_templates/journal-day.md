@@ -4,16 +4,8 @@ type: journal
 title: '{{YYYY-MM-DD}}'
 date: '{{YYYY-MM-DD}}'
 tags:
-  - type/journal
-  - freq/daily
-  - date/{{YYYY-MM-DD}}
-  - month/{{YYYY-MM}}
-  - year/{{YYYY}}
-  - weekday/<n>
-  - lang/zh-CN
-  - source/manual
-  - score/3
-  - maturity/stable
+  - 日记
+  - journal
 template_version: 1
 ---
 

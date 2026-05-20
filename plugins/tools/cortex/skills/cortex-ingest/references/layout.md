@@ -75,9 +75,9 @@ SYM_N=$(find "$ROOT/符号/api/" -name '*.md' 2>/dev/null | wc -l)
 | `confidence` (P8 新) | 0.0-10.0 浮点 | AI 对内容把握度; tags 完整性 (≥5=5, 仅语义 tag 计) + when_to_read (≥30字=3) + wikilink ≥5 (2) |
 | `source_credibility` (P8 新) | 0.0-10.0 浮点 | host 白名单查表 (anthropic.com=10, react.dev=9.5, github.com=7.5, medium.com=5, 未知 4) — 见 `scripts/cli/lib/remote.py:_HOST_CREDIBILITY` |
 | `maturity` | draft / review / stable / deprecated | 按上游 release 状态或 README 标注判定; pre-alpha/WIP → draft; 有 release → stable; archived → deprecated; refresh hash 变可重评 |
-| `tags[关注度]` | freq/<high\|mid\|low> | 自动: README badges + commit 近 30 天频率 + search.sh 命中次数 |
+| `frequency` (字段) | high / mid / low | 写 **frontmatter 字段** (非 tag): README badges + commit 近 30 天频率 + search.sh 命中次数 |
 
-4 评分字段全 frontmatter **强制** (lint rule 21 `frontmatter-required-scores` 校验); freq tag 自动追加。AI 自评启发式见 `references/extract.md §3.1`。
+4 评分字段全 frontmatter **强制** (lint rule 21 `frontmatter-required-scores` 校验)。`frequency` 走字段, 不写 hierarchical tag。AI 自评启发式见 `references/extract.md §3.1`。
 
 ---
 

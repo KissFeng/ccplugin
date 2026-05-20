@@ -1638,7 +1638,6 @@ def _check_frontmatter_schema(
     if not rule:
         return findings
     required = rule.get("required", []) or []
-    tags_required = rule.get("tags_required", []) or []
     for k in required:
         if k not in fm or fm.get(k) in (None, "", []):
             findings.append(
@@ -1651,22 +1650,7 @@ def _check_frontmatter_schema(
                     True,
                 )
             )
-    fm_tags = fm.get("tags", []) or []
-    if isinstance(fm_tags, str):
-        fm_tags = [fm_tags]
-    for t in tags_required:
-        prefix = str(t).split("/", 1)[0] + "/"
-        if not any(str(ft).startswith(prefix) for ft in fm_tags):
-            findings.append(
-                _f(
-                    "frontmatter-schema-violation",
-                    "warn",
-                    rel_path,
-                    1,
-                    f"frontmatter 缺 required tag prefix '{prefix}*'",
-                    True,
-                )
-            )
+    # tags_required (hierarchical 前缀强制) schema v2 已废除, 不再校验
     return findings
 
 
@@ -1676,7 +1660,7 @@ def _fix_frontmatter_schema(
     plugin_root: Path,
     backup_dir: Path,
 ) -> bool:
-    """Fill missing required (via defaults) + tags_required prefixes."""
+    """Fill missing required (via defaults). tags_required 已废, 不再补 hierarchical tag."""
     try:
         import yaml  # type: ignore
     except ImportError:
@@ -1709,7 +1693,6 @@ def _fix_frontmatter_schema(
 
     defaults = rule.get("defaults", {}) or {}
     required = rule.get("required", []) or []
-    tags_required = rule.get("tags_required", []) or []
 
     changed = False
     for k, v in defaults.items():
@@ -1722,16 +1705,7 @@ def _fix_frontmatter_schema(
     if "updated" in required and not fm.get("updated"):
         fm["updated"] = datetime.now(timezone.utc).isoformat()
         changed = True
-    fm_tags = fm.get("tags", []) or []
-    if isinstance(fm_tags, str):
-        fm_tags = [fm_tags]
-    for t in tags_required:
-        prefix = str(t).split("/", 1)[0] + "/"
-        if not any(str(ft).startswith(prefix) for ft in fm_tags):
-            fm_tags.append(t)
-            changed = True
-    if changed:
-        fm["tags"] = fm_tags
+    # tags_required 已废: schema v2 不再注入 hierarchical tag prefix
     for k in required:
         if k in fm and fm.get(k) not in (None, "", []):
             continue

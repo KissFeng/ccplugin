@@ -7,16 +7,8 @@ subtopic: <可选, 如 技术/分布式系统>
 created: <YYYY-MM-DD>
 updated: <YYYY-MM-DD>
 tags:
-  - type/topic
-  - domain/<域>
-  - subtopic/<子>
-  - lang/<l>
-  - source/<manual|ingest>
-  - score/<n>
-  - maturity/<draft|stable>
-  - keyword/<关键词>
-  - created/<YYYY>
-  - scope/<concept|entity>
+  - 主题
+  - topic
 template_version: 1
 ---
 

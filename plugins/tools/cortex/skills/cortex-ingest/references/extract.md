@@ -16,7 +16,7 @@ title: <人类可读标题>
 desc: <1-3 句, 这页讲啥, 用于召回排序>
 created: <YYYY-MM-DD>
 updated: <YYYY-MM-DD>
-tags: [<分类>, <主题>, <技术栈>, ...]   # ≥ 10 个 (严禁 placeholder/<待填>/TODO 等占位)
+tags: [<语义 tag — alias / h1-h2 slug / 核心概念名>]   # 严禁占位; 严禁 hierarchical 前缀 (type/, source/, host/, topic/ 等), 见 global-rules.md §6
 source_url: <原始 URL — github/gitlab repo url / website url / arxiv url / 本地 git remote / N/A>
 version: <对应原始版本 — git commit sha / git tag / package version / website fetch date>
 when_to_read: <触发条件描述, 给 AI 召回判定用; 例 "当用户问 X / 改 Y / 调试 Z 时">

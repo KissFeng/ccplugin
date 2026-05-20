@@ -27,22 +27,21 @@
 
 autofix: 缺字段时写 stub 值 (score=5.0 / confidence=5.0 / source_credibility=5.0 / maturity=draft / importance=5.0)。AI 后续 ingest_remote/save 自动重评。
 
-## tags 强制 ≥ 10 (rule 17 fm-missing-tags)
+## tags 派生策略 (rule 17 fm-missing-tags)
 
-`tags[]` ≥ 10, 严禁占位 (`<待填>` / `placeholder/N` / `TODO` / `TBD`)。至少覆盖 10 类:
+仅校验 tags 字段存在 + 类型 list (无数量下限)。派生**语义** tag (内容相关), 严禁占位 (`<待填>` / `placeholder/N` / `TODO` / `TBD`)。
 
-1. 来源类型 `source/{repo|web|paper|book|local}` (必含)
-2. 主题域 `topic/<领域>` (必含)
-3. 技术栈 `stack/<语言或框架>` (必含)
-4. 来源元数据 `host/<host>` / `org/<org>` / `repo/<repo>`
-5. 语言 `lang/<zh-CN|en|...>`
-6. 质量评分 `score/<1-5>`
-7. 成熟度 `maturity/<draft|review|stable|deprecated>`
-8. 时间 `created/<YYYY>`
-9. 类型 `type/<concept|domain|log|...>`
-10. 关键词 `keyword/<词>` (h1/h2/正文派生, 中文 2-4 字或英文 PascalCase)
+**派生来源** (优先级):
+1. frontmatter `aliases` (高质量, 直接采)
+2. h1/h2 标题词 slug (中文 2-4 字 / 英文 PascalCase 小写化)
+3. 正文 500 字内的高频中文 2-4 字短语 + 英文 PascalCase
+4. 概念名
 
-autofix 读 fm + 正文派生; 不足由 AI 二次补, 严禁占位。tag 命名: kebab-case, 斜杠分层, 全小写。
+**不要派生**结构/元数据/分类前缀 tag (`type/x` / `source/x` / `topic/x` / `host/x` / `org/x` / `repo/x` / `lang/x` / `stack/x` / `score/x` / `maturity/x` / `created/x` / `year/x` / `keyword/x` / `memory/Lx` 等)。这些信息已在 frontmatter 字段, 不需重复成 tag。schema v2 已移除 `tags_required` 字段, lint 不再校验 hierarchical 前缀缺失。
+
+**lint 禁令**: `fm-banned-tags` 禁裸结构 (`index/meta/template/_index/stub`) + 裸时间 (`YYYY[-MM[-DD]]/YYYY-Q[1-4]/YYYY-W##`); hierarchical `xxx/yyy` lint **不禁** (允许用户/特定场景手动加), 但**派生侧不主动生**。
+
+tag 命名: kebab-case, 全小写; 单 tag 优于斜杠分层。
 
 ## 白名单匹配规则
 

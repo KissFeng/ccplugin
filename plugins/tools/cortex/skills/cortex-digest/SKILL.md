@@ -139,7 +139,7 @@ LLM 深读全文 (非启发式 keyword 扫), 抽 4 类候选 + 实体 + 概念 +
 | 2 | frontmatter `source_url` 含 repo 模式 | 强 | `github.com/<org>/<repo>` · `gitlab.*/<org>/<repo>` |
 | 3 | 正文 wikilink `[[知识库/项目/<host>/<org>/<repo>/...]]` 或 `[[<repo-name>]]` 命中已知 repo | 中 | `[[ccplugin]]` 命中 `知识库/项目/persons/lyxamour/ccplugin/` |
 | 4 | 正文含 git URL | 中 | `git@github.com:<org>/<repo>.git` |
-| 5 | tag `repo/<name>` · `host/<host>` · `org/<org>` | 中 | `tags: [repo/ccplugin, org/lyxamour]` |
+| 5 | 用户手动 hierarchical tag (历史遗留 `repo/<n>` · `host/<h>` · `org/<o>` 等) | 中 | `tags: [repo/ccplugin, org/lyxamour]` (派生侧不主动生, 仅识别既有) |
 | 6 | 关键词匹配 `<repo-name>` ≥ 3 次 | 弱 | "ccplugin" 在正文出现 ≥3 次 |
 
 识别结果落候选元数据: `route_target = 知识库/项目/<host>/<org>/<repo>/` 或 `route_target = inbox`。多 repo 命中按**强信号优先** (1 > 2 > 3 > 4 > 5 > 6) 选首要, 余者保留为次要 (阶段 3 加 backlink)。

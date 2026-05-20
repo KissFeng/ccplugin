@@ -72,12 +72,12 @@ write/update/delete 类似, 单行结果 + 落盘路径。
 
 ## 写入时 Frontmatter 自动填
 
-write level=L<N> 时, 调 cortex-lint 内联 schema 校验 (PR1: cortex-schema 已合入 cortex-lint) `read 记忆/L<N>-<name>/` 取 schema, 自动填 uri/level/weight/recall_when/created, tags 含 `memory/L<N>` + `memory/<type>`。例:
+write level=L<N> 时, 调 cortex-lint 内联 schema 校验 `read 记忆/L<N>-<name>/` 取 schema, 自动填 uri/level/weight/recall_when/created (字段)。`level` / `type` 等元信息走 **frontmatter 字段**, 不再追加 `memory/Lx` / `memory/<type>` 等 hierarchical tag。例:
 
-- write `L1://procedural/git-flow` → frontmatter: uri / level:L1 / weight / recall_when / created, tags: `[memory/L1, memory/procedural]`
-- write `L2://semantic/go/goroutine` → 上述 + expires, tags: `[memory/L2, memory/semantic]`
+- write `L1://procedural/git-flow` → frontmatter: uri / level:L1 / type:procedural / weight / recall_when / created; tags: 派生自概念名 (如 `[git-flow, 分支策略]`)
+- write `L2://semantic/go/goroutine` → 上述 + expires; tags: 派生自概念 (如 `[goroutine, 并发原语]`)
 
-schema 源: `<vault>/_meta/frontmatter-schema.yaml` `namespaces.记忆.*`。缺字段时 policy validator 拒写, lint 后续报 `frontmatter-schema-violation`。
+schema 源: `<vault>/_meta/frontmatter-schema.yaml` `namespaces.记忆.*`。缺字段时 policy validator 拒写, lint 后续报 `frontmatter-schema-violation`。tag 派生策略见 [cortex-ingest/references/global-rules.md §6](../../cortex-ingest/references/global-rules.md)。
 
 ## 错误处理
 

@@ -5,17 +5,8 @@ type: project
 title: {{TITLE}}
 aliases: []
 tags:
-  - type/project
-  - host/<github.com|gitlab.com|local>
-  - org/<组织>
-  - repo/<仓库名|项目basename>
-  - lang/<主语言>
-  - topic/<主题>
-  - stack/<技术栈>
-  - source/git
-  - score/<1-5>
-  - maturity/<draft|stable|deprecated>
-  - keyword/<关键词>
+  - 项目
+  - project
 created: {{CREATED}}
 updated: {{UPDATED}}
 lang: {{LANG}}

@@ -22,16 +22,8 @@ view_kpi:
 view_legend: "本图怎么读 ... 刷新: bash ~/.cortex/scripts/dashboard.sh"
 view_stale_after: 24
 tags:
-  - type/dashboard
-  - chart/table
-  - kind/memory
-  - level/L2
-  - refresh/manual
-  - scope/{{SCOPE}}
-  - lang/{{LANG}}
-  - source/dashboard
-  - status/active
-  - score/3
+  - 仪表盘
+  - dashboard
 created: {{CREATED}}
 updated: {{UPDATED}}
 lang: {{LANG}}

@@ -1,5 +1,5 @@
-version: 1
-description: cortex vault 每目录 frontmatter + tag 规范
+version: 2
+description: cortex vault 每目录 frontmatter 规范 (tag 派生由 cortex-save/cortex-ingest 走语义生成, schema 不再强制 hierarchical tags_required)
 namespaces:
   知识库:
     项目:
@@ -8,8 +8,6 @@ namespaces:
       defaults:
         type: project
         status: active
-      tags_required: ["type/project", "host/<host>", "org/<org>", "repo/<repo>"]
-      tags_optional: ["lang/<language>", "topic/<area>", "stack/<tech>"]
       filename_pattern: "<slug>.md"
       note: "GitHub/GitLab/local git repo 与本地项目统一落 知识库/项目/<host>/<org>/<repo>/, host=local 时 org=basename"
     来源:
@@ -19,56 +17,45 @@ namespaces:
         defaults:
           type: source
           source_kind: web
-        tags_required: ["source/web", "domain/<domain>"]
       论文:
         required: [type, title, source_kind, year, created]
         optional: [tags, authors, doi, arxiv, venue]
         defaults:
           type: source
           source_kind: paper
-        tags_required: ["source/paper", "year/<year>"]
       书籍:
         required: [type, title, source_kind, author, created]
         optional: [tags, isbn, year, publisher]
         defaults:
           type: source
           source_kind: book
-        tags_required: ["source/book"]
     领域:
       "*":
         required: [type, title, domain, created]
         optional: [tags, prerequisites, related, evidence, confidence]
         defaults:
           type: concept
-        tags_required: ["domain/<domain-path>"]
-        tags_optional: ["concept/<name>", "method/<name>"]
     日记:
       "*":
         required: [type, date, created]
         optional: [tags, mood, weather, summary]
         defaults:
           type: journal
-        tags_required: ["journal/<period>"]
         filename_pattern: "YYYY-MM-DD.md | YYYY-Wnn.md | YYYY-MM.md | YYYY.md"
     反思:
       洞察:
         required: [type, title, created]
         defaults: {type: insight}
-        tags_required: ["reflect/insight"]
-        tags_optional: ["domain/<area>"]
       连接:
         required: [type, title, from_domain, to_domain, created]
         defaults: {type: connection}
-        tags_required: ["reflect/connection"]
       疑问:
         required: [type, title, status, created]
         defaults: {type: question, status: open}
-        tags_required: ["reflect/question"]
     收件箱:
       "*":
         required: [type, title, created]
         defaults: {type: inbox}
-        tags_required: ["inbox"]
   记忆:
     L0-核心:
       "*":
@@ -78,36 +65,21 @@ namespaces:
           level: L0
           immutable: true
           needs_user_confirm: true
-        tags_required: ["memory/L0"]
     L1-长期:
       procedural:
         required: [uri, level, weight, recall_when, created]
         defaults: {level: L1}
-        tags_required: ["memory/L1", "memory/procedural"]
       semantic-stable:
         required: [uri, level, weight, recall_when, created]
         defaults: {level: L1}
-        tags_required: ["memory/L1", "memory/semantic-stable"]
     L2-中期:
       semantic:
         required: [uri, level, weight, recall_when, created, expires]
         defaults: {level: L2}
-        tags_required: ["memory/L2", "memory/semantic"]
     L3-短期:
       episodic:
         required: [uri, level, weight, created, expires]
         defaults: {level: L3}
-        tags_required: ["memory/L3", "memory/episodic"]
 
-tag_naming:
-  format: "namespace/<value>"
-  separator: "/"
-  case: lowercase
-  allowed_chars: "a-z0-9-/.中文"
-  examples:
-    - "project/cortex"
-    - "domain/技术/编程语言/Go"
-    - "source/repo"
-    - "host/github.com"
-    - "memory/L1"
-    - "journal/日"
+# tag 派生策略: 语义优先, hierarchical `xxx/yyy` lint 不禁但提示词不主动生.
+# 详见 skills/cortex-ingest/references/global-rules.md §6

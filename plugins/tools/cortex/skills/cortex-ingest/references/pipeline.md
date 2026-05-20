@@ -102,12 +102,14 @@ dead links (跑 /cortex:lint --fix): [[Nonexistent Page]] (在 [[...]] 提及)
 
 ## Source 类型路由 + Frontmatter
 
-按 URL/file 判定 source_kind: **repo (github/gitlab)** → `知识库/项目/<host>/<org>/<repo>/`;**本地项目** → 相对 `$HOME` 拆段 (不足 3 段补 `_local`), 同样落 项目/;**非 repo 来源 (网页/论文/书籍)** → `知识库/项目/<host>/_site/<path-slug>/<path-slug>.md` (`_site` 占位代替 org)。调 cortex-lint 内联 schema 校验 (PR1: cortex-schema 已合入 cortex-lint) `read <target-path>` 取 schema 填 frontmatter, 加 tags_required。例:
+按 URL/file 判定 source_kind: **repo (github/gitlab)** → `知识库/项目/<host>/<org>/<repo>/`;**本地项目** → 相对 `$HOME` 拆段 (不足 3 段补 `_local`), 同样落 项目/;**非 repo 来源 (网页/论文/书籍)** → `知识库/项目/<host>/_site/<path-slug>/<path-slug>.md` (`_site` 占位代替 org)。frontmatter 字段从 schema defaults 自动补 (`type`, `source_kind`, `status` 等), 元数据如 host/org/repo/source_url 写**字段**而非 tag。例:
 
-- GitHub/GitLab URL → 项目/<host>/<org>/<repo>/_index.md, tags: `[type/project, host/<host>, org/<org>, repo/<repo>]`
-- 本地 `~/persons/lyxamour/ccplugin/` → 项目/persons/lyxamour/ccplugin/_index.md, source_url: `file://$HOME/...`
-- 网页 → 项目/<host>/_site/<path-slug>/<path-slug>.md, tags: `[type/source, source/web, host/<host>]`
-- arxiv/doi → 项目/arxiv.org/_site/<path-slug>/<path-slug>.md, tags: `[type/source, source/paper, year/<year>]`
+- GitHub/GitLab URL → 项目/<host>/<org>/<repo>/_index.md, fm: `type: project, host: <host>, org: <org>, repo: <repo>`
+- 本地 `~/persons/lyxamour/ccplugin/` → 项目/persons/lyxamour/ccplugin/_index.md, fm: `source_url: file://$HOME/...`
+- 网页 → 项目/<host>/_site/<path-slug>/<path-slug>.md, fm: `type: source, source_kind: web, domain: <host>`
+- arxiv/doi → 项目/arxiv.org/_site/<path-slug>/<path-slug>.md, fm: `type: source, source_kind: paper, year: <year>`
+
+**tags**: 派生语义 tag (alias / h1-h2 slug / 关键概念名), **不主动派生** hierarchical 前缀 (`type/x` / `source/x` / `host/x` 等; 这些已是字段)。详见 [global-rules.md §6](global-rules.md)。
 
 schema 缺字段时由 lint `frontmatter-schema-violation` autofix 补 defaults。
 

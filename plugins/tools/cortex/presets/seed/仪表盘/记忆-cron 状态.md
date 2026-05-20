@@ -18,16 +18,9 @@ refresh: daily
 namespace: 仪表盘
 last_updated: "{{UPDATED}}"
 tags:
-  - type/dashboard
-  - chart/table
-  - kind/cron
-  - refresh/daily
-  - domain/dashboard
-  - lang/zh-CN
-  - source/seed
-  - score/3
-  - maturity/stable
-  - topic/cron-ops
+  - 仪表盘
+  - dashboard
+  - 记忆-cron-状态
 template_version: 2
 ---
 
