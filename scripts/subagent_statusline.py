@@ -230,7 +230,7 @@ def _extract_ctx_pct(task: dict, top_ctx: dict | None) -> float | None:
 
 def render_row(task: dict, *, max_width: int, now: float, model: str = "",
                top_ctx: dict | None = None) -> str:
-    name = str(task.get("name") or task.get("label") or task.get("id") or "?").strip()
+    name = str(task.get("label") or task.get("name") or task.get("id") or "?").strip()
     type_ = str(task.get("type") or "").strip()
     description = str(task.get("description") or "").strip()
     tokens = task.get("tokenCount")
@@ -269,7 +269,7 @@ def render_row(task: dict, *, max_width: int, now: float, model: str = "",
         try:
             tok_n = int(tokens)
             if tok_n > 0:
-                tok_seg = _style(f"{_format_compact_int(tok_n)} tok", fg=CATPPUCCIN["text"])
+                tok_seg = _style(f"{_format_compact_int(tok_n)}", fg=CATPPUCCIN["text"])
                 rate = _token_rate(samples)
                 if rate and rate > 0:
                     tok_seg += _style(f" ({rate:.0f}/s)", fg=CATPPUCCIN["subtle"], dim=True)
@@ -280,8 +280,7 @@ def render_row(task: dict, *, max_width: int, now: float, model: str = "",
     if elapsed is not None and elapsed > 0:
         parts.append(_style(_format_duration(elapsed), fg=CATPPUCCIN["subtle"], dim=True))
 
-    label = str(task.get("label") or "").strip()
-    if description and description != name and description != label:
+    if description and description != name:
         parts.append(_style(description, fg=CATPPUCCIN["subtle"]))
 
     line = sep.join(p for p in parts if p)
