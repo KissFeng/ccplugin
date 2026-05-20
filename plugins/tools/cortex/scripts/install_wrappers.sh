@@ -34,9 +34,9 @@ set -euo pipefail
 
 if [[ -t 2 && -z "${NO_COLOR:-}" ]]; then
   _C_RESET=$'\033[0m'; _C_BOLD=$'\033[1m'; _C_DIM=$'\033[2m'
-  _C_GREEN=$'\033[32m'; _C_CYAN=$'\033[36m'
+  _C_GREEN=$'\033[32m'; _C_CYAN=$'\033[36m'; _C_YELLOW=$'\033[33m'
 else
-  _C_RESET=""; _C_BOLD=""; _C_DIM=""; _C_GREEN=""; _C_CYAN=""
+  _C_RESET=""; _C_BOLD=""; _C_DIM=""; _C_GREEN=""; _C_CYAN=""; _C_YELLOW=""
 fi
 
 print_help() {
@@ -366,9 +366,9 @@ for f in "$TARGET_DIR"/*.sh; do
   esac
 done
 
-printf '%s[install_wrappers.sh]%s %s✓%s wrote %s25 wrappers%s to %s%s%s\n' \
+printf '%s[install_wrappers.sh]%s %s✓%s wrote %s24 wrappers%s to %s%s%s\n' \
   "$_C_CYAN" "$_C_RESET" "$_C_GREEN" "$_C_RESET" \
   "$_C_BOLD" "$_C_RESET" "$_C_BOLD" "$TARGET_DIR" "$_C_RESET" >&2
 # 24 wrappers total: 10 slash (lint/dashboard/doctor/init/promote/forget/digest/recall/refactor/ingest)
-#                  + 3 shell (install_cron/config/update)
-#                  + 11 CLI (save/search/deep_search/ingest_url/ingest_file/ingest_remote/refresh_projects/memory/ledger/session/html_render)
+#                  + 2 shell (install_cron/config)
+#                  + 12 CLI (save/search/deep_search/ingest_url/ingest_file/ingest_remote/refresh_projects/memory/ledger/session/html_render/image_gen)
