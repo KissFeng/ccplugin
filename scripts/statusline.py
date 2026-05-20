@@ -344,6 +344,45 @@ CATPPUCCIN = {
     "pink": (245, 194, 231),
 }
 
+# 单位: $ / M tokens (2026-05 最新定价)
+MODEL_PRICING = {
+    # Opus 4.7
+    "claude-opus-4-7": {"input": 5.0, "output": 25.0, "cache_read": 0.5},
+    # Sonnet 4.6
+    "claude-sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_read": 0.3},
+    # Haiku 4.5
+    "claude-haiku-4-5": {"input": 1.0, "output": 5.0, "cache_read": 0.1},
+    # Opus 4.5
+    "claude-opus-4-5-20251101": {"input": 5.0, "output": 25.0, "cache_read": 0.5},
+    # Sonnet 4.5
+    "claude-sonnet-4-5-20250929": {"input": 3.0, "output": 15.0, "cache_read": 0.3},
+}
+
+# 通用前缀匹配（精确未命中时回退）
+MODEL_PRICING_PREFIX = {
+    "claude-opus-4-7": "claude-opus-4-7",
+    "claude-opus-4-5": "claude-opus-4-5-20251101",
+    "claude-sonnet-4-6": "claude-sonnet-4-6",
+    "claude-sonnet-4-5": "claude-sonnet-4-5-20250929",
+    "claude-haiku-4-5": "claude-haiku-4-5",
+}
+
+
+def calc_model_cost(model_id: str, input_tokens: int, output_tokens: int, cache_read_tokens: int) -> float | None:
+    key = MODEL_PRICING.get(model_id)
+    if not key:
+        for prefix, resolved in MODEL_PRICING_PREFIX.items():
+            if model_id.startswith(prefix):
+                key = MODEL_PRICING.get(resolved)
+                break
+    if not key:
+        return None
+    return (
+        input_tokens / 1_000_000 * key["input"]
+        + output_tokens / 1_000_000 * key["output"]
+        + cache_read_tokens / 1_000_000 * key["cache_read"]
+    )
+
 
 def cache_path_for_git(root: str) -> Path:
     digest = hashlib.sha1(root.encode("utf-8", errors="ignore")).hexdigest()[:12]
@@ -1030,13 +1069,26 @@ def render_statusline(payload: dict) -> str:
         total_tokens = 0
     if total_tokens > 0:
         token_value = f"{format_compact_int(total_tokens)}"
-        try:
-            c = float(cost_usd) if cost_usd is not None else 0.0
-            if c > 0:
-                token_cost = f"[${c:.2f}]".rstrip("0").rstrip(".")
-                if not token_cost.endswith("."):
-                    token_cost = token_cost.rstrip(".")
-        except Exception:
+        # 优先用模型定价计算；回退 stdin cost_usd
+        computed_cost = None
+        if total_in is not None or total_out is not None or (cur_cc > 0 or cur_cr > 0):
+            try:
+                t_in = int(total_in or 0)
+                t_out = int(total_out or 0)
+                computed_cost = calc_model_cost(str(model), t_in, t_out, cur_cr)
+            except Exception:
+                computed_cost = None
+        c = computed_cost if computed_cost is not None else None
+        if c is None and cost_usd is not None:
+            try:
+                c = float(cost_usd)
+            except Exception:
+                c = None
+        if c is not None and c > 0:
+            token_cost = f"[${c:.2f}]".rstrip("0").rstrip(".")
+            if not token_cost.endswith("."):
+                token_cost = token_cost.rstrip(".")
+        else:
             token_cost = ""
         tokens_seg = style(token_value, fg=CATPPUCCIN["text"], bold=True) + (
             style(token_cost, fg=CATPPUCCIN["subtle"], dim=True) if token_cost else ""

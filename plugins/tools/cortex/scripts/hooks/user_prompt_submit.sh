@@ -112,8 +112,9 @@ project_hint, project_src = detect_project_hint()
 def build_search_contract_msg() -> str:
     """每轮注入 — 极简约定."""
     return (
-        "🔍 cortex: 需查资料时 → `bash ~/.cortex/scripts/search.sh --query \"<词>\"` 优先, "
-        "次 `mcp__obsidian__*_search`, 再本地 Read/Grep, 最后 WebSearch。\n"
+        "🔍 cortex: 需查资料时依次回退 (前一步无果才走下一步) → "
+        "`mcp__obsidian__*_search` → `mcp__qmd__search` → "
+        "`bash ~/.cortex/scripts/search.sh --query \"<词>\"` → 本地 Read/Grep → WebSearch。\n"
         "📝 非平凡发现 (架构决策/踩坑/选型/技巧/外部综述) 自动 `cortex-save` 或 `cortex-ingest` 落档, "
         "用户说\"记住\" → `memory.sh write`。"
     )
