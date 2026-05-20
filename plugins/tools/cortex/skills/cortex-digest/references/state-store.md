@@ -7,7 +7,7 @@
 ```
 <vault>/.cortex/state/
 ├── digest.json        # 阶段 1 读 + 整体 last_run
-├── consolidate.json   # 阶段 5 项目→领域 提炼
+├── consolidate.json   # 阶段 5 双向整合 (5a 项目→领域 / 5b 记忆→KB / 5c KB→记忆 / 5d backlink+audit)
 ├── enrich.json        # 阶段 6 md 图表/tags 优化
 └── verify.json        # 阶段 7 search 多次验证
 ```
@@ -54,7 +54,7 @@
 | 阶段 | state 文件 | 主要 cursor 字段 |
 |---|---|---|
 | 1 读 | digest.json | `inbox_last_mtime` / `log_last_date` / `session_last_id` |
-| 5 整合 | consolidate.json | `last_repo_path` (按 repo 顺序遍历) |
+| 5 整合 | consolidate.json | `last_repo_path` (5a) / `last_memory_path` (5b) / `last_kb_path` (5c); processed_memories / processed_kb_for_memory 独立 hash 集 |
 | 6 优化 | enrich.json | `processed_files` (hash-based, 无单独 cursor) |
 | 7 验证 | verify.json | `processed_files` (hash-based) |
 

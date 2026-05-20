@@ -52,18 +52,39 @@ cortex-memory 输出 stats JSON 合并到 digest `updated` 字段。
 
 > 实际归档由独立 `memory-archive` cron (月度 1st 06:00) 执行; L4 ledger gzip 由 `memory-compact` cron (周日 04:00); 腐化检测由 `memory-warden` cron (1st/15th 05:00)。digest 不接管这三类破坏性操作。
 
-## 5. 整合 (Consolidate) — 项目→领域 提炼 (new)
+## 5. 整合 (Consolidate) — 双向 (new)
 
-读 `state/consolidate.json` cursor + processed_files hash; 遍历 `知识库/项目/<host>/<org>/<repo>/**` 中 hash 未命中的 md:
+读 `state/consolidate.json` cursor + processed_{files,memories,kb_for_memory} hash 三组。
 
-1. LLM 深读, 识别**通用概念** (技术/方法/模式, 非项目专属事实)
-2. 检查 `知识库/领域/**` 既有概念 — 命中则 patch (append 例证 + 项目 backlink); 未命中则新建 `知识库/领域/<域>/<concept>.md` (frontmatter 含 `type: concept` / `domain` / `aliases` / `sources` 数组列 source 项目路径)
-3. 域名决策: `config/digest.yaml:domain_aliases` 强映射优先, 否则 LLM 自决 (技术/创作/学习/工作/生活/金融/未分类)
-4. 合并冲突 (与既有概念定义不一致): 落 `知识库/收件箱/<date>-矛盾-<concept>.md` 列对照, 不动既有
+### 5a. 项目 → 领域 (KB 内提炼)
 
-阶段结束: hash 写入 `state/consolidate.json:processed_files`, `cursors.last_repo_path` 更新。
+遍历 `知识库/项目/<host>/<org>/<repo>/**` 中 hash 未命中的 md, LLM 深读抽通用概念到 `知识库/领域/<域>/`, 既有命中则 patch 例证 + 项目 backlink, 冲突落收件箱。详见 [consolidate.md](consolidate.md)。
 
-详见 [consolidate.md](consolidate.md)。
+### 5b. 记忆 → 知识库 (晋升)
+
+遍历 `记忆/L1-长期/**` ∪ `记忆/L2-中期/**` 中 hash 未命中的:
+- 触发: `weight ≥ 0.7` AND `recall_count ≥ 5` AND `type ∈ {semantic, skill, decision, principle}` AND `kb_promoted ≠ true`
+- LLM 抽提稳定语义 → 写 `知识库/领域/<域>/<concept>.md` (新建或 patch), `sources` 含记忆 wikilink
+- 回写记忆 frontmatter `kb_promoted: true` + `kb_target: <kb_path>`
+- 审计 append `_meta/bridge.jsonl`
+
+### 5c. 知识库 → 记忆 (具化)
+
+遍历 `知识库/领域/**` 中 hash 未命中的:
+- 触发: `score ≥ 7` AND `importance ≥ 7` AND 反向 wikilink ≥ 3 AND `type ∈ {method, pattern, principle}` AND 对应 memory URI 不存在
+- 层级决策: `principle + importance ≥ 9` → L1, 其他 → L2
+- 新建 `记忆/<level>/<slug>.md` (浓缩定义 + 操作要点, L1 ≤1500c, L2 ≤3000c), 继承 score/confidence
+- 回写 KB frontmatter `memory_materialized: true` + `memory_target: <memory_uri>`
+- 审计 append `_meta/bridge.jsonl`
+
+### 5d. 双向 backlink 同步 + 审计
+
+- 扫本轮 5a/5b/5c 新生/patch 的所有文件 + 凡 frontmatter 含 `sources` / `promoted_from_memory` / `materialized_from_kb` / `kb_target` / `memory_target` 的文件, 确保对端 `## Backlinks` 段含本端 wikilink, 缺则 append
+- bridge.jsonl 写盘失败不阻塞 pipeline (stderr 报错)
+
+阶段结束: hash 三组分别写入 `state/consolidate.json`, `cursors.{last_repo_path, last_memory_path, last_kb_path}` 更新。
+
+详见 [consolidate.md](consolidate.md) (5a) + [memory-kb-bridge.md](memory-kb-bridge.md) (5b/5c/5d)。
 
 ## 6. 优化 (Enrich) — 图表 + tags/aliases (new)
 
@@ -125,7 +146,10 @@ cortex-memory 输出 stats JSON 合并到 digest `updated` 字段。
     "forget_marked_L2": <N>, "forget_marked_L3": <N>
   },
   "consolidate": {
-    "scanned": <N>, "concepts_extracted": <N>, "domain_created": <N>, "domain_enriched": <N>, "conflicts_recorded": <N>
+    "scanned": <N>, "concepts_extracted": <N>, "domain_created": <N>, "domain_enriched": <N>, "conflicts_recorded": <N>,
+    "memory_to_kb_promoted": <N>, "memory_to_kb_skipped_threshold": <N>,
+    "kb_to_memory_materialized": <N>, "kb_to_memory_skipped_exists": <N>,
+    "backlinks_synced": <N>, "bridge_audit_rows": <N>
   },
   "enrich": {
     "scanned": <N>, "mermaid_injected": <N>, "tags_updated": <N>, "aliases_updated": <N>, "skipped_path": <N>

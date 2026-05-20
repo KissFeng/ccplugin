@@ -12,6 +12,13 @@
 
 **digest 阶段 4 内联记忆维护**: 在 L4→L3 自动晋级后, 扫 L3↑/L2↑ 晋级候选 (写 `记忆/views/candidates.md`, 不自动晋) + 标 L2/L3 过期 `archive_pending` (非破坏, 不删不移)。详见 `pipeline-stages.md §4`。
 
+**digest 阶段 5b/5c 跨域桥** (记忆 ↔ 知识库, 与记忆内 L→L+1 正交):
+- 5b 记忆→知识库: L1/L2 稳定 (weight≥0.7 + recall≥5) → `知识库/领域/<域>/<concept>.md`, 回写记忆 `kb_promoted: true`
+- 5c 知识库→记忆: 领域 score≥7 + backref≥3 → 具化成 L1/L2 operator 记忆, 回写 KB `memory_materialized: true`
+- 5d 双向 backlink 同步 + `_meta/bridge.jsonl` 审计
+- L0 永不参与桥的两侧 (硬约束)
+- 详见 `memory-kb-bridge.md`
+
 ## 增量游标 (state-driven)
 
 每阶段独立 `.cortex/state/<stage>.json` 存:
