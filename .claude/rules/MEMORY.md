@@ -22,7 +22,7 @@
 
 `.claude/memory/` 项目长期记忆:
 
-- `cortex-plugin-2026-05-13.md` — **@cortex 当前真相** (vault 4 子目录 / 6 agent / 13 skill (cortex-digest 单文件 815 行, 其他多文件渐进披露) / 18 slash (移 /update) / 24 wrapper / 12 py CLI / 30 lint / 4 cron / MCP 写 + 搜索回退链 / 评分字段 4+2 / 记忆 L0-L4 / digest stage 5 双向桥 + bridge.jsonl 审计)
+- `cortex-plugin-2026-05-13.md` — **@cortex 当前真相** (vault 4 子目录 / 6 agent / 14 skill (含 cortex-image-understand 图理解 2026-05-22) / 19 slash / 25 wrapper / 13 py CLI (含 image_understand + 共享 _provider_common) / 30 lint / 4 cron / MCP 写 + 搜索回退链 / 评分字段 4+2 / 记忆 L0-L4 / digest stage 5 双向桥 + bridge.jsonl 审计)
 - `desktop-event-driven-architecture.md` — **@desktop 事件驱动架构** (Rust 业务 + 事件驱动前端 + 单向数据流)
 - `desktop-code-quality-2026-04-05.md` — **@desktop 代码质量** (代码复用 / TOCTOU 反模式 / 三路并行 Agent 审查)
 - `desktop-testing.md` — **@desktop 测试约定**

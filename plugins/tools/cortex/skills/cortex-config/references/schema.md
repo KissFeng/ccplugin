@@ -132,6 +132,65 @@ defaults:
 9. extra_headers / extra_body 必须 mapping
 10. 未知字段 → warn
 
+## `<vault>/.cortex/config/image-understand.yaml`
+
+```yaml
+providers:
+  - name: zhipu-glm4v
+    endpoint: https://open.bigmodel.cn/api/paas/v4/chat/completions
+    api_key_env: ZHIPU_API_KEY
+    model: glm-4v-plus
+    trusted: true
+    disabled: false
+    timeout_seconds: 60
+    max_tokens: 1024
+    temperature: 0.3
+    extra_headers: {}
+    extra_body: {}
+    notes: ""
+defaults:
+  random_selection: false
+  default_provider: zhipu-glm4v
+  max_tokens: 1024
+  temperature: 0.3
+```
+
+### `providers[]` 字段
+
+| key | type | required | default | range / 约束 | 读取方 |
+|---|---|---|---|---|---|
+| `name` | str | ✓ | — | kebab-case, 全局唯一 | image_understand probe/list/* |
+| `endpoint` | str | ✓ | — | https:// (http warn; 其他 reject); 含 `/chat/completions` | chat POST |
+| `model` | str | ✓ | — | 非空 | request body.model |
+| `api_key_env` | str | (xor api_key) | — | 环境变量名 | os.environ |
+| `api_key` | str | (xor api_key_env) | — | 字面值, warn commit 风险 | inline 兜底 |
+| `trusted` | bool | — | false | — | probe: true → 4xx 不剔除 |
+| `disabled` | bool | — | false | — | probe 自动写; active 过滤 |
+| `last_check` | str | — | null | UTC ISO | probe 写 |
+| `last_status` | int | — | null | HTTP code | probe 写 |
+| `timeout_seconds` | int | — | 60 | 1-300 | urllib timeout |
+| `max_tokens` | int | — | (defaults) | 1-32768 | request body.max_tokens |
+| `temperature` | float | — | (defaults) | 0.0-2.0 | request body.temperature |
+| `extra_headers` | map<str,str> | — | `{}` | — | request headers 合并 |
+| `extra_body` | map | — | `{}` | — | request body 合并 (provider 私有字段) |
+| `notes` | str | — | "" | 自由文本 | 用户备注 |
+
+### `defaults` 字段
+
+| key | type | default | range | 读取方 |
+|---|---|---|---|---|
+| `random_selection` | bool | false | — | 无 --config 时是否随机选 |
+| `default_provider` | str | null | provider name | 无 --config + random=false 时优先 |
+| `max_tokens` | int | 1024 | 1-32768 | provider 未覆盖时生效 |
+| `temperature` | float | 0.3 | 0.0-2.0 | provider 未覆盖时生效 |
+
+### 校验规则 (validate_config.py `validate_image_understand_yaml`)
+
+同 image-gen 1-10 条; 额外:
+11. max_tokens int 1-32768
+12. temperature float 0.0-2.0
+13. default_provider 若设置必须存在于 providers[] (warn if missing)
+
 ## validate_config.py 输出 JSON
 
 ```json

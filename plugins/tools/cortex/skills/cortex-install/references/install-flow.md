@@ -103,7 +103,8 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
     ├── digest.yaml            各阶段开关 + 增量失效阈值 + 域名映射
     ├── enrich.yaml            mermaid 类型白名单 + 跳过路径
     ├── tags.yaml              tag 命名约定 + alias 同义词表
-    └── image-gen.yaml         文生图 provider 列表 + defaults (随机选 / 输出目录)
+    ├── image-gen.yaml         文生图 provider 列表 + defaults (随机选 / 输出目录)
+    └── image-understand.yaml  图理解 provider 列表 + defaults (default_provider / max_tokens / temperature)
 ```
 
 ### state JSON 空骨架 (4 文件, 内容相同)
@@ -167,6 +168,36 @@ providers:
 defaults:
   random_selection: true       # 无 --config 时随机选 active provider
   output_dir: _assets/images   # 相对 vault 根
+```
+
+`image-understand.yaml` (空骨架, 用户自填 provider):
+
+```yaml
+# image-understand.yaml — cortex-image-understand / image_understand CLI 配置
+# providers: OpenAI 兼容 chat completions + vision messages
+# probe 自动 ping /models 端点; 4xx 且 trusted=false → 自动 disabled
+providers:
+  # - name: zhipu-glm4v
+  #   endpoint: https://open.bigmodel.cn/api/paas/v4/chat/completions
+  #   model: glm-4v-plus
+  #   api_key_env: ZHIPU_API_KEY
+  #   trusted: true
+  #   timeout_seconds: 60
+  # - name: openai-gpt4o
+  #   endpoint: https://api.openai.com/v1/chat/completions
+  #   model: gpt-4o-mini
+  #   api_key_env: OPENAI_API_KEY
+  #   disabled: true
+  # - name: qwen-vl
+  #   endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+  #   model: qwen-vl-plus
+  #   api_key_env: DASHSCOPE_API_KEY
+  #   disabled: true
+defaults:
+  random_selection: false        # 无 --config 时是否随机选 active provider
+  default_provider: zhipu-glm4v  # 无 --config + random=false 时优先选这个
+  max_tokens: 1024
+  temperature: 0.3
 ```
 
 `tags.yaml`:

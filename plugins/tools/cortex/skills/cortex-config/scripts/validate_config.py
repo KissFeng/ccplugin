@@ -13,6 +13,7 @@ Behavior:
 
 Schema mirrors references/schema.md. Keep both in sync.
 """
+
 from __future__ import annotations
 
 import json
@@ -31,26 +32,75 @@ _USER_KEYS = {
     "lang": {"type": "lang", "required": False, "default": "zh-CN"},
     "settings": {"type": "path", "required": False, "exists": True},
     "install_path": {"type": "path", "required": False, "exists": True},
-    "timeout_default": {"type": "int", "required": False, "default": 600, "min": 60, "max": 7200},
+    "timeout_default": {
+        "type": "int",
+        "required": False,
+        "default": 600,
+        "min": 60,
+        "max": 7200,
+    },
 }
 
 _MERMAID_TYPES = {
-    "flowchart", "sequenceDiagram", "classDiagram", "stateDiagram", "erDiagram",
-    "journey", "gantt", "pie", "mindmap", "timeline", "gitGraph",
-    "requirementDiagram", "c4Context", "quadrantChart", "sankey", "xychart",
+    "flowchart",
+    "sequenceDiagram",
+    "classDiagram",
+    "stateDiagram",
+    "erDiagram",
+    "journey",
+    "gantt",
+    "pie",
+    "mindmap",
+    "timeline",
+    "gitGraph",
+    "requirementDiagram",
+    "c4Context",
+    "quadrantChart",
+    "sankey",
+    "xychart",
 }
 
 _TAG_NAMING_ENUM = {"kebab-case", "snake_case"}
 
 _IMAGE_GEN_REQUIRED_PROVIDER_KEYS = ("name", "endpoint", "model")
 _IMAGE_GEN_PROVIDER_KEYS = {
-    "name", "endpoint", "api_key_env", "api_key", "model",
-    "trusted", "disabled", "last_check", "last_status", "notes",
-    "extra_headers", "extra_body", "timeout_seconds",
+    "name",
+    "endpoint",
+    "api_key_env",
+    "api_key",
+    "model",
+    "trusted",
+    "disabled",
+    "last_check",
+    "last_status",
+    "notes",
+    "extra_headers",
+    "extra_body",
+    "timeout_seconds",
+}
+
+_IMAGE_UNDERSTAND_REQUIRED_PROVIDER_KEYS = ("name", "endpoint", "model")
+_IMAGE_UNDERSTAND_PROVIDER_KEYS = {
+    "name",
+    "endpoint",
+    "api_key_env",
+    "api_key",
+    "model",
+    "trusted",
+    "disabled",
+    "last_check",
+    "last_status",
+    "notes",
+    "extra_headers",
+    "extra_body",
+    "timeout_seconds",
+    "max_tokens",
+    "temperature",
 }
 
 
 # ---------- helpers ----------------------------------------------------------
+
 
 def _err(errors: list[dict], file: str, key: str, issue: str) -> None:
     errors.append({"file": file, "key": key, "issue": issue})
@@ -94,6 +144,7 @@ def _resolve_vault(user_cfg: dict | None) -> Path | None:
 
 # ---------- validators -------------------------------------------------------
 
+
 def validate_user_config(errors: list[dict], warnings: list[dict]) -> dict | None:
     path = _user_config_path()
     if not path.exists():
@@ -125,7 +176,12 @@ def validate_user_config(errors: list[dict], warnings: list[dict]) -> dict | Non
         t = spec["type"]
         if t == "path":
             if not isinstance(val, str):
-                _err(errors, file_label, key, f"expected str path, got {type(val).__name__}")
+                _err(
+                    errors,
+                    file_label,
+                    key,
+                    f"expected str path, got {type(val).__name__}",
+                )
                 continue
             if spec.get("exists") and not Path(val).expanduser().exists():
                 _err(errors, file_label, key, f"{val} does not exist")
@@ -158,11 +214,21 @@ def validate_digest_yaml(vault: Path, errors: list[dict], warnings: list[dict]) 
     stages = data.get("stages")
     if stages is not None:
         if not isinstance(stages, dict):
-            _err(errors, file_label, "stages", f"expected mapping, got {type(stages).__name__}")
+            _err(
+                errors,
+                file_label,
+                "stages",
+                f"expected mapping, got {type(stages).__name__}",
+            )
         else:
             for sk in ("consolidate", "enrich", "verify"):
                 if sk in stages and not isinstance(stages[sk], bool):
-                    _err(errors, file_label, f"stages.{sk}", f"expected bool, got {type(stages[sk]).__name__}")
+                    _err(
+                        errors,
+                        file_label,
+                        f"stages.{sk}",
+                        f"expected bool, got {type(stages[sk]).__name__}",
+                    )
             for k in stages:
                 if k not in ("consolidate", "enrich", "verify"):
                     _warn(warnings, file_label, f"stages.{k}", "unknown stage")
@@ -170,20 +236,45 @@ def validate_digest_yaml(vault: Path, errors: list[dict], warnings: list[dict]) 
     age = data.get("incremental_max_age_days")
     if age is not None:
         if not isinstance(age, int) or isinstance(age, bool):
-            _err(errors, file_label, "incremental_max_age_days", f"expected int 1-365, got {type(age).__name__}")
+            _err(
+                errors,
+                file_label,
+                "incremental_max_age_days",
+                f"expected int 1-365, got {type(age).__name__}",
+            )
         elif not (1 <= age <= 365):
-            _err(errors, file_label, "incremental_max_age_days", f"out of range 1-365, got {age}")
+            _err(
+                errors,
+                file_label,
+                "incremental_max_age_days",
+                f"out of range 1-365, got {age}",
+            )
 
     aliases = data.get("domain_aliases")
     if aliases is not None:
         if not isinstance(aliases, dict):
-            _err(errors, file_label, "domain_aliases", f"expected mapping, got {type(aliases).__name__}")
+            _err(
+                errors,
+                file_label,
+                "domain_aliases",
+                f"expected mapping, got {type(aliases).__name__}",
+            )
         else:
             for ak, av in aliases.items():
                 if not isinstance(ak, str) or not ak:
-                    _err(errors, file_label, f"domain_aliases.{ak!r}", "key must be non-empty str")
+                    _err(
+                        errors,
+                        file_label,
+                        f"domain_aliases.{ak!r}",
+                        "key must be non-empty str",
+                    )
                 if not isinstance(av, str) or not av:
-                    _err(errors, file_label, f"domain_aliases.{ak}", "value must be non-empty str")
+                    _err(
+                        errors,
+                        file_label,
+                        f"domain_aliases.{ak}",
+                        "value must be non-empty str",
+                    )
 
     for k in data:
         if k not in ("stages", "incremental_max_age_days", "domain_aliases"):
@@ -203,22 +294,44 @@ def validate_enrich_yaml(vault: Path, errors: list[dict], warnings: list[dict]) 
     wl = data.get("mermaid_whitelist")
     if wl is not None:
         if not isinstance(wl, list):
-            _err(errors, file_label, "mermaid_whitelist", f"expected list, got {type(wl).__name__}")
+            _err(
+                errors,
+                file_label,
+                "mermaid_whitelist",
+                f"expected list, got {type(wl).__name__}",
+            )
         else:
             for i, item in enumerate(wl):
                 if not isinstance(item, str):
-                    _err(errors, file_label, f"mermaid_whitelist[{i}]", f"expected str, got {type(item).__name__}")
+                    _err(
+                        errors,
+                        file_label,
+                        f"mermaid_whitelist[{i}]",
+                        f"expected str, got {type(item).__name__}",
+                    )
                 elif item not in _MERMAID_TYPES:
-                    _warn(warnings, file_label, f"mermaid_whitelist[{i}]", f"unknown mermaid type '{item}'")
+                    _warn(
+                        warnings,
+                        file_label,
+                        f"mermaid_whitelist[{i}]",
+                        f"unknown mermaid type '{item}'",
+                    )
 
     sp = data.get("skip_paths")
     if sp is not None:
         if not isinstance(sp, list):
-            _err(errors, file_label, "skip_paths", f"expected list, got {type(sp).__name__}")
+            _err(
+                errors,
+                file_label,
+                "skip_paths",
+                f"expected list, got {type(sp).__name__}",
+            )
         else:
             for i, item in enumerate(sp):
                 if not isinstance(item, str) or not item:
-                    _err(errors, file_label, f"skip_paths[{i}]", "expected non-empty str")
+                    _err(
+                        errors, file_label, f"skip_paths[{i}]", "expected non-empty str"
+                    )
 
     for k in data:
         if k not in ("mermaid_whitelist", "skip_paths"):
@@ -238,33 +351,70 @@ def validate_tags_yaml(vault: Path, errors: list[dict], warnings: list[dict]) ->
     syn = data.get("alias_synonyms")
     if syn is not None:
         if not isinstance(syn, dict):
-            _err(errors, file_label, "alias_synonyms", f"expected mapping, got {type(syn).__name__}")
+            _err(
+                errors,
+                file_label,
+                "alias_synonyms",
+                f"expected mapping, got {type(syn).__name__}",
+            )
         else:
             for sk, sv in syn.items():
                 if not isinstance(sk, str) or not sk:
-                    _err(errors, file_label, f"alias_synonyms.{sk!r}", "key must be non-empty str")
+                    _err(
+                        errors,
+                        file_label,
+                        f"alias_synonyms.{sk!r}",
+                        "key must be non-empty str",
+                    )
                 if not isinstance(sv, list):
-                    _err(errors, file_label, f"alias_synonyms.{sk}", f"expected list, got {type(sv).__name__}")
+                    _err(
+                        errors,
+                        file_label,
+                        f"alias_synonyms.{sk}",
+                        f"expected list, got {type(sv).__name__}",
+                    )
                 elif not sv:
-                    _err(errors, file_label, f"alias_synonyms.{sk}", "list must be non-empty")
+                    _err(
+                        errors,
+                        file_label,
+                        f"alias_synonyms.{sk}",
+                        "list must be non-empty",
+                    )
                 else:
                     for i, e in enumerate(sv):
                         if not isinstance(e, str) or not e:
-                            _err(errors, file_label, f"alias_synonyms.{sk}[{i}]", "expected non-empty str")
+                            _err(
+                                errors,
+                                file_label,
+                                f"alias_synonyms.{sk}[{i}]",
+                                "expected non-empty str",
+                            )
 
     naming = data.get("tag_naming")
     if naming is not None:
         if not isinstance(naming, str):
-            _err(errors, file_label, "tag_naming", f"expected str, got {type(naming).__name__}")
+            _err(
+                errors,
+                file_label,
+                "tag_naming",
+                f"expected str, got {type(naming).__name__}",
+            )
         elif naming not in _TAG_NAMING_ENUM:
-            _err(errors, file_label, "tag_naming", f"expected enum {sorted(_TAG_NAMING_ENUM)}, got '{naming}'")
+            _err(
+                errors,
+                file_label,
+                "tag_naming",
+                f"expected enum {sorted(_TAG_NAMING_ENUM)}, got '{naming}'",
+            )
 
     for k in data:
         if k not in ("alias_synonyms", "tag_naming"):
             _warn(warnings, file_label, k, "unknown key")
 
 
-def validate_image_gen_yaml(vault: Path, errors: list[dict], warnings: list[dict]) -> None:
+def validate_image_gen_yaml(
+    vault: Path, errors: list[dict], warnings: list[dict]
+) -> None:
     path = vault / ".cortex" / "config" / "image-gen.yaml"
     file_label = "image-gen.yaml"
     data, err = _load_yaml(path)
@@ -278,61 +428,113 @@ def validate_image_gen_yaml(vault: Path, errors: list[dict], warnings: list[dict
     seen_names: set[str] = set()
     if providers is not None:
         if not isinstance(providers, list):
-            _err(errors, file_label, "providers",
-                 f"expected list, got {type(providers).__name__}")
+            _err(
+                errors,
+                file_label,
+                "providers",
+                f"expected list, got {type(providers).__name__}",
+            )
         else:
             for i, p in enumerate(providers):
                 prefix = f"providers[{i}]"
                 if not isinstance(p, dict):
-                    _err(errors, file_label, prefix,
-                         f"expected mapping, got {type(p).__name__}")
+                    _err(
+                        errors,
+                        file_label,
+                        prefix,
+                        f"expected mapping, got {type(p).__name__}",
+                    )
                     continue
                 for rk in _IMAGE_GEN_REQUIRED_PROVIDER_KEYS:
                     if not p.get(rk):
-                        _err(errors, file_label, f"{prefix}.{rk}",
-                             "required field missing or empty")
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{rk}",
+                            "required field missing or empty",
+                        )
                 name = p.get("name")
                 if isinstance(name, str):
                     if name in seen_names:
-                        _err(errors, file_label, f"{prefix}.name",
-                             f"duplicate provider name '{name}'")
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.name",
+                            f"duplicate provider name '{name}'",
+                        )
                     else:
                         seen_names.add(name)
                 ep = p.get("endpoint")
                 if isinstance(ep, str) and ep:
                     if ep.startswith("http://"):
-                        _warn(warnings, file_label, f"{prefix}.endpoint",
-                              "http:// is insecure, prefer https://")
+                        _warn(
+                            warnings,
+                            file_label,
+                            f"{prefix}.endpoint",
+                            "http:// is insecure, prefer https://",
+                        )
                     elif not ep.startswith("https://"):
-                        _err(errors, file_label, f"{prefix}.endpoint",
-                             "must start with https:// (or http:// with warning)")
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.endpoint",
+                            "must start with https:// (or http:// with warning)",
+                        )
                 has_env = bool(p.get("api_key_env"))
                 has_inline = bool(p.get("api_key"))
                 if not (has_env or has_inline):
-                    _err(errors, file_label, f"{prefix}.api_key",
-                         "either api_key_env or api_key required")
+                    _err(
+                        errors,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "either api_key_env or api_key required",
+                    )
                 if has_env and has_inline:
-                    _warn(warnings, file_label, f"{prefix}.api_key",
-                          "both api_key_env and api_key set; env takes precedence")
+                    _warn(
+                        warnings,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "both api_key_env and api_key set; env takes precedence",
+                    )
                 if has_inline:
-                    _warn(warnings, file_label, f"{prefix}.api_key",
-                          "inline api_key is a commit risk; prefer api_key_env")
+                    _warn(
+                        warnings,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "inline api_key is a commit risk; prefer api_key_env",
+                    )
                 for bk in ("trusted", "disabled"):
                     if bk in p and not isinstance(p[bk], bool):
-                        _err(errors, file_label, f"{prefix}.{bk}",
-                             f"expected bool, got {type(p[bk]).__name__}")
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{bk}",
+                            f"expected bool, got {type(p[bk]).__name__}",
+                        )
                 t = p.get("timeout_seconds")
                 if t is not None:
                     if not isinstance(t, int) or isinstance(t, bool):
-                        _err(errors, file_label, f"{prefix}.timeout_seconds",
-                             f"expected int 1-300, got {type(t).__name__}")
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.timeout_seconds",
+                            f"expected int 1-300, got {type(t).__name__}",
+                        )
                     elif not (1 <= t <= 300):
-                        _err(errors, file_label, f"{prefix}.timeout_seconds",
-                             f"out of range 1-300, got {t}")
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.timeout_seconds",
+                            f"out of range 1-300, got {t}",
+                        )
                 for dk in ("extra_headers", "extra_body"):
                     if dk in p and p[dk] is not None and not isinstance(p[dk], dict):
-                        _err(errors, file_label, f"{prefix}.{dk}",
-                             f"expected mapping, got {type(p[dk]).__name__}")
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{dk}",
+                            f"expected mapping, got {type(p[dk]).__name__}",
+                        )
                 for k in p:
                     if k not in _IMAGE_GEN_PROVIDER_KEYS:
                         _warn(warnings, file_label, f"{prefix}.{k}", "unknown key")
@@ -340,17 +542,26 @@ def validate_image_gen_yaml(vault: Path, errors: list[dict], warnings: list[dict
     defaults = data.get("defaults")
     if defaults is not None:
         if not isinstance(defaults, dict):
-            _err(errors, file_label, "defaults",
-                 f"expected mapping, got {type(defaults).__name__}")
+            _err(
+                errors,
+                file_label,
+                "defaults",
+                f"expected mapping, got {type(defaults).__name__}",
+            )
         else:
             rs = defaults.get("random_selection")
             if rs is not None and not isinstance(rs, bool):
-                _err(errors, file_label, "defaults.random_selection",
-                     f"expected bool, got {type(rs).__name__}")
+                _err(
+                    errors,
+                    file_label,
+                    "defaults.random_selection",
+                    f"expected bool, got {type(rs).__name__}",
+                )
             od = defaults.get("output_dir")
             if od is not None and (not isinstance(od, str) or not od):
-                _err(errors, file_label, "defaults.output_dir",
-                     "expected non-empty str")
+                _err(
+                    errors, file_label, "defaults.output_dir", "expected non-empty str"
+                )
             for k in defaults:
                 if k not in ("random_selection", "output_dir"):
                     _warn(warnings, file_label, f"defaults.{k}", "unknown key")
@@ -360,7 +571,247 @@ def validate_image_gen_yaml(vault: Path, errors: list[dict], warnings: list[dict
             _warn(warnings, file_label, k, "unknown key")
 
 
+def validate_image_understand_yaml(
+    vault: Path, errors: list[dict], warnings: list[dict]
+) -> None:
+    path = vault / ".cortex" / "config" / "image-understand.yaml"
+    file_label = "image-understand.yaml"
+    data, err = _load_yaml(path)
+    if err:
+        _err(errors, file_label, "*", err)
+        return
+    if data is None:
+        return
+
+    providers = data.get("providers")
+    seen_names: set[str] = set()
+    if providers is not None:
+        if not isinstance(providers, list):
+            _err(
+                errors,
+                file_label,
+                "providers",
+                f"expected list, got {type(providers).__name__}",
+            )
+        else:
+            for i, p in enumerate(providers):
+                prefix = f"providers[{i}]"
+                if not isinstance(p, dict):
+                    _err(
+                        errors,
+                        file_label,
+                        prefix,
+                        f"expected mapping, got {type(p).__name__}",
+                    )
+                    continue
+                for rk in _IMAGE_UNDERSTAND_REQUIRED_PROVIDER_KEYS:
+                    if not p.get(rk):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{rk}",
+                            "required field missing or empty",
+                        )
+                name = p.get("name")
+                if isinstance(name, str):
+                    if name in seen_names:
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.name",
+                            f"duplicate provider name '{name}'",
+                        )
+                    else:
+                        seen_names.add(name)
+                ep = p.get("endpoint")
+                if isinstance(ep, str) and ep:
+                    if ep.startswith("http://"):
+                        _warn(
+                            warnings,
+                            file_label,
+                            f"{prefix}.endpoint",
+                            "http:// is insecure, prefer https://",
+                        )
+                    elif not ep.startswith("https://"):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.endpoint",
+                            "must start with https:// (or http:// with warning)",
+                        )
+                has_env = bool(p.get("api_key_env"))
+                has_inline = bool(p.get("api_key"))
+                if not (has_env or has_inline):
+                    _err(
+                        errors,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "either api_key_env or api_key required",
+                    )
+                if has_env and has_inline:
+                    _warn(
+                        warnings,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "both api_key_env and api_key set; env takes precedence",
+                    )
+                if has_inline:
+                    _warn(
+                        warnings,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "inline api_key is a commit risk; prefer api_key_env",
+                    )
+                for bk in ("trusted", "disabled"):
+                    if bk in p and not isinstance(p[bk], bool):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{bk}",
+                            f"expected bool, got {type(p[bk]).__name__}",
+                        )
+                t = p.get("timeout_seconds")
+                if t is not None:
+                    if not isinstance(t, int) or isinstance(t, bool):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.timeout_seconds",
+                            f"expected int 1-300, got {type(t).__name__}",
+                        )
+                    elif not (1 <= t <= 300):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.timeout_seconds",
+                            f"out of range 1-300, got {t}",
+                        )
+                mt = p.get("max_tokens")
+                if mt is not None:
+                    if not isinstance(mt, int) or isinstance(mt, bool):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.max_tokens",
+                            f"expected int 1-32768, got {type(mt).__name__}",
+                        )
+                    elif not (1 <= mt <= 32768):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.max_tokens",
+                            f"out of range 1-32768, got {mt}",
+                        )
+                temp = p.get("temperature")
+                if temp is not None:
+                    if isinstance(temp, bool) or not isinstance(temp, (int, float)):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.temperature",
+                            f"expected float 0.0-2.0, got {type(temp).__name__}",
+                        )
+                    elif not (0.0 <= float(temp) <= 2.0):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.temperature",
+                            f"out of range 0.0-2.0, got {temp}",
+                        )
+                for dk in ("extra_headers", "extra_body"):
+                    if dk in p and p[dk] is not None and not isinstance(p[dk], dict):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{dk}",
+                            f"expected mapping, got {type(p[dk]).__name__}",
+                        )
+                for k in p:
+                    if k not in _IMAGE_UNDERSTAND_PROVIDER_KEYS:
+                        _warn(warnings, file_label, f"{prefix}.{k}", "unknown key")
+
+    defaults = data.get("defaults")
+    if defaults is not None:
+        if not isinstance(defaults, dict):
+            _err(
+                errors,
+                file_label,
+                "defaults",
+                f"expected mapping, got {type(defaults).__name__}",
+            )
+        else:
+            rs = defaults.get("random_selection")
+            if rs is not None and not isinstance(rs, bool):
+                _err(
+                    errors,
+                    file_label,
+                    "defaults.random_selection",
+                    f"expected bool, got {type(rs).__name__}",
+                )
+            dp = defaults.get("default_provider")
+            if dp is not None:
+                if not isinstance(dp, str) or not dp:
+                    _err(
+                        errors,
+                        file_label,
+                        "defaults.default_provider",
+                        "expected non-empty str",
+                    )
+                elif dp not in seen_names:
+                    _warn(
+                        warnings,
+                        file_label,
+                        "defaults.default_provider",
+                        f"'{dp}' not found in providers[]",
+                    )
+            mt = defaults.get("max_tokens")
+            if mt is not None:
+                if not isinstance(mt, int) or isinstance(mt, bool):
+                    _err(
+                        errors,
+                        file_label,
+                        "defaults.max_tokens",
+                        f"expected int 1-32768, got {type(mt).__name__}",
+                    )
+                elif not (1 <= mt <= 32768):
+                    _err(
+                        errors,
+                        file_label,
+                        "defaults.max_tokens",
+                        f"out of range 1-32768, got {mt}",
+                    )
+            temp = defaults.get("temperature")
+            if temp is not None:
+                if isinstance(temp, bool) or not isinstance(temp, (int, float)):
+                    _err(
+                        errors,
+                        file_label,
+                        "defaults.temperature",
+                        f"expected float 0.0-2.0, got {type(temp).__name__}",
+                    )
+                elif not (0.0 <= float(temp) <= 2.0):
+                    _err(
+                        errors,
+                        file_label,
+                        "defaults.temperature",
+                        f"out of range 0.0-2.0, got {temp}",
+                    )
+            for k in defaults:
+                if k not in (
+                    "random_selection",
+                    "default_provider",
+                    "max_tokens",
+                    "temperature",
+                ):
+                    _warn(warnings, file_label, f"defaults.{k}", "unknown key")
+
+    for k in data:
+        if k not in ("providers", "defaults"):
+            _warn(warnings, file_label, k, "unknown key")
+
+
 # ---------- main -------------------------------------------------------------
+
 
 def main(argv: list[str] | None = None) -> int:
     errors: list[dict] = []
@@ -372,12 +823,18 @@ def main(argv: list[str] | None = None) -> int:
     if vault is None:
         _warn(warnings, "*", "vault", "vault not resolved (skip yaml validation)")
     elif not vault.exists():
-        _warn(warnings, "*", "vault", f"vault path {vault} not found (skip yaml validation)")
+        _warn(
+            warnings,
+            "*",
+            "vault",
+            f"vault path {vault} not found (skip yaml validation)",
+        )
     else:
         validate_digest_yaml(vault, errors, warnings)
         validate_enrich_yaml(vault, errors, warnings)
         validate_tags_yaml(vault, errors, warnings)
         validate_image_gen_yaml(vault, errors, warnings)
+        validate_image_understand_yaml(vault, errors, warnings)
 
     result = {
         "ok": len(errors) == 0,
@@ -388,7 +845,10 @@ def main(argv: list[str] | None = None) -> int:
     if errors:
         # Stop hook displays this in stderr; keep stdout JSON for programmatic use.
         for e in errors:
-            print(f"[cortex-config WARN] {e['file']}/{e['key']}: {e['issue']}", file=sys.stderr)
+            print(
+                f"[cortex-config WARN] {e['file']}/{e['key']}: {e['issue']}",
+                file=sys.stderr,
+            )
 
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["ok"] else 1

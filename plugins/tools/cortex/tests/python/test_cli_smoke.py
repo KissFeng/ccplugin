@@ -16,6 +16,8 @@ CLI_MODULES = [
     "ledger",
     "session",
     "html_render",
+    "image_gen",
+    "image_understand",
 ]
 
 

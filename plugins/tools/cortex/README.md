@@ -207,6 +207,7 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 | `cortex-html` | "render html" / "render badge/card/timeline" | 模板 `{{VAR}}` 替换, 输出 HTML 片段 | 📁 |
 | `cortex-config` | "查看 cortex 配置" / "改 cortex 配置" / "cortex config" / `/cortex:config` | 展示/编辑 `~/.cortex/config.json` + vault `.cortex/config/*.yaml`; 写前 schema 校验; Stop hook 自动 validate | 🌐 + 📚 |
 | `cortex-image` | "生成图" / "做张图" / "text to image" / "AI 画图" / "render image" | 文生图 — 多 provider 配置 (`.cortex/config/image-gen.yaml`) 随机/指定; 10 风格 + 6 排版库; Junior Designer 工作流 + 反 AI slop | 📚 |
+| `cortex-image-understand` | "看图" / "识图" / "VQA" / "OCR" / "describe image" / "图里写了什么" | 图理解 — 多 provider VLM (`.cortex/config/image-understand.yaml`); 4 模式 describe/ask/extract/OCR; 支持 zhipu glm-4v / openai gpt-4o / qwen-vl | 📚 |
 
 ### 渐进披露架构
 
