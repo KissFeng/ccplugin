@@ -208,6 +208,8 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 | `cortex-config` | "查看 cortex 配置" / "改 cortex 配置" / "cortex config" / `/cortex:config` | 展示/编辑 `~/.cortex/config.json` + vault `.cortex/config/*.yaml`; 写前 schema 校验; Stop hook 自动 validate | 🌐 + 📚 |
 | `cortex-image` | "生成图" / "做张图" / "text to image" / "AI 画图" / "render image" | 文生图 — 多 provider 配置 (`.cortex/config/image-gen.yaml`) 随机/指定; 10 风格 + 6 排版库; Junior Designer 工作流 + 反 AI slop | 📚 |
 | `cortex-image-understand` | "看图" / "识图" / "VQA" / "OCR" / "describe image" / "图里写了什么" | 图理解 — 多 provider VLM (`.cortex/config/image-understand.yaml`); 4 模式 describe/ask/extract/OCR; 支持 zhipu glm-4v / openai gpt-4o / qwen-vl | 📚 |
+| `cortex-video-understand` | "看视频" / "视频理解" / "总结视频" / "video QA" | 视频理解 — 多 provider VLM (`.cortex/config/video-understand.yaml`); 双模式 video_url (zhipu glm-4v-plus / qwen-vl-max-video) + frames (ffmpeg 抽帧, 兼容 openai gpt-4o) | 📚 |
+| `cortex-audio-understand` | "转录" / "听音频" / "ASR" / "音频问答" | 音频理解 — 多 provider (`.cortex/config/audio-understand.yaml`); asr (Whisper / GLM-ASR) + chat (gpt-4o-audio / qwen-audio); transcribe/describe/ask 三子命令 | 📚 |
 
 ### 渐进披露架构
 

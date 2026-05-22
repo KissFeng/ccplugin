@@ -191,6 +191,40 @@ defaults:
 12. temperature float 0.0-2.0
 13. default_provider 若设置必须存在于 providers[] (warn if missing)
 
+## `<vault>/.cortex/config/video-understand.yaml`
+
+字段同 image-understand, 额外:
+
+| key | type | default | 说明 |
+|---|---|---|---|
+| `mode` | enum | `video_url` | `video_url` 直传 vs `frames` ffmpeg 抽帧 |
+| `frames_count` | int | 8 | frames 模式抽帧数, 1-64 |
+| `frames_fps` | float | null | (保留) 按 fps 抽, 未启用 |
+| `defaults.mode` / `defaults.frames_count` | — | — | provider 未覆盖时生效 |
+
+### 校验规则 (validate_video_understand_yaml)
+
+同 image-understand 1-13 条; 额外:
+14. mode ∈ {video_url, frames}
+15. frames_count int 1-64
+16. defaults.mode ∈ {video_url, frames}
+
+## `<vault>/.cortex/config/audio-understand.yaml`
+
+字段同 image-understand, 额外:
+
+| key | type | default | 说明 |
+|---|---|---|---|
+| `mode` | enum | `asr` | `asr` Whisper-style multipart vs `chat` chat completions w/ input_audio |
+| `response_format` | str | `json` | asr 时: `json` / `text` / `verbose_json` |
+| `defaults.mode` / `defaults.language` | — | — | provider 未覆盖时生效; `language` 是 ISO 639-1 |
+
+### 校验规则 (validate_audio_understand_yaml)
+
+同 image-understand 1-13 条; 额外:
+14. mode ∈ {asr, chat}
+15. defaults.mode ∈ {asr, chat}
+
 ## validate_config.py 输出 JSON
 
 ```json

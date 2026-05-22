@@ -18,6 +18,8 @@ CLI_MODULES = [
     "html_render",
     "image_gen",
     "image_understand",
+    "video_understand",
+    "audio_understand",
 ]
 
 

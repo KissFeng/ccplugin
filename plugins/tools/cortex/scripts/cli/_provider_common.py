@@ -222,6 +222,44 @@ def http_request(
         return 0, b"", f"error: {e}"
 
 
+def http_multipart(
+    url: str,
+    headers: dict | None = None,
+    fields: dict | None = None,
+    files: list[tuple[str, str, bytes, str]] | None = None,
+    timeout: int = 120,
+) -> tuple[int, bytes, str | None]:
+    """POST multipart/form-data via stdlib.
+
+    files: list of (field_name, filename, content_bytes, content_type).
+    """
+    import uuid
+
+    boundary = f"----cortex{uuid.uuid4().hex}"
+    body = bytearray()
+    for k, v in (fields or {}).items():
+        body.extend(f"--{boundary}\r\n".encode())
+        body.extend(f'Content-Disposition: form-data; name="{k}"\r\n\r\n'.encode())
+        body.extend(str(v).encode("utf-8"))
+        body.extend(b"\r\n")
+    for field_name, filename, content, content_type in files or []:
+        body.extend(f"--{boundary}\r\n".encode())
+        body.extend(
+            f'Content-Disposition: form-data; name="{field_name}"; '
+            f'filename="{filename}"\r\n'.encode()
+        )
+        body.extend(f"Content-Type: {content_type}\r\n\r\n".encode())
+        body.extend(content)
+        body.extend(b"\r\n")
+    body.extend(f"--{boundary}--\r\n".encode())
+
+    hdrs = dict(headers or {})
+    hdrs["Content-Type"] = f"multipart/form-data; boundary={boundary}"
+    return http_request(
+        url, method="POST", headers=hdrs, body=bytes(body), timeout=timeout
+    )
+
+
 def download(
     url: str, dst: Path, timeout: int = 60, ua: str = "cortex-cli/1"
 ) -> tuple[bool, str | None]:

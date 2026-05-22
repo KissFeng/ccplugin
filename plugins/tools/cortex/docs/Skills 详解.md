@@ -1,6 +1,6 @@
 # Skills 详解
 
-cortex 提供 **15 个 skill** (PR1-4 整改后: 删 7 + 合 1 = 21→16 (新增 cortex-config + cortex-image + cortex-image-understand))。skill 由 description 池语义匹配自动触发, 也可显式调用 (`/cortex:<相关 command>`)。
+cortex 提供 **15 个 skill** (PR1-4 整改后: 删 7 + 合 1 = 21→18 (新增 cortex-config + cortex-image + cortex-image-understand + cortex-video-understand + cortex-audio-understand))。skill 由 description 池语义匹配自动触发, 也可显式调用 (`/cortex:<相关 command>`)。
 
 全部 skill 遵循渐进披露: 入口 SKILL.md ≤ 80 行 (frontmatter + 触发词 + 决策树 + AUTO_MODE 分支 + references 指针表), 细节迁 `references/<topic>.md` 按需加载。
 
@@ -41,6 +41,8 @@ cortex 提供 **15 个 skill** (PR1-4 整改后: 删 7 + 合 1 = 21→16 (新增
 | `cortex-config` | 全局+知识库 | "查看 cortex 配置" / "改 cortex 配置" | 展示/编辑 `~/.cortex/config.json` + vault `.cortex/config/*.yaml`; Stop hook 校验 schema | 自动 |
 | `cortex-image` | 知识库 | "生成图" / "做张图" / "AI 画图" | 文生图 — 多 provider 配置 (`.cortex/config/image-gen.yaml`) 随机/指定; 10 风格 + 6 排版库; Junior Designer 工作流 | 自动 |
 | `cortex-image-understand` | 知识库 | "看图" / "识图" / "VQA" / "OCR" / "图里写了什么" | 图理解 — 多 provider VLM (`.cortex/config/image-understand.yaml`); describe/ask/extract/OCR 四模式 | 自动 |
+| `cortex-video-understand` | 知识库 | "看视频" / "视频理解" / "总结视频" | 视频理解 — 多 provider; video_url + frames (ffmpeg) 双模式; describe/ask/extract | 自动 |
+| `cortex-audio-understand` | 知识库 | "转录" / "听音频" / "ASR" / "音频问答" | 音频理解 — asr (Whisper/GLM-ASR multipart) + chat (gpt-4o-audio/qwen-audio); transcribe/describe/ask | 自动 |
 
 ## 行为约束 (AUTO_MODE persistent, 所有 skill 一致)
 

@@ -98,6 +98,19 @@ _IMAGE_UNDERSTAND_PROVIDER_KEYS = {
     "temperature",
 }
 
+_VIDEO_UNDERSTAND_PROVIDER_KEYS = _IMAGE_UNDERSTAND_PROVIDER_KEYS | {
+    "mode",
+    "frames_count",
+    "frames_fps",
+}
+_VIDEO_MODE_ENUM = {"video_url", "frames"}
+
+_AUDIO_UNDERSTAND_PROVIDER_KEYS = _IMAGE_UNDERSTAND_PROVIDER_KEYS | {
+    "mode",
+    "response_format",
+}
+_AUDIO_MODE_ENUM = {"asr", "chat"}
+
 
 # ---------- helpers ----------------------------------------------------------
 
@@ -810,6 +823,233 @@ def validate_image_understand_yaml(
             _warn(warnings, file_label, k, "unknown key")
 
 
+def _validate_chat_like_yaml(
+    vault: Path,
+    filename: str,
+    valid_keys: set[str],
+    mode_enum: set[str] | None,
+    errors: list[dict],
+    warnings: list[dict],
+) -> None:
+    """Shared validator for image/video/audio-understand yaml.
+
+    All three share the same core schema (chat-completions compat); only the
+    `mode` enum + a few optional keys differ.
+    """
+    path = vault / ".cortex" / "config" / filename
+    file_label = filename
+    data, err = _load_yaml(path)
+    if err:
+        _err(errors, file_label, "*", err)
+        return
+    if data is None:
+        return
+
+    providers = data.get("providers")
+    seen_names: set[str] = set()
+    if providers is not None:
+        if not isinstance(providers, list):
+            _err(
+                errors,
+                file_label,
+                "providers",
+                f"expected list, got {type(providers).__name__}",
+            )
+        else:
+            for i, p in enumerate(providers):
+                prefix = f"providers[{i}]"
+                if not isinstance(p, dict):
+                    _err(
+                        errors,
+                        file_label,
+                        prefix,
+                        f"expected mapping, got {type(p).__name__}",
+                    )
+                    continue
+                for rk in ("name", "endpoint", "model"):
+                    if not p.get(rk):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{rk}",
+                            "required field missing or empty",
+                        )
+                name = p.get("name")
+                if isinstance(name, str):
+                    if name in seen_names:
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.name",
+                            f"duplicate provider name '{name}'",
+                        )
+                    else:
+                        seen_names.add(name)
+                ep = p.get("endpoint")
+                if isinstance(ep, str) and ep:
+                    if ep.startswith("http://"):
+                        _warn(
+                            warnings,
+                            file_label,
+                            f"{prefix}.endpoint",
+                            "http:// is insecure, prefer https://",
+                        )
+                    elif not ep.startswith("https://"):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.endpoint",
+                            "must start with https:// (or http:// with warning)",
+                        )
+                has_env = bool(p.get("api_key_env"))
+                has_inline = bool(p.get("api_key"))
+                if not (has_env or has_inline):
+                    _err(
+                        errors,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "either api_key_env or api_key required",
+                    )
+                if has_env and has_inline:
+                    _warn(
+                        warnings,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "both api_key_env and api_key set; env takes precedence",
+                    )
+                if has_inline:
+                    _warn(
+                        warnings,
+                        file_label,
+                        f"{prefix}.api_key",
+                        "inline api_key is a commit risk; prefer api_key_env",
+                    )
+                for bk in ("trusted", "disabled"):
+                    if bk in p and not isinstance(p[bk], bool):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{bk}",
+                            f"expected bool, got {type(p[bk]).__name__}",
+                        )
+                t = p.get("timeout_seconds")
+                if t is not None:
+                    if not isinstance(t, int) or isinstance(t, bool):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.timeout_seconds",
+                            f"expected int 1-600, got {type(t).__name__}",
+                        )
+                    elif not (1 <= t <= 600):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.timeout_seconds",
+                            f"out of range 1-600, got {t}",
+                        )
+                if mode_enum is not None and "mode" in p:
+                    if p["mode"] not in mode_enum:
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.mode",
+                            f"expected enum {sorted(mode_enum)}, got '{p['mode']}'",
+                        )
+                fc = p.get("frames_count")
+                if fc is not None:
+                    if not isinstance(fc, int) or isinstance(fc, bool):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.frames_count",
+                            f"expected int 1-64, got {type(fc).__name__}",
+                        )
+                    elif not (1 <= fc <= 64):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.frames_count",
+                            f"out of range 1-64, got {fc}",
+                        )
+                for dk in ("extra_headers", "extra_body"):
+                    if dk in p and p[dk] is not None and not isinstance(p[dk], dict):
+                        _err(
+                            errors,
+                            file_label,
+                            f"{prefix}.{dk}",
+                            f"expected mapping, got {type(p[dk]).__name__}",
+                        )
+                for k in p:
+                    if k not in valid_keys:
+                        _warn(warnings, file_label, f"{prefix}.{k}", "unknown key")
+
+    defaults = data.get("defaults")
+    if defaults is not None:
+        if not isinstance(defaults, dict):
+            _err(
+                errors,
+                file_label,
+                "defaults",
+                f"expected mapping, got {type(defaults).__name__}",
+            )
+        else:
+            dp = defaults.get("default_provider")
+            if dp is not None:
+                if not isinstance(dp, str) or not dp:
+                    _err(
+                        errors,
+                        file_label,
+                        "defaults.default_provider",
+                        "expected non-empty str",
+                    )
+                elif dp not in seen_names:
+                    _warn(
+                        warnings,
+                        file_label,
+                        "defaults.default_provider",
+                        f"'{dp}' not found in providers[]",
+                    )
+            if mode_enum is not None and "mode" in defaults:
+                if defaults["mode"] not in mode_enum:
+                    _err(
+                        errors,
+                        file_label,
+                        "defaults.mode",
+                        f"expected enum {sorted(mode_enum)}, got '{defaults['mode']}'",
+                    )
+
+    for k in data:
+        if k not in ("providers", "defaults"):
+            _warn(warnings, file_label, k, "unknown key")
+
+
+def validate_video_understand_yaml(
+    vault: Path, errors: list[dict], warnings: list[dict]
+) -> None:
+    _validate_chat_like_yaml(
+        vault,
+        "video-understand.yaml",
+        _VIDEO_UNDERSTAND_PROVIDER_KEYS,
+        _VIDEO_MODE_ENUM,
+        errors,
+        warnings,
+    )
+
+
+def validate_audio_understand_yaml(
+    vault: Path, errors: list[dict], warnings: list[dict]
+) -> None:
+    _validate_chat_like_yaml(
+        vault,
+        "audio-understand.yaml",
+        _AUDIO_UNDERSTAND_PROVIDER_KEYS,
+        _AUDIO_MODE_ENUM,
+        errors,
+        warnings,
+    )
+
+
 # ---------- main -------------------------------------------------------------
 
 
@@ -835,6 +1075,8 @@ def main(argv: list[str] | None = None) -> int:
         validate_tags_yaml(vault, errors, warnings)
         validate_image_gen_yaml(vault, errors, warnings)
         validate_image_understand_yaml(vault, errors, warnings)
+        validate_video_understand_yaml(vault, errors, warnings)
+        validate_audio_understand_yaml(vault, errors, warnings)
 
     result = {
         "ok": len(errors) == 0,

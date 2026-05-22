@@ -104,7 +104,9 @@ URI scheme: `L0://identity/me` / `L1://procedural/git-flow` / `L2://semantic/go/
     ├── enrich.yaml            mermaid 类型白名单 + 跳过路径
     ├── tags.yaml              tag 命名约定 + alias 同义词表
     ├── image-gen.yaml         文生图 provider 列表 + defaults (随机选 / 输出目录)
-    └── image-understand.yaml  图理解 provider 列表 + defaults (default_provider / max_tokens / temperature)
+    ├── image-understand.yaml  图理解 provider 列表 + defaults (default_provider / max_tokens / temperature)
+    ├── video-understand.yaml  视频理解 provider 列表 + mode=video_url|frames + frames_count
+    └── audio-understand.yaml  音频理解 provider 列表 + mode=asr|chat + language
 ```
 
 ### state JSON 空骨架 (4 文件, 内容相同)
@@ -198,6 +200,68 @@ defaults:
   default_provider: zhipu-glm4v  # 无 --config + random=false 时优先选这个
   max_tokens: 1024
   temperature: 0.3
+```
+
+`video-understand.yaml` (空骨架, 用户自填 provider):
+
+```yaml
+# video-understand.yaml — cortex-video-understand / video_understand CLI 配置
+# mode: video_url (zhipu glm-4v-plus / qwen-vl-max-video) 或 frames (ffmpeg 抽帧走 image VLM)
+providers:
+  # - name: zhipu-glm4v
+  #   endpoint: https://open.bigmodel.cn/api/paas/v4/chat/completions
+  #   model: glm-4v-plus
+  #   api_key_env: ZHIPU_API_KEY
+  #   mode: video_url
+  #   trusted: true
+  #   timeout_seconds: 120
+  # - name: openai-gpt4o-frames
+  #   endpoint: https://api.openai.com/v1/chat/completions
+  #   model: gpt-4o-mini
+  #   api_key_env: OPENAI_API_KEY
+  #   mode: frames
+  #   frames_count: 8
+  #   disabled: true
+defaults:
+  random_selection: false
+  default_provider: zhipu-glm4v
+  max_tokens: 1024
+  temperature: 0.3
+  mode: video_url
+  frames_count: 8
+```
+
+`audio-understand.yaml` (空骨架, 用户自填 provider):
+
+```yaml
+# audio-understand.yaml — cortex-audio-understand / audio_understand CLI 配置
+# mode: asr (Whisper-style multipart) 或 chat (gpt-4o-audio / qwen-audio)
+providers:
+  # - name: zhipu-glm-asr
+  #   endpoint: https://open.bigmodel.cn/api/paas/v4/audio/transcriptions
+  #   model: glm-asr
+  #   api_key_env: ZHIPU_API_KEY
+  #   mode: asr
+  #   trusted: true
+  # - name: openai-whisper
+  #   endpoint: https://api.openai.com/v1/audio/transcriptions
+  #   model: whisper-1
+  #   api_key_env: OPENAI_API_KEY
+  #   mode: asr
+  #   disabled: true
+  # - name: openai-gpt4o-audio
+  #   endpoint: https://api.openai.com/v1/chat/completions
+  #   model: gpt-4o-audio-preview
+  #   api_key_env: OPENAI_API_KEY
+  #   mode: chat
+  #   disabled: true
+defaults:
+  random_selection: false
+  default_provider: zhipu-glm-asr
+  max_tokens: 1024
+  temperature: 0.3
+  mode: asr
+  language: null
 ```
 
 `tags.yaml`:

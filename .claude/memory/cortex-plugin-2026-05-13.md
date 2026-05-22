@@ -24,10 +24,10 @@ type: project
 | 类型 | 计数 | 备注 |
 |---|---|---|
 | Agents | 6 | curator / researcher / archivist / cartographer / summarizer / translator (PR4 删 linker, 6 含 vs-skill 分工注) |
-| Skills | 14 | 新增 cortex-image-understand (图理解, 2026-05-22); 全部多文件渐进披露, SKILL.md 入口 ≤80 行 |
+| Skills | 16 | 新增 cortex-image-understand / cortex-video-understand / cortex-audio-understand (多模态理解三件套, 2026-05-22); 全部多文件渐进披露, SKILL.md 入口 ≤80 行 |
 | Slash commands | 19 | `/cortex:<name>` 冒号 |
-| Wrappers | 25 | +image_understand.sh (2026-05-22); slash 走 stream-json + rich UI, CLI 直 exec python3, `~/.cortex/scripts/*.sh` |
-| Python CLI | 13 | save/search/deep_search/digest/ingest_{url,file,remote}/refresh_projects/memory/ledger/session/html_render/image_gen/image_understand; 共享 `cli/_provider_common.py` (多 provider OpenAI 兼容) |
+| Wrappers | 27 | +image/video/audio_understand.sh (2026-05-22); slash 走 stream-json + rich UI, CLI 直 exec python3, `~/.cortex/scripts/*.sh` |
+| Python CLI | 15 | save/search/deep_search/digest/ingest_{url,file,remote}/refresh_projects/memory/ledger/session/html_render/image_gen/image_understand/video_understand/audio_understand; 共享 `cli/_provider_common.py` (多 provider OpenAI 兼容 + multipart helper) |
 | Migration scripts | 2 | `migrate_scores_to_v2.py` + `migrate_aliases_keywords_to_v3.py` → `migrate.sh --to=v2\|v3` |
 | Lint 规则 | 30 | frontmatter / wikilink / orphan / 命名 / i18n / 评分字段 / .base YAML / path-deprecated 等 |
 | Hooks | 5 | SessionStart / PostCompact / Stop / SubagentStop / UserPromptSubmit |
