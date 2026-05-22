@@ -24,7 +24,7 @@ type: project
 | 类型 | 计数 | 备注 |
 |---|---|---|
 | Agents | 6 | curator / researcher / archivist / cartographer / summarizer / translator (PR4 删 linker, 6 含 vs-skill 分工注) |
-| Skills | 16 | 新增 cortex-image-understand / cortex-video-understand / cortex-audio-understand (多模态理解三件套, 2026-05-22); 全部多文件渐进披露, SKILL.md 入口 ≤80 行 |
+| Skills | 18 | 多模态理解三件套 cortex-image/video/audio-understand (2026-05-22); 全部多文件渐进披露, SKILL.md 入口 ≤80 行 |
 | Slash commands | 19 | `/cortex:<name>` 冒号 |
 | Wrappers | 27 | +image/video/audio_understand.sh (2026-05-22); slash 走 stream-json + rich UI, CLI 直 exec python3, `~/.cortex/scripts/*.sh` |
 | Python CLI | 15 | save/search/deep_search/digest/ingest_{url,file,remote}/refresh_projects/memory/ledger/session/html_render/image_gen/image_understand/video_understand/audio_understand; 共享 `cli/_provider_common.py` (多 provider OpenAI 兼容 + multipart helper) |

@@ -116,7 +116,7 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 - 📁 **当前目录** — PWD (调用 wrapper 时的 cwd)
 - 📚 **知识库** — `~/.cortex/config.json:.vault` 指向的 Obsidian vault
 
-### 25 wrapper 全清单
+### 27 wrapper 全清单
 
 #### 安装 / 配置 (5)
 
@@ -188,7 +188,7 @@ stdout 仅最终 result text; stderr 显示 rich 实时进度; wrapper 退出时
 | **AUTO_MODE** | wrapper 传 `auto` 后缀, 跳 `AskUserQuestion` 自决执行 |
 | **Skill 内部** | skill 之间互相调度 (cortex-digest 在 evolution 阶段触 refactor) |
 
-### 15 skill 全清单
+### 18 skill 全清单
 
 | Skill | 触发词 | 用途 | 范围 |
 |-------|--------|------|------|
@@ -372,8 +372,8 @@ dashboard / digest job 同 schedule 分支即可, 完整 yaml 见 `install_cron.
 - [安装与配置](docs/安装与配置.md) — vault 解析 / `config.json` schema / 升级
 - [知识库结构](docs/知识库结构.md) — vault 4 子目录布局
 - [Commands](docs/Commands.md) — 19 个 slash command 速查
-- [Bash 脚本](docs/Bash%20脚本.md) — 25 wrapper 调用约定 + 退出码
-- [Skills 详解](docs/Skills%20详解.md) — 15 skill 用途 / 触发 / 示例 / 失败处理
+- [Bash 脚本](docs/Bash%20脚本.md) — 27 wrapper 调用约定 + 退出码
+- [Skills 详解](docs/Skills%20详解.md) — 18 skill 用途 / 触发 / 示例 / 失败处理
 - [Agents](docs/Agents.md) — 6 agent + 调度边界 + frontmatter 协议
 - [Lint 规则](docs/Lint%20规则.md) — 30 规则逐条解释 + `--fix` 行为
 - [重构与归档](docs/重构与归档.md) — refactor 子操作 + backup + 不可逆风险

@@ -45,7 +45,7 @@ allowed-tools: Bash Read Write Edit Glob AskUserQuestion mcp__obsidian__obsidian
 |---|---|
 | [references/install-flow.md](references/install-flow.md) | 顶层结构 / 知识库 4 子目录 / 记忆 L0-L4 / 36 模板 / 44 seed_files 完整清单 |
 | [references/cron-setup.md](references/cron-setup.md) | 9 cron job 调度表 + 3 平台后端 (launchd/cron/GHA) + PLUGIN_ROOT 解析 |
-| [references/update-config.md](references/update-config.md) | 24 wrapper 分组 + 卸载提示 + 输出格式样本 + 错误处理 |
+| [references/update-config.md](references/update-config.md) | 27 wrapper 分组 + 卸载提示 + 输出格式样本 + 错误处理 |
 
 ## 错误处理
 
