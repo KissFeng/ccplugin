@@ -31,7 +31,7 @@
 
 ## 核心约定
 
-**代码提交**: 所有变更自动暂存 (CLAUDE.md §1)。
+**代码提交**: 所有变更自动暂存 (CLAUDE.md §1)。**`.version` 文件强制随每次代码 commit 一同提交** (skill/CLI/wrapper/yaml 等任何用户可见变更), bump 末段 patch 号 (0.0.X.Y → 0.0.X.Y+1)。
 
 **@desktop 架构**: Rust 业务 + 事件驱动前端, TS 仅 UI 渲染。Rust → Event → Frontend State → UI Render。详见 `.claude/memory/desktop-event-driven-architecture.md`。
 
