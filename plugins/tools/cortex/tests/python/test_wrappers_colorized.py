@@ -1,4 +1,4 @@
-"""验证所有 wrapper 含 colorized helper, 5 新 wrapper 走 python3 <abs>/cortex_stream.py."""
+"""验证所有 wrapper 含 colorized helper, slash wrapper 走 python3 <abs>/cortex_stream.py."""
 from __future__ import annotations
 
 import re
@@ -21,8 +21,8 @@ def _run_install(target: Path) -> None:
 def test_install_wrappers_generates_expected_set(tmp_path: Path) -> None:
     _run_install(tmp_path)
     files = sorted(p.name for p in tmp_path.glob("*.sh"))
-    # 9 slash + 3 shell + 9 cli = 21
-    assert len(files) >= 20, f"got {len(files)}: {files}"
+    # 10 slash + 2 shell + 15 cli = 27
+    assert len(files) >= 27, f"got {len(files)}: {files}"
     # 关键文件存在
     for n in ["lint.sh", "digest.sh", "recall.sh", "save.sh", "search.sh",
               "memory.sh", "ingest_url.sh", "ingest_file.sh", "ledger.sh",
@@ -32,7 +32,7 @@ def test_install_wrappers_generates_expected_set(tmp_path: Path) -> None:
 
 
 def test_all_wrappers_have_color_helper(tmp_path: Path) -> None:
-    """17 wrapper 全部含 err/ok/banner helper (PRELUDE 注入)."""
+    """27 wrapper 全部含 err/ok/banner helper (PRELUDE 注入)."""
     _run_install(tmp_path)
     pat = re.compile(r"_CX_R=|err\(\)\s*\{|ok\(\)\s*\{")
     for f in tmp_path.glob("*.sh"):
