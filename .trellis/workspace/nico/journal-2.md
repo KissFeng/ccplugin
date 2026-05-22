@@ -1161,3 +1161,36 @@ install.sh 扩展支持 opencode (~/.config/opencode/skills + agents)。重构: 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 94: 新增 cortex-image-understand skill
+
+**Date**: 2026-05-22
+**Task**: 新增 cortex-image-understand skill
+**Branch**: `master`
+
+### Summary
+
+为 plugins/tools/cortex 添加图理解 skill (镜像 cortex-image)。新 CLI scripts/cli/image_understand.py 5 子命令 (probe/describe/ask/extract/list), 走 OpenAI 兼容 chat completions vision 格式, 支持 zhipu/openai/qwen-vl。抽 _provider_common.py 共享模块, image_gen 同步重构。yaml 配置 <vault>/.cortex/config/image-understand.yaml。validate_config.py 加 validate_image_understand_yaml 校验。wrapper 24→25, py CLI 12→13, skill 13→14。15 pytest 单测 + ruff 全过。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `48731868` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
