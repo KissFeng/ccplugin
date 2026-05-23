@@ -1,3 +1,24 @@
+---
+type: concept
+created: 2026-05-20
+tags:
+- type/concept
+- created/2026
+- topic/{{TITLE}}
+- topic/概要
+- topic/架构
+- topic/状态-路线图
+- topic/依赖
+- topic/链接
+- topic/关联
+- keyword/组织
+- keyword/仓库名
+- keyword/项目
+- keyword/主语言
+- keyword/主题
+- keyword/技术栈
+---
+
 <!-- cortex template: project -->
 ---
 lint-skip: true
@@ -5,8 +26,17 @@ type: project
 title: {{TITLE}}
 aliases: []
 tags:
-  - 项目
-  - project
+  - type/project
+  - host/<github.com|gitlab.com|local>
+  - org/<组织>
+  - repo/<仓库名|项目basename>
+  - lang/<主语言>
+  - topic/<主题>
+  - stack/<技术栈>
+  - source/git
+  - score/<1-5>
+  - maturity/<draft|stable|deprecated>
+  - keyword/<关键词>
 created: {{CREATED}}
 updated: {{UPDATED}}
 lang: {{LANG}}

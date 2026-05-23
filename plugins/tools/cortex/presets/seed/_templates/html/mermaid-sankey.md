@@ -1,3 +1,24 @@
+---
+type: concept
+created: 2026-05-20
+tags:
+- type/concept
+- created/2026
+- keyword/风桑基图
+- keyword/用于固化
+- keyword/变量占位
+- keyword/图标题
+- keyword/流量定义
+- keyword/每行形如
+- keyword/目标
+- keyword/权重
+- keyword/grok
+- keyword/live
+- keyword/artifacts
+- keyword/title
+- keyword/flows
+---
+
 <!-- cortex-template-version: 2 -->
 <!--
   mermaid-sankey.md — Grok Live Artifacts 风桑基图 (用于固化流 L4→L3→L2→L1→L0)

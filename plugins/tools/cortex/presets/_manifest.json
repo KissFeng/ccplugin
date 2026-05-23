@@ -1,29 +1,41 @@
 {
   "version": 2,
-  "generated": "2026-05-13T15:23:23Z",
+  "generated": "2026-05-23T03:54:48Z",
   "entries": {
     "seed/_templates/_index.md": {
-      "sha256": "f15bbe3bce1acdf0b4bc610ab09f32f64efbd77522a92b04b9142aaa0adbd90d",
+      "sha256": "292102e5896d74feffe801b4912cda2d70f591abc647205e38fdd9274140067a",
+      "template_version": 1
+    },
+    "seed/_templates/concept.md": {
+      "sha256": "c95e380ee0f2df117bdb0f0c0bb732ce19fa6482e37084d7bfd53d84771acbea",
       "template_version": 1
     },
     "seed/_templates/dashboard.md": {
-      "sha256": "336c570a1cd44246f221d62e2d5011f46b31a8cbbd20d90b54ab8b9f10ca853b",
-      "template_version": 2
+      "sha256": "13545364bf0cf3a19f48bcd19515585f0a5c887de2c20df50dc0005b33cb0d84",
+      "template_version": 1
     },
     "seed/_templates/domain-topic.md": {
       "sha256": "8d45032321ab94f89d8ff233ded044ddd4c35b66bbda0857fc827531d2ab8e40",
       "template_version": 1
     },
+    "seed/_templates/domain.md": {
+      "sha256": "d6bdae58d7fb4b2ad46b0fda6787c46027dbd92f2f3f71aa83754a5ca441619e",
+      "template_version": 1
+    },
+    "seed/_templates/entity.md": {
+      "sha256": "35dc14632eeb318339f3673b2751bed17be0e216c8a1cbaa52b86938a0fe59b9",
+      "template_version": 1
+    },
     "seed/_templates/html/mermaid-flowchart.md": {
-      "sha256": "6dc2f662bb42a0acbe1894bdad8eae60ab0b9c91ac204805d2158c4b7bb4272a",
+      "sha256": "25f9a61c29b2d11754ae067c92535ae945714a44f06b0605489a48d674f12a98",
       "template_version": 2
     },
     "seed/_templates/html/mermaid-mindmap.md": {
-      "sha256": "a3a251dc192cf970a3ad0178890b62ecbeae8c38e809d8f3bbfb32304387ace4",
+      "sha256": "931ffb100d98f316ad65ebe48db1a6c3b702d55e89686620bb004d3606da78ef",
       "template_version": 2
     },
     "seed/_templates/html/mermaid-sankey.md": {
-      "sha256": "bb41352bd43d9383a25e3cace640edc9f6215be3511b35517c32c1384580eb85",
+      "sha256": "83c2333f0ff5f5279865ed4adc390f7fc182e813508b31a2cbd3b24d9e6b08e0",
       "template_version": 2
     },
     "seed/_templates/inbox.md": {
@@ -119,7 +131,15 @@
       "template_version": 1
     },
     "seed/_templates/project.md": {
-      "sha256": "e0c2797961d29ed7a6af301939ae687a97d02708d74e9133f733c851f9b45e35",
+      "sha256": "9ef80a2852694d71b175ab2b3406d42bd67a7aa4d34f0828471d4e0380d68b0d",
+      "template_version": 1
+    },
+    "seed/_templates/question.md": {
+      "sha256": "14811d898544a5584ff0a2435cd317d7dfa759975362e4decbd6f94f24a92018",
+      "template_version": 1
+    },
+    "seed/_templates/source.md": {
+      "sha256": "ee924d1aab738c5637c43417146390f4f71393aaa0d1696e03cf215bf94338eb",
       "template_version": 1
     },
     "seed/root/主页.md": {
@@ -131,75 +151,75 @@
       "template_version": 1
     },
     "seed/仪表盘/固化流.md": {
-      "sha256": "989565919f33d20be44d14a8d7dd2f509b4d41fcac4eb6fae6ae498cdab8e137",
+      "sha256": "bef97623e7545736c871367920927e343258ca175d052e03ad548d803fd53c81",
       "template_version": 2
     },
     "seed/仪表盘/总览.md": {
-      "sha256": "1f34a5f9caf120e81078b50aa4d7221b497d3d684ad6ad87a57cce8179e607e2",
+      "sha256": "7d3fa022ca808f89261b5677cc7ae8a7c3d8b563dbb519eafa9cfc25e3965424",
       "template_version": 2
     },
     "seed/仪表盘/知识-记忆 桥接.md": {
-      "sha256": "f49fc8d25d73aa5917b8ebdd9a4f167247c296d669e772daf660121b15a90dbd",
+      "sha256": "5ab1e4ec7c6b21acb891502cd3b83dd8363ac98588760648369881cbbc182802",
       "template_version": 2
     },
     "seed/仪表盘/知识库分布.md": {
-      "sha256": "d4bb74e3cbc09ab63c277e9a623c188d392221445ae522883e542462404dacfe",
+      "sha256": "85fc161e172b1c725607f62eeaa6d97e664b61cd1986357bb1b4e7684d8f4dd6",
       "template_version": 2
     },
     "seed/仪表盘/记忆-L0-核心.md": {
-      "sha256": "2da4dc4c70e52996972b3b5e8636e5b7453dfcdb261cb438ec134c0fff499669",
+      "sha256": "779bf96134b79ac69dbaccefbbfc8aed94ef00096010b7a008301c456699f27b",
       "template_version": 2
     },
     "seed/仪表盘/记忆-L1-长期.md": {
-      "sha256": "8d2ccad0027feb4cfa7df9c938655811566cb6ebc100da1a428fe1b86c356368",
+      "sha256": "b4c1cbe3b13008cb60d01a793dadc68bfe6503e52bea8e6c5c9c2297588218dc",
       "template_version": 2
     },
     "seed/仪表盘/记忆-L2-中期.md": {
-      "sha256": "ade1f95fbf96320282c25781c9ac6f35b756208937322e7ce74a9c556e49e143",
+      "sha256": "1b579f71835bcd2593255bc022751dc6b5c273abba03375791636a2c9b536dd3",
       "template_version": 2
     },
     "seed/仪表盘/记忆-L3-短期.md": {
-      "sha256": "8a5baa0074f5a94b1f24e9c514373464a68574c551e4d6b7bf1177fe591fca4a",
+      "sha256": "83b87988592fecda3d22f236e44e581810e814eb53fe72415f6d07a969906c46",
       "template_version": 2
     },
     "seed/仪表盘/记忆-L4-流水.md": {
-      "sha256": "14a23c030034bcee89d47b6f5ea94872095746c893a875a93a785704c3b705f6",
+      "sha256": "f8d58060fbe5f3729258e7aeb1a6b646c7936c45aea36c4b7141619786d26c39",
       "template_version": 2
     },
     "seed/仪表盘/记忆-cron 状态.md": {
-      "sha256": "42bf649dadb61dbad0a392c17666116f166869107ec5a000ebb45eaf6e631ce2",
+      "sha256": "58637c3c6c2b916f86972ec5daadbf79b04350238c633a1eea581350d1b597cd",
       "template_version": 2
     },
     "seed/仪表盘/记忆-晋级候选.md": {
-      "sha256": "866741b5ebf521e9300ed38be6064b076fd77a5aab9c374e4da7d2013a417000",
+      "sha256": "554af370201a3f1a7a2550970c07a15693cac86582296016672c02bdf8394b1f",
       "template_version": 2
     },
     "seed/仪表盘/记忆-腐化监控.md": {
-      "sha256": "365ac65f381ff9bf5a3a02d37b1a2b367716f829c8db4a9a06322a2a723bf159",
+      "sha256": "ebb219c20d7e6362991737984226fa20d33f6f141faa31dfe878ebb51dd99da7",
       "template_version": 2
     },
     "seed/知识库/_index.md": {
-      "sha256": "e18a31c399e55f53c1a6decb342a7c2559b4d5d786eec253dc43f3fd625cb057",
+      "sha256": "4cebf67fa99fe9c775df1b1cd2167a63a22dbb6d5f679884697dd00144da1900",
       "template_version": 1
     },
     "seed/知识库/收件箱/_index.md": {
-      "sha256": "abe81619316f5db38737d720ba8bdad06059380f04ab6c3f8bad30b46947dc69",
+      "sha256": "f26f58b8cfe09fdd2f3a4f537d20408fa8639ea7cd73744dd277d854032f257e",
       "template_version": 1
     },
     "seed/知识库/日记/_index.md": {
-      "sha256": "3ec27ffb096168419233088cd7c74d80eb6652ce31650dabc1d67f7306200d9a",
+      "sha256": "dcd9ee2da190e16c06b645d28a6fe39b815f3ffb55c0d0e623d734647f1aa079",
       "template_version": 1
     },
     "seed/知识库/日记/日/_index.md": {
-      "sha256": "c1a93612e7e01678520e83531b1e3ac3b3cc5f8c41c39baaa55876abb8216412",
+      "sha256": "950ac50e3f23ecef63cc0ec40f5e8cc41521d347594714fa5ebb2af6cc9c2c63",
       "template_version": 1
     },
     "seed/知识库/项目/_index.md": {
-      "sha256": "e88ce6ea55ee9352fe3a37e62ab44ccef015370e0592215553abdbbcc5b5953a",
+      "sha256": "d4a10f9a3901f83ec0fc87a6312f446b749f55c99503951b0709b37bc50d9978",
       "template_version": 1
     },
     "seed/知识库/领域/_index.md": {
-      "sha256": "23a41a48f408de8495f9575b51d2bf31e3283b91c1e921ea3ad683ec66813cc4",
+      "sha256": "1d373443f86afdb0a238f3e5b0c2c2e13aa295641d5cc732b08489008f7c33dd",
       "template_version": 1
     },
     "seed/记忆/L0-核心/_index.md": {

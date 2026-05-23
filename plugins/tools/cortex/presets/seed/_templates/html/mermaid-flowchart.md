@@ -1,3 +1,24 @@
+---
+type: concept
+created: 2026-05-20
+tags:
+- type/concept
+- created/2026
+- keyword/模板
+- keyword/变量占位
+- keyword/图标题
+- keyword/节点定义
+- keyword/注入
+- keyword/形如
+- keyword/开始
+- keyword/判断
+- keyword/grok
+- keyword/live
+- keyword/artifacts
+- keyword/title
+- keyword/nodes
+---
+
 <!-- cortex-template-version: 2 -->
 <!--
   mermaid-flowchart.md — Grok Live Artifacts 风 flowchart 模板

@@ -1,3 +1,18 @@
+---
+type: concept
+created: 2026-05-20
+tags:
+- type/concept
+- created/2026
+- topic/view_chart-pie-sankey-heatmap
+- topic/{{TITLE}}
+- keyword/使用
+- keyword/总数
+- keyword/记忆
+- keyword/本周新增
+- keyword/title
+---
+
 <!-- cortex template: dashboard -->
 ---
 lint-skip: true
@@ -22,8 +37,16 @@ view_kpi:
 view_legend: "本图怎么读 ... 刷新: bash ~/.cortex/scripts/dashboard.sh"
 view_stale_after: 24
 tags:
-  - 仪表盘
-  - dashboard
+  - type/dashboard
+  - chart/table
+  - kind/memory
+  - level/L2
+  - refresh/manual
+  - scope/{{SCOPE}}
+  - lang/{{LANG}}
+  - source/dashboard
+  - status/active
+  - score/3
 created: {{CREATED}}
 updated: {{UPDATED}}
 lang: {{LANG}}

@@ -436,6 +436,37 @@ step_python_deps() {
 
 step_python_deps
 
+# ── Obsidian quickadd 插件配置 (可选) ─────────────────────────────
+# 检测 vault/.obsidian/plugins/quickadd/, 若存在则同步 cortex 预设 choices
+# (闪念笔记 / 网页剪藏 / 写日记 / 概念笔记 / 项目笔记 / 问题笔记)。
+# 用户自定义 choices 会被覆盖 — 先备份再写。
+step_quickadd() {
+  [[ -z "$VAULT" ]] && return 0
+  local qa_dir="$VAULT/.obsidian/plugins/quickadd"
+  if [[ ! -d "$qa_dir" ]]; then
+    log_info "quickadd 未装 — 装后重跑 install.sh 即同步预设 choices"
+    return 0
+  fi
+  local src=~/.claude/plugins/marketplaces/ccplugin-market/plugins/tools/cortex/presets/quickadd/data.json
+  if [[ ! -f "$src" ]]; then
+    log_warn "quickadd 预设缺失: $src"
+    return 0
+  fi
+  if [[ -f "$qa_dir/data.json" ]]; then
+    if cmp -s "$src" "$qa_dir/data.json"; then
+      log_info "quickadd: data.json 已与预设一致"
+      return 0
+    fi
+    local ts; ts=$(date -u +%Y%m%dT%H%M%SZ)
+    cp "$qa_dir/data.json" "$qa_dir/data.json.bak.$ts"
+    log_info "quickadd: 备份现有 data.json → data.json.bak.$ts"
+  fi
+  cp "$src" "$qa_dir/data.json"
+  log_ok "quickadd: 写入 6 choice 预设, 请重启 Obsidian 生效"
+}
+
+step_quickadd
+
 # ── cron 幂等性 ────────────────────────────────────────────────────
 # 检测 crontab / launchd 中是否已有 cortex job
 # 返 0 = 已注册 (跳过装), 1 = 无 (走原流程)

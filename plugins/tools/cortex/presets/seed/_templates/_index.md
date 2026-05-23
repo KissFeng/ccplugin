@@ -1,3 +1,21 @@
+---
+type: concept
+created: 2026-05-20
+tags:
+- type/concept
+- created/2026
+- topic/{{TITLE}}
+- topic/模板分类
+- topic/frontmatter-公共字段
+- topic/占位变量约定
+- topic/修改提示
+- keyword/子目录
+- keyword/title
+- keyword/created
+- keyword/updated
+- keyword/lang
+---
+
 <!-- cortex template: _index -->
 <!-- cortex-template-version: 1 -->
 ---

@@ -1,29 +1,41 @@
 {
   "version": 2,
-  "generated": "2026-05-13T15:23:23Z",
+  "generated": "2026-05-23T03:54:48Z",
   "entries": {
     "_index.md": {
-      "sha256": "f15bbe3bce1acdf0b4bc610ab09f32f64efbd77522a92b04b9142aaa0adbd90d",
+      "sha256": "292102e5896d74feffe801b4912cda2d70f591abc647205e38fdd9274140067a",
+      "template_version": 1
+    },
+    "concept.md": {
+      "sha256": "c95e380ee0f2df117bdb0f0c0bb732ce19fa6482e37084d7bfd53d84771acbea",
       "template_version": 1
     },
     "dashboard.md": {
-      "sha256": "336c570a1cd44246f221d62e2d5011f46b31a8cbbd20d90b54ab8b9f10ca853b",
-      "template_version": 2
+      "sha256": "13545364bf0cf3a19f48bcd19515585f0a5c887de2c20df50dc0005b33cb0d84",
+      "template_version": 1
     },
     "domain-topic.md": {
       "sha256": "8d45032321ab94f89d8ff233ded044ddd4c35b66bbda0857fc827531d2ab8e40",
       "template_version": 1
     },
+    "domain.md": {
+      "sha256": "d6bdae58d7fb4b2ad46b0fda6787c46027dbd92f2f3f71aa83754a5ca441619e",
+      "template_version": 1
+    },
+    "entity.md": {
+      "sha256": "35dc14632eeb318339f3673b2751bed17be0e216c8a1cbaa52b86938a0fe59b9",
+      "template_version": 1
+    },
     "html/mermaid-flowchart.md": {
-      "sha256": "6dc2f662bb42a0acbe1894bdad8eae60ab0b9c91ac204805d2158c4b7bb4272a",
+      "sha256": "25f9a61c29b2d11754ae067c92535ae945714a44f06b0605489a48d674f12a98",
       "template_version": 2
     },
     "html/mermaid-mindmap.md": {
-      "sha256": "a3a251dc192cf970a3ad0178890b62ecbeae8c38e809d8f3bbfb32304387ace4",
+      "sha256": "931ffb100d98f316ad65ebe48db1a6c3b702d55e89686620bb004d3606da78ef",
       "template_version": 2
     },
     "html/mermaid-sankey.md": {
-      "sha256": "bb41352bd43d9383a25e3cace640edc9f6215be3511b35517c32c1384580eb85",
+      "sha256": "83c2333f0ff5f5279865ed4adc390f7fc182e813508b31a2cbd3b24d9e6b08e0",
       "template_version": 2
     },
     "inbox.md": {
@@ -119,7 +131,15 @@
       "template_version": 1
     },
     "project.md": {
-      "sha256": "e0c2797961d29ed7a6af301939ae687a97d02708d74e9133f733c851f9b45e35",
+      "sha256": "9ef80a2852694d71b175ab2b3406d42bd67a7aa4d34f0828471d4e0380d68b0d",
+      "template_version": 1
+    },
+    "question.md": {
+      "sha256": "14811d898544a5584ff0a2435cd317d7dfa759975362e4decbd6f94f24a92018",
+      "template_version": 1
+    },
+    "source.md": {
+      "sha256": "ee924d1aab738c5637c43417146390f4f71393aaa0d1696e03cf215bf94338eb",
       "template_version": 1
     },
     "html/badge.html": {

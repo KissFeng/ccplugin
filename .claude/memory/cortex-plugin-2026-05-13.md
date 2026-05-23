@@ -25,6 +25,8 @@ type: project
 |---|---|---|
 | Agents | 6 | curator / researcher / archivist / cartographer / summarizer / translator (PR4 删 linker, 6 含 vs-skill 分工注) |
 | Skills | 18 | 多模态理解三件套 cortex-image/video/audio-understand (2026-05-22); 全部多文件渐进披露, SKILL.md 入口 ≤80 行 |
+| Templates | 40 | presets/seed/_templates/ (顶层 6 + html 7 + knowledge 13 + memory 6 + 共有结构 8); _manifest.json sha256, 改后 regen_template_manifest.py 重生成。2026-05-23 全量回灌 vault 落后版本 |
+| Quickadd preset | 6 choice | presets/quickadd/data.json (闪念/网页剪藏/写日记/概念/项目/问题); install.sh step_quickadd 自动同步, 备份 data.json.bak.<UTC> |
 | Slash commands | 19 | `/cortex:<name>` 冒号 |
 | Wrappers | 27 | +image/video/audio_understand.sh (2026-05-22); slash 走 stream-json + rich UI, CLI 直 exec python3, `~/.cortex/scripts/*.sh` |
 | Python CLI | 15 | save/search/deep_search/digest/ingest_{url,file,remote}/refresh_projects/memory/ledger/session/html_render/image_gen/image_understand/video_understand/audio_understand; 共享 `cli/_provider_common.py` (多 provider OpenAI 兼容 + multipart helper) |

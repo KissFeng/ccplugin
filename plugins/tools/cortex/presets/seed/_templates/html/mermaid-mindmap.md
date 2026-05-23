@@ -1,3 +1,24 @@
+---
+type: concept
+created: 2026-05-20
+tags:
+- type/concept
+- created/2026
+- keyword/风思维导
+- keyword/变量占位
+- keyword/图标题
+- keyword/根节点文
+- keyword/分支节点
+- keyword/缩进表示
+- keyword/层级
+- keyword/grok
+- keyword/live
+- keyword/artifacts
+- keyword/title
+- keyword/root
+- keyword/branches
+---
+
 <!-- cortex-template-version: 2 -->
 <!--
   mermaid-mindmap.md — Grok Live Artifacts 风思维导图
