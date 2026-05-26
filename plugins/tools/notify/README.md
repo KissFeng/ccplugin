@@ -1,6 +1,6 @@
 # Notify - 系统通知插件
 
-> 通过系统通知和 TTS 语音播报向用户实时提示 Claude Code 会话状态变更、权限请求等重要事件
+> 通过系统通知向用户实时提示 Claude Code 会话状态变更、权限请求等重要事件
 
 ## 安装
 
@@ -17,7 +17,6 @@ claude plugin install notify@ccplugin-market
 
 - **全事件覆盖** - 支持全部 24 个 Claude Code 官方 Hook 事件
 - **跨平台通知** - macOS (Swift/AppKit overlay)、Linux/Windows (Tk overlay)
-- **语音播报** - 跨平台 TTS（macOS say / Linux espeak / Windows PowerShell）
 - **YAML 配置驱动** - 每个事件独立开关，按子类型精细控制
 - **模板消息** - Jinja2 风格模板语法，支持变量替换
 - **Node.js 入口** - 快速启动，零 Python 依赖等待（通知部分按需调用 Python）
@@ -61,14 +60,6 @@ claude plugin install notify@ccplugin-market
 | Linux | Tkinter 浮层 | python3-tk |
 | Windows | Tkinter 浮层 | python3-tk |
 
-### 语音播报
-
-| 平台 | 实现方式 | 要求 |
-|------|---------|------|
-| macOS | say 命令 | 内置 |
-| Linux | espeak | 需安装 |
-| Windows | PowerShell Speech API | .NET Framework |
-
 ## 配置
 
 配置文件位置：
@@ -81,23 +72,20 @@ claude plugin install notify@ccplugin-market
 
 ```yaml
 hooks:
-  # 主 Agent 完成时通知 + 语音
+  # 主 Agent 完成时通知
   stop:
     enabled: true
-    play_sound: true
     message: "{{ project_name }} 任务已完成"
 
   # 只在权限请求时通知
   notification:
     permission_prompt:
       enabled: true
-      play_sound: true
       message: "权限请求: {{ message | default('') }}"
 
   # API 错误时通知
   stop_failure:
     enabled: true
-    play_sound: true
     message: "{{ project_name }} API 错误: {{ error | default('unknown') }}"
 ```
 
@@ -111,14 +99,11 @@ hooks:
 
 ```
 hooks.mjs (Node.js)          notify.py (Python)
-  ├─ 读取 stdin JSON           ├─ TTS 引擎
-  ├─ 加载 YAML 配置             │   ├─ macOS: say
-  ├─ 匹配事件配置               │   ├─ Linux: espeak
-  ├─ 渲染消息模板               │   └─ Windows: PowerShell
-  └─ 调用 notify.py ──────────→├─ 系统通知
-                                │   ├─ macOS: Swift overlay
-                                │   └─ Linux/Win: Tk overlay
-                                └─ 图标解析/SVG转PNG
+  ├─ 读取 stdin JSON           ├─ 系统通知
+  ├─ 加载 YAML 配置             │   ├─ macOS: Swift overlay
+  ├─ 匹配事件配置               │   └─ Linux/Win: Tk overlay
+  ├─ 渲染消息模板               └─ 图标解析/SVG转PNG
+  └─ 调用 notify.py ──────────→
 ```
 
 ## 许可证

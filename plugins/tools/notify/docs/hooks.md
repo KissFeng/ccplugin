@@ -21,10 +21,10 @@ Notify 插件支持的 Hook 事件。
 会话开始时触发，初始化配置。
 
 ```yaml
-events:
-  SessionStart:
-    notify: true
-    voice: false
+hooks:
+  session_start:
+    startup:
+      enabled: true
 ```
 
 ### SessionEnd
@@ -32,10 +32,10 @@ events:
 会话结束时触发，发送结束通知。
 
 ```yaml
-events:
-  SessionEnd:
-    notify: true
-    voice: true
+hooks:
+  session_end:
+    other:
+      enabled: true
 ```
 
 ### UserPromptSubmit
@@ -43,10 +43,9 @@ events:
 用户提交提示时触发。
 
 ```yaml
-events:
-  UserPromptSubmit:
-    notify: true
-    voice: false
+hooks:
+  user_prompt_submit:
+    enabled: true
 ```
 
 ### PreToolUse
@@ -54,15 +53,12 @@ events:
 工具使用前触发，支持按工具过滤。
 
 ```yaml
-events:
-  PreToolUse:
-    tools:
-      Task:
-        notify: true
-        voice: false
-      Bash:
-        notify: true
-        voice: false
+hooks:
+  pre_tool_use:
+    task:
+      enabled: true
+    bash:
+      enabled: true
 ```
 
 ### PostToolUse
@@ -70,12 +66,10 @@ events:
 工具使用后触发。
 
 ```yaml
-events:
-  PostToolUse:
-    tools:
-      Task:
-        notify: true
-        voice: true
+hooks:
+  post_tool_use:
+    task:
+      enabled: true
 ```
 
 ### Notification
@@ -83,15 +77,12 @@ events:
 系统通知事件，包括权限请求和空闲提示。
 
 ```yaml
-events:
-  Notification:
-    types:
-      permission_prompt:
-        notify: true
-        voice: true
-      idle_prompt:
-        notify: true
-        voice: false
+hooks:
+  notification:
+    permission_prompt:
+      enabled: true
+    idle_prompt:
+      enabled: true
 ```
 
 ### Stop
@@ -103,9 +94,7 @@ events:
 - 如果不存在 `agent_transcript_path` 字段：主 agent stop
 
 ```yaml
-events:
-  Stop:
-    notify: true
-    voice: false
-    stats: true
+hooks:
+  stop:
+    enabled: true
 ```

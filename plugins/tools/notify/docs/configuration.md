@@ -12,35 +12,19 @@ Notify 插件的配置选项。
 ### 配置示例
 
 ```yaml
-events:
-  PreToolUse:
-    tools:
-      Task:
-        notify: true
-        voice: false
-      Bash:
-        notify: true
-        voice: false
+hooks:
+  stop:
+    enabled: true
+    message: "{{ project_name }} 任务已完成"
 
-  PostToolUse:
-    tools:
-      Task:
-        notify: true
-        voice: true
+  notification:
+    permission_prompt:
+      enabled: true
+      message: "权限请求: {{ message | default('') }}"
 
-  Notification:
-    types:
-      permission_prompt:
-        notify: true
-        voice: true
-      idle_prompt:
-        notify: true
-        voice: false
-
-  Stop:
-    notify: true
-    voice: false
-    stats: true
+  stop_failure:
+    enabled: true
+    message: "{{ project_name }} API 错误: {{ error | default('unknown') }}"
 ```
 
 ## 配置选项
@@ -49,34 +33,29 @@ events:
 
 | 选项 | 类型 | 描述 |
 |------|------|------|
-| `notify` | boolean | 是否发送系统通知 |
-| `voice` | boolean | 是否语音播报 |
-| `stats` | boolean | 是否显示统计信息 |
+| `enabled` | boolean | 是否启用通知 |
+| `message` | string | 通知消息模板（支持 Jinja2 语法） |
 
 ### 工具过滤
 
 ```yaml
-events:
-  PreToolUse:
-    tools:
-      Task:        # 仅对 Task 工具
-        notify: true
-      Bash:        # 仅对 Bash 工具
-        notify: true
+hooks:
+  pre_tool_use:
+    task:
+      enabled: true
+    bash:
+      enabled: true
 ```
 
 ### 通知类型过滤
 
 ```yaml
-events:
-  Notification:
-    types:
-      permission_prompt:  # 权限请求
-        notify: true
-        voice: true
-      idle_prompt:        # 空闲提示
-        notify: true
-        voice: false
+hooks:
+  notification:
+    permission_prompt:
+      enabled: true
+    idle_prompt:
+      enabled: true
 ```
 
 ## 跨平台支持
@@ -85,14 +64,6 @@ events:
 
 | 平台 | 实现方式 | 要求 |
 |------|---------|------|
-| macOS | terminal-notifier / osascript | terminal-notifier 需安装 |
-| Linux | notify-send | libnotify |
-| Windows | PowerShell Toast | PowerShell 3.0+ |
-
-### 语音播报
-
-| 平台 | 实现方式 | 要求 |
-|------|---------|------|
-| macOS | say 命令 | 内置 |
-| Linux | espeak/festival | 需安装 |
-| Windows | PowerShell Speech API | .NET Framework |
+| macOS | Swift/AppKit 无焦点浮层 | Xcode CLT (自动编译缓存) |
+| Linux | Tkinter 浮层 | python3-tk |
+| Windows | Tkinter 浮层 | python3-tk |

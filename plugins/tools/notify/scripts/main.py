@@ -20,7 +20,7 @@ def with_debug(func):
 @click.pass_context
 def main(ctx) -> None:
 	"""
-	Notify plugin for system notifications and TTS.
+	Notify plugin for system notifications.
 	"""
 	pass
 

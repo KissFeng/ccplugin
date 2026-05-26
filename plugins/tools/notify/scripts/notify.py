@@ -1,9 +1,7 @@
 """
-通知和 TTS 功能模块
+系统通知功能模块
 
-提供两个主要功能：
-1. play_text_tts() - 通过 TTS 播放文本内容
-2. show_system_notification() - 显示系统通知
+提供系统通知显示功能：show_system_notification()
 """
 
 import base64
@@ -27,46 +25,8 @@ def _command_exists(cmd: str) -> bool:
 	return shutil.which(cmd) is not None
 
 
-_EMOJI_RE = re.compile(
-	"("
-	"[\U0001F1E6-\U0001F1FF]"  # flags
-	"|[\U0001F300-\U0001F5FF]"  # symbols & pictographs
-	"|[\U0001F600-\U0001F64F]"  # emoticons
-	"|[\U0001F680-\U0001F6FF]"  # transport & map
-	"|[\U0001F700-\U0001F77F]"  # alchemical
-	"|[\U0001F780-\U0001F7FF]"  # geometric extended
-	"|[\U0001F800-\U0001F8FF]"  # arrows-c
-	"|[\U0001F900-\U0001F9FF]"  # supplemental symbols
-	"|[\U0001FA00-\U0001FA6F]"  # chess etc.
-	"|[\U0001FA70-\U0001FAFF]"  # symbols ext-a
-	"|[\u2600-\u26FF]"  # misc symbols
-	"|[\u2700-\u27BF]"  # dingbats
-	")"
-)
-
-_MAX_TTS_HANZI = 300
-
-
-def _is_hanzi(ch: str) -> bool:
-	if not ch:
-		return False
-	cp = ord(ch)
-	# CJK Unified Ideographs + Extensions (common ranges)
-	return (
-		0x3400 <= cp <= 0x4DBF  # Ext A
-		or 0x4E00 <= cp <= 0x9FFF  # Unified
-		or 0xF900 <= cp <= 0xFAFF  # Compatibility
-		or 0x20000 <= cp <= 0x2A6DF  # Ext B
-		or 0x2A700 <= cp <= 0x2B73F  # Ext C
-		or 0x2B740 <= cp <= 0x2B81F  # Ext D
-		or 0x2B820 <= cp <= 0x2CEAF  # Ext E
-		or 0x2CEB0 <= cp <= 0x2EBEF  # Ext F
-		or 0x30000 <= cp <= 0x3134F  # Ext G (subset)
-	)
-
-
 def _strip_markdown(text: str) -> str:
-	"""移除常见 Markdown 标记，保留可读的纯文本（用于通知与 TTS）。
+	"""移除常见 Markdown 标记，保留可读的纯文本（用于通知）。
 
 	特殊处理：保护 Jinja2 模板语法（{{ variable }}）不被破坏。
 	"""
@@ -135,41 +95,6 @@ def _strip_markdown(text: str) -> str:
 	return text.strip()
 
 
-def _truncate_tts_text(text: str, max_hanzi: int = _MAX_TTS_HANZI) -> str:
-	"""TTS 只输出前 max_hanzi 个汉字；超过则直接截断到第 max_hanzi 个汉字的位置。"""
-	if not text:
-		return text
-	if max_hanzi <= 0:
-		return ""
-
-	hanzi_count = 0
-	for i, ch in enumerate(text):
-		if _is_hanzi(ch):
-			hanzi_count += 1
-			if hanzi_count > max_hanzi:
-				return text[:i]
-	return text
-
-
-def _sanitize_tts_text(text: str) -> str:
-	"""过滤 emoji：用空格替换 emoji 本体，移除连接/变体符号。"""
-	if not text:
-		return text
-
-	# Remove joiners/selectors/modifiers that are not useful for TTS output.
-	text = text.replace("\u200d", "")  # ZWJ
-	text = text.replace("\ufe0f", "").replace("\ufe0e", "")  # VS16/VS15
-	text = text.replace("\u20e3", "")  # keycap enclosing
-	text = re.sub(r"[\U0001F3FB-\U0001F3FF]", "", text)  # skin tone modifiers
-
-	# Replace emoji with a space to keep word boundaries readable.
-	text = _EMOJI_RE.sub(" ", text)
-
-	# Collapse excessive spaces but preserve newlines.
-	text = re.sub(r"[ \t]{2,}", " ", text)
-	return text
-
-
 def _file_md5(path: str) -> Optional[str]:
 	try:
 		h = hashlib.md5()
@@ -211,7 +136,7 @@ def _svg_to_png_cached(svg_path: str, size: int = 256) -> Optional[str]:
 	if not source_md5:
 		return None
 
-	# 按“文件内容 md5”去重：同内容同尺寸只生成一次缓存文件，不重复覆盖/生成
+	# 按"文件内容 md5"去重：同内容同尺寸只生成一次缓存文件，不重复覆盖/生成
 	cached_png = os.path.join(cache_dir, f"svg_{source_md5}_{int(size)}.png")
 	if os.path.exists(cached_png):
 		return cached_png
@@ -304,7 +229,6 @@ def _icon_for_overlay(icon_path: Optional[str]) -> Optional[str]:
 _TK_OVERLAY_SCRIPT = r'''
 import sys
 import os
-import time
 
 def _truncate_preview(text: str, max_chars: int = 180) -> str:
 	if not text:
@@ -316,13 +240,12 @@ def _truncate_preview(text: str, max_chars: int = 180) -> str:
 
 
 def main() -> int:
-	if len(sys.argv) < 5:
+	if len(sys.argv) < 4:
 		return 2
 
 	title = sys.argv[1]
 	message = sys.argv[2]
-	duration_seconds = max(1, int(float(sys.argv[3])))
-	icon_path = sys.argv[4]
+	icon_path = sys.argv[3]
 
 	import tkinter as tk
 
@@ -522,50 +445,8 @@ def main() -> int:
 
 	_place_bottom_right()
 
-	tts_pid = 0
-	if len(sys.argv) >= 6:
-		try:
-			tts_pid = int(float(sys.argv[5]))
-		except Exception:
-			tts_pid = 0
-
-	def _stop_tts():
-		if not tts_pid or tts_pid <= 0:
-			return
-		try:
-			if sys.platform.startswith("win"):
-				import subprocess as _sp
-				_sp.run(
-					["taskkill", "/PID", str(tts_pid), "/T", "/F"],
-					stdout=_sp.DEVNULL,
-					stderr=_sp.DEVNULL,
-				)
-			else:
-				import signal
-				try:
-					os.kill(tts_pid, signal.SIGTERM)
-				except ProcessLookupError:
-					return
-				except PermissionError:
-					return
-				def _kill_hard():
-					try:
-						os.kill(tts_pid, signal.SIGKILL)
-					except Exception:
-						pass
-				root.after(400, _kill_hard)
-		except Exception:
-			pass
-
-	def _close():
-		_stop_tts()
-		root.destroy()
-
-	# wire close button
-	close_btn.configure(command=_close)
-
 	# auto close
-	root.after(int(duration_seconds * 1000), _close)
+	root.after(3000, root.destroy)
 	root.mainloop()
 	return 0
 
@@ -611,12 +492,10 @@ def _tkinter_available() -> bool:
 def _show_tk_overlay_notification(
 	message: str,
 	title: str,
-	duration_seconds: int,
 	icon_path: Optional[str],
-	tts_pid: Optional[int] = None,
 ) -> bool:
 	if not _tkinter_available():
-		error("Tkinter 不可用，无法满足强制 duration/logo/title/message 的提醒需求")
+		error("Tkinter 不可用，无法满足强制 logo/title/message 的提醒需求")
 		return False
 
 	script_path = _ensure_tk_overlay_script()
@@ -629,11 +508,8 @@ def _show_tk_overlay_notification(
 		return False
 	logging.debug(f"Tk overlay 使用图标: {icon_for_overlay}")
 
-	timeout_seconds = max(1, int(duration_seconds))
 	try:
-		args = [sys.executable, script_path, title, message, str(timeout_seconds), str(icon_for_overlay)]
-		if isinstance(tts_pid, int) and tts_pid > 0:
-			args.append(str(tts_pid))
+		args = [sys.executable, script_path, title, message, str(icon_for_overlay)]
 		subprocess.Popen(
 			args,
 			stdout=subprocess.DEVNULL,
@@ -694,12 +570,9 @@ def _resolve_icon_path(icon: str) -> Optional[str]:
 def _show_macos_notification_terminal_notifier(
 	message: str,
 	title: str,
-	duration_seconds: int,
 	icon_path: Optional[str],
 ) -> bool:
-	# 保留函数名用于兼容旧调用路径，但实现改为“可控时长的无焦点浮层提醒”。
-	# 原因：macOS 通知横幅停留时长无法被系统通知 API 可靠控制，无法满足“强制 duration 秒”的要求。
-	return _show_macos_overlay_notification(message=message, title=title, duration_seconds=duration_seconds,
+	return _show_macos_overlay_notification(message=message, title=title,
 	                                        icon_path=icon_path)
 
 
@@ -756,22 +629,13 @@ func measureHeight(text: String, font: NSFont, width: CGFloat) -> CGFloat {
 }
 
 func main() -> Int32 {
-	// argv: title message duration_seconds icon_b64_or_path [tts_pid]
-	guard CommandLine.arguments.count >= 5 else { return 2 }
+	// argv: title message icon_b64_or_path
+	guard CommandLine.arguments.count >= 4 else { return 2 }
 
 	let title = CommandLine.arguments[1]
 	let message = CommandLine.arguments[2]
-	let durationSeconds = max(1, Int(CommandLine.arguments[3]) ?? 60)
-	let iconArg = CommandLine.arguments[4]
-	let ttsPid: Int32 = (CommandLine.arguments.count >= 6) ? (Int32(CommandLine.arguments[5]) ?? 0) : 0
-
-	func stopTts() {
-		guard ttsPid > 0 else { return }
-		_ = kill(ttsPid, SIGTERM)
-		DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(400)) {
-			_ = kill(ttsPid, SIGKILL)
-		}
-	}
+	let iconArg = CommandLine.arguments[3]
+	let durationSeconds = 3
 
 	NSApplication.shared.setActivationPolicy(.accessory)
 
@@ -875,7 +739,6 @@ func main() -> Int32 {
 
 	let closeTarget = CloseTarget()
 	closeTarget.onClose = {
-		stopTts()
 		NSApp.terminate(nil)
 	}
 	let closeButton = NSButton(title: "×", target: closeTarget, action: #selector(CloseTarget.close(_:)))
@@ -937,7 +800,6 @@ func main() -> Int32 {
 	}
 
 	DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(durationSeconds)) {
-		stopTts()
 		NSAnimationContext.runAnimationGroup({ ctx in
 			ctx.duration = 0.18
 			panel.animator().alphaValue = 0
@@ -955,7 +817,7 @@ exit(main())
 
 
 def _ensure_macos_overlay_binary() -> Optional[str]:
-	"""编译并缓存 macOS 浮层提醒二进制（用于强制 duration 秒）。"""
+	"""编译并缓存 macOS 浮层提醒二进制。"""
 	cache_dir = _get_user_cache_dir("bin")
 	os.makedirs(cache_dir, exist_ok=True)
 
@@ -1042,11 +904,9 @@ def _ensure_macos_overlay_binary() -> Optional[str]:
 def _show_macos_overlay_notification(
 	message: str,
 	title: str,
-	duration_seconds: int,
 	icon_path: Optional[str],
-	tts_pid: Optional[int] = None,
 ) -> bool:
-	"""macOS：不抢焦点的右下角浮层提醒，强制展示 duration_seconds 秒。"""
+	"""macOS：不抢焦点的右下角浮层提醒，展示 3 秒。"""
 	icon_for_overlay = _icon_for_overlay(icon_path)
 	if not icon_for_overlay:
 		error("macOS 通知无法获取可用图标，无法满足强制 logo 要求")
@@ -1057,14 +917,11 @@ def _show_macos_overlay_notification(
 	if not bin_path:
 		return False
 
-	timeout_seconds = max(1, int(duration_seconds))
 	try:
 		with open(icon_for_overlay, "rb") as f:
 			icon_b64 = base64.b64encode(f.read()).decode("ascii")
 
-		args = [bin_path, title, message, str(timeout_seconds), f"b64:{icon_b64}"]
-		if isinstance(tts_pid, int) and tts_pid > 0:
-			args.append(str(tts_pid))
+		args = [bin_path, title, message, f"b64:{icon_b64}"]
 		subprocess.Popen(
 			args,
 			stdout=subprocess.DEVNULL,
@@ -1076,115 +933,31 @@ def _show_macos_overlay_notification(
 		return False
 
 
-def play_text_tts(text: str, rate: int = 200) -> bool:
-	"""通过 TTS 播放文本内容
-
-	使用系统默认的 TTS 引擎（macOS 使用 say，Linux 使用 espeak）。
-	强制要求：TTS 以“独立子进程”方式启动，不阻塞当前 Python 进程，且不依赖当前 Python 进程存活。
-
-	Args:
-		text: 要播放的文本内容
-		rate: 播放速率（字/分钟），仅对 macOS 有效，默认 200
-
-	Returns:
-		bool: 成功启动 TTS 子进程返回 True，失败返回 False
-
-	示例:
-		play_text_tts("Hello, World!")
-		play_text_tts("操作已完成", rate=150)
-	"""
-	if not text or not isinstance(text, str):
-		error("文本内容不能为空且必须是字符串类型")
-		return False
-
-	text = _strip_markdown(text)
-	text = _sanitize_tts_text(text)
-	text = _truncate_tts_text(text, _MAX_TTS_HANZI)
-
-	return start_text_tts(text=text, rate=rate) is not None
-
-
-def start_text_tts(text: str, rate: int = 200) -> Optional[int]:
-	"""启动 TTS 子进程并返回 PID（用于通知关闭时停止播报）。"""
-	if not text or not isinstance(text, str):
-		error("文本内容不能为空且必须是字符串类型")
-		return None
-
-	text = _strip_markdown(text)
-	text = _sanitize_tts_text(text)
-	text = _truncate_tts_text(text, _MAX_TTS_HANZI)
-
-	try:
-		system = platform.system()
-
-		if system == "Darwin":  # macOS
-			cmd = ["say", "-r", str(rate), text]
-		elif system == "Linux":
-			cmd = ["espeak", text]
-		elif system == "Windows":
-			ps_cmd = f"""
-            Add-Type -AssemblyName System.Speech
-            $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer
-            $speak.Speak('{text}')
-            """
-			cmd = ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd]
-		else:
-			error(f"不支持的操作系统: {system}")
-			return None
-
-		popen_kwargs = {
-			"stdin": subprocess.DEVNULL,
-			"stdout": subprocess.DEVNULL,
-			"stderr": subprocess.DEVNULL,
-			"close_fds": True,
-		}
-
-		# 确保子进程不依赖当前 Python 进程存活（尽可能脱离会话/控制台）
-		if system == "Windows":
-			popen_kwargs["creationflags"] = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
-		else:
-			popen_kwargs["start_new_session"] = True
-
-		proc = subprocess.Popen(cmd, **popen_kwargs)
-		return proc.pid
-
-	except FileNotFoundError as e:
-		error(f"TTS 工具未找到（可能未安装）: {e}")
-		return None
-	except Exception as e:
-		error(f"TTS 播放过程中发生异常: {e}")
-		return None
-
-
 def show_system_notification(
 	message: str,
 	title: str = "Claude Code",
-	duration: int = 60,
 	icon: str = 'claude',
-	tts_pid: Optional[int] = None,
 	event: Optional[str] = None,
 ) -> bool:
 	"""显示系统通知
 
 	根据操作系统调用相应的通知方式（统一为"无焦点浮层 toast"）：
-	- macOS: Swift/AppKit 浮层（强制 duration 秒 + 自定义 logo/title/message）
-	- Linux: Tk 浮层（强制 duration 秒 + 自定义 logo/title/message）
-	- Windows: Tk 浮层（强制 duration 秒 + 自定义 logo/title/message）
+	- macOS: Swift/AppKit 浮层（展示 3 秒 + 自定义 logo/title/message）
+	- Linux: Tk 浮层（展示 3 秒 + 自定义 logo/title/message）
+	- Windows: Tk 浮层（展示 3 秒 + 自定义 logo/title/message）
 
 	Args:
 		message: 通知消息内容（必填）
 		title: 通知标题，默认为 "Claude Code"
-		duration: 通知显示时长（秒），默认 60
 		icon: 通知图标，可以是预定义名称（'claude'）或文件路径，默认为 'claude'
 		event: 事件名称，会在标题后添加 [event] 后缀，例如 "Claude Code[Stop]"
-		tts_pid: TTS 进程 ID，用于在关闭通知时停止 TTS 播放
 
 	Returns:
 		bool: 通知显示成功返回 True，失败返回 False
 
 	示例:
 		show_system_notification("操作已完成")
-		show_system_notification("权限请求", title="Claude Code - Permission", duration=10)
+		show_system_notification("权限请求", title="Claude Code - Permission")
 		show_system_notification("已完成", icon='claude')
 		show_system_notification("已完成", icon='/path/to/icon.png')
 		show_system_notification("已停止", event="Stop")
@@ -1218,33 +991,27 @@ def show_system_notification(
 		system = platform.system()
 
 		if system == "Darwin":  # macOS
-			# 强制要求：duration、logo、title、message
+			# 强制要求：logo、title、message
 			return _show_macos_overlay_notification(
 				message=message,
 				title=title,
-				duration_seconds=duration,
 				icon_path=icon_path,
-				tts_pid=tts_pid,
 			)
 
 		elif system == "Linux":
-			# 强制要求：duration、logo、title、message
+			# 强制要求：logo、title、message
 			return _show_tk_overlay_notification(
 				message=message,
 				title=title,
-				duration_seconds=duration,
 				icon_path=icon_path,
-				tts_pid=tts_pid,
 			)
 
 		elif system == "Windows":
-			# 强制要求：duration、logo、title、message
+			# 强制要求：logo、title、message
 			return _show_tk_overlay_notification(
 				message=message,
 				title=title,
-				duration_seconds=duration,
 				icon_path=icon_path,
-				tts_pid=tts_pid,
 			)
 
 		else:

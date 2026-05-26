@@ -13,8 +13,7 @@
     "notification",
     "system-notification",
     "hook",
-    "event",
-    "tts"
+    "event"
   ],
   "hooks": {
     "SessionStart": [

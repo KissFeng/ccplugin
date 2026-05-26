@@ -8,7 +8,6 @@
 #
 # 每个 hook 配置项:
 #   enabled: 是否启用通知（默认 false）
-#   play_sound: 是否启用 TTS 语音播报（默认 false）
 #   message: 通知消息模板（支持 {{ variable }} 和 {{ var | default('') }} 语法）
 #
 # 通用模板变量:
@@ -27,7 +26,6 @@ hooks:
   # 额外变量: {{ last_assistant_message }}, {{ stop_hook_active }}
   stop:
     enabled: true
-    play_sound: true
     message: |-
       {{ project_name }} 的任务已完成
       {{ last_assistant_message }}
@@ -40,35 +38,27 @@ hooks:
   pre_tool_use:
     write:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 准备写入文件 {{ file_path | default('') }}"
     edit:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 准备编辑文件 {{ file_path | default('') }}"
     read:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 准备读取文件 {{ file_path | default('') }}"
     bash:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 准备执行命令"
     agent:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 准备启动子代理"
     webfetch:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 准备获取网页"
     websearch:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 准备搜索网页"
     askuserquestion:
       enabled: true
-      play_sound: true
       message: "{{ project_name }} 有问题需要你解决"
 
   # ============================================================================
@@ -79,31 +69,24 @@ hooks:
   post_tool_use:
     write:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 文件写入完成 {{ file_path | default('') }}"
     edit:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 文件编辑完成 {{ file_path | default('') }}"
     read:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 文件读取完成 {{ file_path | default('') }}"
     bash:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 命令执行完成"
     agent:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 子代理完成"
     webfetch:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 网页获取完成"
     websearch:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 网页搜索完成"
 
   # ============================================================================
@@ -113,7 +96,6 @@ hooks:
   # 额外变量: {{ tool_name }}, {{ error }}, {{ is_interrupt }}
   post_tool_use_failure:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 工具 {{ tool_name | default('') }} 执行失败: {{ error | default('') }}"
 
   # ============================================================================
@@ -123,7 +105,6 @@ hooks:
   # 额外变量: {{ tool_name }}, {{ tool_input }}
   permission_request:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 需要权限授权 ({{ tool_name | default('') }})"
 
   # ============================================================================
@@ -133,7 +114,6 @@ hooks:
   # 额外变量: {{ prompt }}
   user_prompt_submit:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 接收到用户输入"
 
   # ============================================================================
@@ -144,19 +124,15 @@ hooks:
   notification:
     permission_prompt:
       enabled: true
-      play_sound: true
       message: "权限请求: {{ message | default('') }}"
     idle_prompt:
       enabled: false
-      play_sound: false
       message: "等待输入: {{ message | default('') }}"
     auth_success:
       enabled: false
-      play_sound: false
       message: "身份验证成功: {{ message | default('') }}"
     elicitation_dialog:
       enabled: false
-      play_sound: false
       message: "工具引出: {{ message | default('') }}"
 
   # ============================================================================
@@ -168,19 +144,15 @@ hooks:
   session_start:
     startup:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 新会话已启动"
     resume:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 会话已恢复"
     clear:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 会话已清空并重启"
     compact:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 会话已压缩并重启"
 
   # ============================================================================
@@ -191,27 +163,21 @@ hooks:
   session_end:
     clear:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 会话已清除"
     resume:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 切换到其他会话"
     logout:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 用户已注销"
     prompt_input_exit:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 用户退出"
     bypass_permissions_disabled:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 绕过权限模式已禁用"
     other:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 会话已结束"
 
   # ============================================================================
@@ -221,7 +187,6 @@ hooks:
   # 额外变量: {{ agent_id }}, {{ agent_type }}
   subagent_start:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 子代理 {{ agent_type | default('') }} 已启动"
 
   # ============================================================================
@@ -231,7 +196,6 @@ hooks:
   # 额外变量: {{ agent_id }}, {{ agent_type }}, {{ last_assistant_message }}
   subagent_stop:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 子代理 {{ agent_type | default('') }} 已完成"
 
   # ============================================================================
@@ -242,7 +206,6 @@ hooks:
   # 额外变量: {{ error }}, {{ error_details }}, {{ last_assistant_message }}
   stop_failure:
     enabled: true
-    play_sound: true
     message: "{{ project_name }} API 错误: {{ error | default('unknown') }}"
 
   # ============================================================================
@@ -252,7 +215,6 @@ hooks:
   # 额外变量: {{ teammate_name }}, {{ team_name }}
   teammate_idle:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 队友 {{ teammate_name | default('') }} 即将空闲"
 
   # ============================================================================
@@ -263,7 +225,6 @@ hooks:
   #           {{ teammate_name }}, {{ team_name }}
   task_completed:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 任务完成: {{ task_subject | default('') }}"
 
   # ============================================================================
@@ -273,7 +234,6 @@ hooks:
   # 额外变量: {{ file_path }}, {{ memory_type }}, {{ load_reason }}
   instructions_loaded:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 指令文件已加载: {{ file_path | default('') }}"
 
   # ============================================================================
@@ -283,7 +243,6 @@ hooks:
   # 额外变量: {{ source }}, {{ file_path }}
   config_change:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 配置已变更: {{ source | default('') }}"
 
   # ============================================================================
@@ -294,7 +253,6 @@ hooks:
   # 特殊: 可通过 CLAUDE_ENV_FILE 持久化环境变量
   cwd_changed:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 工作目录已变更"
 
   # ============================================================================
@@ -305,7 +263,6 @@ hooks:
   # 特殊: 可通过 CLAUDE_ENV_FILE 持久化环境变量
   file_changed:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} 文件已变更: {{ file_path | default('') }}"
 
   # ============================================================================
@@ -315,7 +272,6 @@ hooks:
   # 额外变量: {{ name }}
   worktree_create:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} Worktree 已创建: {{ name | default('') }}"
 
   # ============================================================================
@@ -325,7 +281,6 @@ hooks:
   # 额外变量: {{ worktree_path }}
   worktree_remove:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} Worktree 已移除"
 
   # ============================================================================
@@ -336,11 +291,9 @@ hooks:
   pre_compact:
     manual:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 手动压缩已启动"
     auto:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 自动压缩已启动"
 
   # ============================================================================
@@ -351,11 +304,9 @@ hooks:
   post_compact:
     manual:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 手动压缩已完成"
     auto:
       enabled: false
-      play_sound: false
       message: "{{ project_name }} 自动压缩已完成"
 
   # ============================================================================
@@ -365,7 +316,6 @@ hooks:
   # 额外变量: {{ mcp_server_name }}, {{ message }}, {{ mode }}, {{ requested_schema }}
   elicitation:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} MCP 服务器请求输入: {{ message | default('') }}"
 
   # ============================================================================
@@ -375,5 +325,4 @@ hooks:
   # 额外变量: {{ mcp_server_name }}, {{ action }}, {{ content }}
   elicitation_result:
     enabled: false
-    play_sound: false
     message: "{{ project_name }} MCP 响应已提交: {{ action | default('') }}"

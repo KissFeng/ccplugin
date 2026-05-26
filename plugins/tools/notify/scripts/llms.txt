@@ -39,13 +39,12 @@
 
 ### notify.py
 
-- `play_text_tts(text, rate)` - 通过 TTS 播放文本内容
-- `show_system_notification(message, title, duration, icon)` - 显示系统通知
+- `show_system_notification(message, title, icon, event)` - 显示系统通知
 
 ### main.py
 
 - `with_debug(func)` - 装饰器：为所有命令添加 --debug 参数支持
-- `main(ctx)` - Notify plugin for system notifications and TTS.
+- `main(ctx)` - Notify plugin for system notifications.
 - `hooks()` - Hook 模式：从 stdin 读取 JSON
 - `wrapper(debug_mode)`
 
