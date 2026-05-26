@@ -3,8 +3,8 @@
 # 支持全部 24 个官方 Hook 事件
 #
 # 复制此文件到以下位置之一:
-# - 项目目录: ./.lazygophers/ccplugin/notify/config.yaml
-# - 用户主目录: ~/.lazygophers/ccplugin/notify/config.yaml
+# - 项目目录: ./.KissFeng/ccplugin/notify/config.yaml
+# - 用户主目录: ~/.KissFeng/ccplugin/notify/config.yaml
 #
 # 每个 hook 配置项:
 #   enabled: 是否启用通知（默认 false）

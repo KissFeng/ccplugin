@@ -32,7 +32,7 @@ import click
 from lib.utils.env import get_project_dir
 from utils import get_version
 
-TASKS_INDEX_FILE = ".lazygophers/tasks/index.json"
+TASKS_INDEX_FILE = ".KissFeng/tasks/index.json"
 
 
 class TaskState:
@@ -211,7 +211,7 @@ def update(
                 current = index[task_id].get("status", TaskState.Pending)
                 TaskState.validate_transition(current, status)
                 project_dir = get_project_dir()
-                task_dir = os.path.join(project_dir, ".lazygophers/tasks", task_id)
+                task_dir = os.path.join(project_dir, ".KissFeng/tasks", task_id)
                 TaskState.check_required_files(status, task_dir)
                 index[task_id]["status"] = status
 
@@ -250,7 +250,7 @@ def update(
         # 索引写入成功后再创建目录（避免孤儿目录）
         if is_new_task:
             project_dir = get_project_dir()
-            task_dir = os.path.join(project_dir, ".lazygophers/tasks", task_id)
+            task_dir = os.path.join(project_dir, ".KissFeng/tasks", task_id)
             os.makedirs(task_dir, exist_ok=True)
         click.echo(f"任务 {task_id} 已更新")
     except ValueError as e:
@@ -278,7 +278,7 @@ def get(task_id: str):
 def cleanup(task_id: str, force: bool):
     """清理任务：删除任务目录并从索引中移除"""
     project_dir = get_project_dir()
-    task_dir = os.path.join(project_dir, ".lazygophers/tasks", task_id)
+    task_dir = os.path.join(project_dir, ".KissFeng/tasks", task_id)
     index_path = get_index_path()
 
     # 检查任务是否存在

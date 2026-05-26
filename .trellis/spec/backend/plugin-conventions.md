@@ -74,12 +74,12 @@ From `plugins/memory/.claude-plugin/plugin.json:1-34`:
   "version": "0.0.193",
   "description": "智能记忆插件 - ...",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/memory",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/memory",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/memory",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/memory",
   "license": "MIT",
   "keywords": ["memory", "persistence", "context", "uri", "sqlite", "hooks"],
   "skills": "./skills/",
@@ -138,7 +138,7 @@ where = ["scripts"]
 include = ["memory*", "web*"]
 
 [tool.uv.sources.lib]
-git = "https://github.com/lazygophers/ccplugin"
+git = "https://github.com/KissFeng/ccplugin"
 subdirectory = "lib"
 rev = "master"
 ```

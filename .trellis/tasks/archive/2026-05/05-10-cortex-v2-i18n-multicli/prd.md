@@ -393,7 +393,7 @@ cortex-install 流程末尾新增:
 
 平台检测顺序:
 
-1. macOS → launchd plist (`~/Library/LaunchAgents/dev.lazygophers.cortex.<job>.plist`)
+1. macOS → launchd plist (`~/Library/LaunchAgents/dev.KissFeng.cortex.<job>.plist`)
 2. Linux → systemd user timer 或 crontab 行
 3. CI 环境 → 输出 GHA workflow yaml, 不自动写
 

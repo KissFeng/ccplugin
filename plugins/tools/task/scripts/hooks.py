@@ -16,8 +16,8 @@ from utils import is_plugin_env
 def handle_session_start():
 	"""SessionStart Hook：替换模板变量、初始化 gitignore"""
 
-	# 确保 .lazygophers/tasks/ 被 gitignore
-	add_gitignore_rule("/tasks/", file_path=os.path.join(get_project_dir(), ".lazygophers", ".gitignore"))
+	# 确保 .KissFeng/tasks/ 被 gitignore
+	add_gitignore_rule("/tasks/", file_path=os.path.join(get_project_dir(), ".KissFeng", ".gitignore"))
 
 	# 只在插件环境时替换变量
 	if not is_plugin_env():

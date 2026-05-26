@@ -36,7 +36,7 @@ AUTO_MODE persistent (shell 触发约束): 禁询问, 禁中止, AI 自决执行
 curl 一键 (本地无 plugin 树时 bootstrap marketplace + plugin, 已装则升级):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lazygophers/ccplugin/master/plugins/tools/cortex/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/KissFeng/ccplugin/master/plugins/tools/cortex/install.sh | bash
 ```
 
 非交互式 (CI / 脚本):
@@ -290,7 +290,7 @@ bash ~/.cortex/scripts/install_cron.sh gha
 ```xml
 <plist version="1.0">
 <dict>
-  <key>Label</key><string>dev.lazygophers.cortex.daily-lint</string>
+  <key>Label</key><string>dev.KissFeng.cortex.daily-lint</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>

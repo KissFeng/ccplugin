@@ -6,7 +6,7 @@ Golang 插件快速入门指南。
 
 ```bash
 # 推荐：一键安装
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin golang@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin golang@ccplugin-market
 ```
 
 ## 前置条件

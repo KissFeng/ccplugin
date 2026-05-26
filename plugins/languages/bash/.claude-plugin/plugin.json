@@ -2,12 +2,12 @@
   "name": "bash",
   "description": "Bash / Shell 开发插件 - 提供 Bash 5.2+ 和 POSIX sh 开发规范、最佳实践和脚本智能支持。包括 strict mode (set -euo pipefail)、shellcheck/shfmt 工具链、bats-core 测试、trap 资源清理、POSIX 兼容性和 macOS bash 3.2 降级策略",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/bash",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/bash",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/languages/bash",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/languages/bash",
   "license": "AGPL-3.0-or-later",
   "agents": [
     "./agents/dev.md",

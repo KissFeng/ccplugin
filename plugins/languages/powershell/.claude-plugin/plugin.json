@@ -2,12 +2,12 @@
   "name": "powershell",
   "description": "PowerShell 开发插件 - 提供 PowerShell 7.4 LTS 跨平台与 5.1 Windows 内置版开发规范、最佳实践和脚本智能支持。包括 cmdlet Verb-Noun 命名、pipeline、PSStyle ANSI、Pester 5.x 测试、PSScriptAnalyzer、ErrorActionPreference、PSResourceGet 模块管理；并覆盖 cmd.exe + 批处理 (.bat/.cmd) 兼容子集",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/powershell",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/powershell",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/languages/powershell",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/languages/powershell",
   "license": "AGPL-3.0-or-later",
   "agents": [
     "./agents/dev.md",

@@ -20,9 +20,9 @@ context: fork
 
 读取以下文件，后续所有 worker 共享，不再重复读取：
 
-- `.lazygophers/tasks/{task_id}/task.json` — 子任务列表、code_style
-- `.lazygophers/tasks/{task_id}/align.json` — behavior_spec（行为规约）
-- `.lazygophers/tasks/{task_id}/context.json` — toolchain（测试/lint 命令）
+- `.KissFeng/tasks/{task_id}/task.json` — 子任务列表、code_style
+- `.KissFeng/tasks/{task_id}/align.json` — behavior_spec（行为规约）
+- `.KissFeng/tasks/{task_id}/context.json` — toolchain（测试/lint 命令）
 
 ### 步骤 2：构建 DAG
 

@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Union
 
-TASK_DIR = Path(".lazygophers/tasks")
+TASK_DIR = Path(".KissFeng/tasks")
 
 
 def format_duration(seconds: Union[int, float]) -> str:

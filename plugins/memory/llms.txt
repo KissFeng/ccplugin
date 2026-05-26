@@ -83,9 +83,9 @@ Web 界面功能：
 
 ## 数据存储
 
-数据库文件位于 `{project_root}/lazygophers/ccplugin/memory/memory.db`，使用 SQLite 存储。
+数据库文件位于 `{project_root}/KissFeng/ccplugin/memory/memory.db`，使用 SQLite 存储。
 
-此目录遵循项目约定，所有插件数据统一存储在 `lazygophers/ccplugin/<plugin-name>/` 目录下。
+此目录遵循项目约定，所有插件数据统一存储在 `KissFeng/ccplugin/<plugin-name>/` 目录下。
 
 表结构通过 lib/db ORM 自动创建：
 - `memories` - 记忆表

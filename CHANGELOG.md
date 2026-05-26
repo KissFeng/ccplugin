@@ -54,5 +54,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > 注：v0.0.1 至 v0.0.192 的详细变更历史未记录。
 
-[0.0.193]: https://github.com/lazygophers/ccplugin/compare/v0.0.1...HEAD
-[0.0.1]: https://github.com/lazygophers/ccplugin/releases/tag/v0.0.1
+[0.0.193]: https://github.com/KissFeng/ccplugin/compare/v0.0.1...HEAD
+[0.0.1]: https://github.com/KissFeng/ccplugin/releases/tag/v0.0.1

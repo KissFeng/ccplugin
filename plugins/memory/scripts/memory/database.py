@@ -32,7 +32,7 @@ def get_db_path() -> str:
     """
     获取数据库文件路径
 
-    数据库存储在项目根目录下的 .lazygophers/ccplugin/memory/memory.db，
+    数据库存储在项目根目录下的 .KissFeng/ccplugin/memory/memory.db，
     遵循项目约定的插件数据存储规范。
 
     Returns:
@@ -79,7 +79,7 @@ async def init_db() -> None:
         project_dir = get_project_dir()
         if project_dir:
             gitignore_path = os.path.join(project_dir, ".gitignore")
-            add_gitignore_rule("/.lazygophers/ccplugin/memory/", gitignore_path)
+            add_gitignore_rule("/.KissFeng/ccplugin/memory/", gitignore_path)
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
         config = DatabaseConfig.sqlite(path=db_path)

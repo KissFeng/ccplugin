@@ -25,7 +25,7 @@ argument-hint: [task_id（可选）]
 
 ### 步骤 1：读取任务索引
 
-读取 `.lazygophers/tasks/index.json`。如果索引为空或不存在，输出"没有找到任何任务记录"并结束。
+读取 `.KissFeng/tasks/index.json`。如果索引为空或不存在，输出"没有找到任何任务记录"并结束。
 
 ### 步骤 2：筛选未完成任务
 
@@ -38,7 +38,7 @@ argument-hint: [task_id（可选）]
 
 ### 步骤 4：快速恢复检查
 
-如果 `.lazygophers/tasks/{task_id}/.state.json` 存在，读取它获取上次状态快照（current_state、transition_count）。这是快速路径，但仍需验证数据文件完整性。
+如果 `.KissFeng/tasks/{task_id}/.state.json` 存在，读取它获取上次状态快照（current_state、transition_count）。这是快速路径，但仍需验证数据文件完整性。
 
 ### 步骤 5：数据文件完整性验证
 

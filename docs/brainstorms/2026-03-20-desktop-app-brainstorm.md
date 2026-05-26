@@ -147,9 +147,9 @@ pub async fn install_plugin(plugin_name: &str, marketplace: &str) -> Result<Stri
     let output = Command::new("uvx")
         .args(&[
             "--from",
-            "git+https://github.com/lazygophers/ccplugin.git@master",
+            "git+https://github.com/KissFeng/ccplugin.git@master",
             "install",
-            "lazygophers/ccplugin",
+            "KissFeng/ccplugin",
             &format!("{}@{}", plugin_name, marketplace)
         ])
         .output()

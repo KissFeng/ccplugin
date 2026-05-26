@@ -31,10 +31,10 @@ def get_project_dir() -> str:
 
 
 def get_project_plugins_dir() -> str:
-	return os.path.join(get_project_dir(), ".lazygophers", "ccplugin")
+	return os.path.join(get_project_dir(), ".KissFeng", "ccplugin")
 
 def get_project_plugins_gitignore_path() -> str:
-	return os.path.join(get_project_dir(), ".lazygophers", ".gitignore")
+	return os.path.join(get_project_dir(), ".KissFeng", ".gitignore")
 
 
 def get_plugins_path() -> str:
@@ -62,7 +62,7 @@ def get_user_home():
 
 
 def get_user_dir():
-	return os.path.join(get_user_home(), ".config", "lazygophers", "ccplugin")
+	return os.path.join(get_user_home(), ".config", "KissFeng", "ccplugin")
 
 
 def get_user_plugins_dir():

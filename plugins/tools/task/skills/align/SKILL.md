@@ -40,7 +40,7 @@ align 分为两个阶段：**生成**和**确认**。生成阶段准备对齐内
 
 #### 1. 检查上下文
 
-读取 `.lazygophers/tasks/{task_id}/context.json`。
+读取 `.KissFeng/tasks/{task_id}/context.json`。
 
 - 文件存在且包含 `task_related` 和 `code_style` → 继续
 - 文件不存在，但 prompt 已明确指定文件路径和修改内容 → 从 prompt 提取上下文，采样代码风格，写入 context.json
@@ -107,7 +107,7 @@ align 分为两个阶段：**生成**和**确认**。生成阶段准备对齐内
 
 **仅在用户确认后执行此步骤。**
 
-写入 `.lazygophers/tasks/{task_id}/align.json`：
+写入 `.KissFeng/tasks/{task_id}/align.json`：
 
 ```json
 {

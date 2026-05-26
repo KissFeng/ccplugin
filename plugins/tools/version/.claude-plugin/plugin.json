@@ -2,12 +2,12 @@
   "name": "version",
   "description": "版本号管理插件 - 提供 SemVer 版本管理，支持自动版本更新和手动版本设置",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/version",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/version",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/version",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/version",
   "license": "AGPL-3.0-or-later",
   "keywords": [
     "version",

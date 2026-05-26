@@ -1,6 +1,6 @@
 ## `index.json` 任务索引文件格式说明
 
-路径：`.lazygophers/tasks/index.json`
+路径：`.KissFeng/tasks/index.json`
 
 ```json
 {

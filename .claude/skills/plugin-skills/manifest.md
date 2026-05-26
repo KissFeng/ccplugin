@@ -164,10 +164,10 @@ LSP 服务器配置：
   "author": {
     "name": "Author Name",
     "email": "author@example.com",
-    "url": "https://github.com/lazygophers"
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin",
-  "repository": "https://github.com/lazygophers/ccplugin",
+  "homepage": "https://github.com/KissFeng/ccplugin",
+  "repository": "https://github.com/KissFeng/ccplugin",
   "license": "MIT",
   "keywords": [
     "task",

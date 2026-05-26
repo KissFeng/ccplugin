@@ -13,10 +13,10 @@
 
 ```bash
 # 推荐：一键安装
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin version@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin version@ccplugin-market
 
 # 或：传统方式
-claude plugin marketplace add lazygophers/ccplugin
+claude plugin marketplace add KissFeng/ccplugin
 claude plugin install version@ccplugin-market
 ```
 

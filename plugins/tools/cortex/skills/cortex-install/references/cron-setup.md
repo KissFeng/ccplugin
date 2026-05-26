@@ -55,7 +55,7 @@ cron daemon 不继承 shell env, snippet 必须绝对路径。优先级:
 
 为每选中 job 写 plist:
 
-- 路径: `~/Library/LaunchAgents/dev.lazygophers.cortex.<job>.plist`
+- 路径: `~/Library/LaunchAgents/dev.KissFeng.cortex.<job>.plist`
 - 内容: `<ProgramArguments>` = `["bash", "<PLUGIN_ROOT>/scripts/cron/<job>.sh"]`, `<StartCalendarInterval>` 按上表
 - 落盘前**必须**再调 `AskUserQuestion` 打印完整 plist, 选项 `写入` / `取消` / `改时间`
 - 用户选 `写入` → `Write` plist + `Bash launchctl load <plist>`

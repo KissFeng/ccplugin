@@ -609,7 +609,7 @@ interface SourceConfig {
   "description": "Claude Code 插件市场",
   "owner": {
     "name": "Lazygophers",
-    "email": "admin@lazygophers.com"
+    "email": "kissfeng66@gmail.com"
   },
   "plugins": [
     {

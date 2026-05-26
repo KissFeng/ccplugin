@@ -9,9 +9,9 @@ This script:
 
 Usage:
   uv run install.py <marketplace> <plugin>
-  uv run install.py lazygophers/ccplugin gin
-  uv run install.py https://github.com/lazygophers/ccplugin.git gin
-  uv run install.py https://github.com/lazygophers/ccplugin gin
+  uv run install.py KissFeng/ccplugin gin
+  uv run install.py https://github.com/KissFeng/ccplugin.git gin
+  uv run install.py https://github.com/KissFeng/ccplugin gin
 """
 
 import argparse
@@ -143,17 +143,17 @@ def normalize_marketplace_name(market_input: str) -> tuple[str, str]:
 	"""Normalize marketplace name to standard format.
 
 	Handles three equivalent formats:
-	- https://github.com/lazygophers/ccplugin.git
-	- https://github.com/lazygophers/ccplugin
-	- lazygophers/ccplugin
+	- https://github.com/KissFeng/ccplugin.git
+	- https://github.com/KissFeng/ccplugin
+	- KissFeng/ccplugin
 
 	Args:
 		market_input: Raw marketplace input string
 
 	Returns:
 		Tuple of (normalized_name, full_url) where:
-		- normalized_name: Short name like 'lazygophers/ccplugin'
-		- full_url: Full URL like 'https://github.com/lazygophers/ccplugin.git'
+		- normalized_name: Short name like 'KissFeng/ccplugin'
+		- full_url: Full URL like 'https://github.com/KissFeng/ccplugin.git'
 	"""
 	market_input = market_input.strip()
 
@@ -418,7 +418,7 @@ def main() -> int:
 		"marketplace",
 		type=str,
 		nargs="?",
-		help="市场名称或 URL (如: lazygophers/ccplugin 或 https://github.com/lazygophers/ccplugin.git)",
+		help="市场名称或 URL (如: KissFeng/ccplugin 或 https://github.com/KissFeng/ccplugin.git)",
 	)
 	parser.add_argument(
 		"plugin",
@@ -448,9 +448,9 @@ def main() -> int:
 			"[bold red]错误: 缺少必需参数[/bold red]\n\n"
 			"[dim]用法: install.py <marketplace> <plugin>[/dim]\n\n"
 			"[dim]示例:[/dim]\n"
-			"  [cyan]install.py lazygophers/ccplugin gin[/cyan]\n"
-			"  [cyan]install.py https://github.com/lazygophers/ccplugin.git python[/cyan]\n"
-			"  [cyan]install.py https://github.com/lazygophers/ccplugin typescript[/cyan]",
+			"  [cyan]install.py KissFeng/ccplugin gin[/cyan]\n"
+			"  [cyan]install.py https://github.com/KissFeng/ccplugin.git python[/cyan]\n"
+			"  [cyan]install.py https://github.com/KissFeng/ccplugin typescript[/cyan]",
 			border_style="red",
 			box=box.DOUBLE
 		))

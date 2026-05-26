@@ -124,8 +124,8 @@ import (
     "os"
 
     // 第三方
-    "github.com/lazygophers/log"
-    "github.com/lazygophers/utils/candy"
+    "github.com/KissFeng/log"
+    "github.com/KissFeng/utils/candy"
     "gorm.io/gorm"
 
     // 项目内

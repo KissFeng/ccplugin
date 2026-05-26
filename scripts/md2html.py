@@ -29,7 +29,7 @@ app = typer.Typer(
 # ──────────────────────────────────────────────────────────────
 # Local Assets Management
 # ──────────────────────────────────────────────────────────────
-ASSETS_DIR = Path.home() / ".lazygophers" / "ccplugin" / "assets"
+ASSETS_DIR = Path.home() / ".KissFeng" / "ccplugin" / "assets"
 VERSION_FILE = ASSETS_DIR / "versions.json"
 
 # Remote URLs with multiple mirror sources for global availability

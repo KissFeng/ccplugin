@@ -106,5 +106,5 @@ plugins/code/semantic/
 ---
 
 **最后更新**: 2025-01-27
-**维护者**: lazygophers
-**联系方式**: admin@lazygophers.dev
+**维护者**: KissFeng
+**联系方式**: kissfeng66@gmail.com

@@ -25,7 +25,7 @@ argument-hint: [任务描述或探索目标]
 1. 从用户输入生成中文 task_id（≤10 字符）
 2. 执行 `task update {task_id} --status=explore` 创建任务
 3. 按下方探索策略执行
-4. 将 context.json 写入 `.lazygophers/tasks/{task_id}/context.json`
+4. 将 context.json 写入 `.KissFeng/tasks/{task_id}/context.json`
 5. 输出探索结果摘要
 
 当由 flow 调用时：直接使用传入的 task_id 和 environment 参数。

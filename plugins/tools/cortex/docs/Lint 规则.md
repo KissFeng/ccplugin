@@ -205,9 +205,9 @@ vault path segment (目录名 / 文件名) 不符 `_meta/version.json:.lang` 指
 
 **示例** (zh-CN vault):
 
-- `知识库/项目/github.com/lazygophers/ccplugin/笔记/架构.md` ✅ (前 5 段豁免, 文件名含 CJK)
-- `知识库/项目/github.com/lazygophers/ccplugin/architecture.md` ⚠ flag (`architecture.md` 全 ASCII, 非豁免 stem)
-- `知识库/项目/github.com/lazygophers/ccplugin/README.md` ✅ (ASCII 专名豁免)
+- `知识库/项目/github.com/KissFeng/ccplugin/笔记/架构.md` ✅ (前 5 段豁免, 文件名含 CJK)
+- `知识库/项目/github.com/KissFeng/ccplugin/architecture.md` ⚠ flag (`architecture.md` 全 ASCII, 非豁免 stem)
+- `知识库/项目/github.com/KissFeng/ccplugin/README.md` ✅ (ASCII 专名豁免)
 - `知识库/领域/技术/笔记/algorithm.md` ⚠ flag (建议 `算法.md` 或加 `path_lang_exempt: true`)
 
 ## --fix 行为

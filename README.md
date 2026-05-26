@@ -14,20 +14,20 @@ CCPlugin Market 是一个为 Claude Code 提供插件的集中市场。我们提
 
 ```bash
 # 安装市场和指定插件
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin <插件名>@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin <插件名>@ccplugin-market
 
 # 示例：安装 Python 插件
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin python@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin python@ccplugin-market
 
 # 示例：安装多个插件
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin python@ccplugin-market golang@ccplugin-market git@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin python@ccplugin-market golang@ccplugin-market git@ccplugin-market
 ```
 
 ### 传统方式安装
 
 ```bash
 # 1. 添加市场
-claude plugin marketplace add lazygophers/ccplugin
+claude plugin marketplace add KissFeng/ccplugin
 
 # 2. 安装插件
 claude plugin install <插件名>@ccplugin-market
@@ -40,7 +40,7 @@ claude plugin install <插件名>@ccplugin-market
 /plugin install python@ccplugin-market
 
 # 方式 2: 先添加市场再安装
-/plugin marketplace add lazygophers/ccplugin
+/plugin marketplace add KissFeng/ccplugin
 /plugin install python@ccplugin-market
 ```
 
@@ -62,7 +62,7 @@ claude plugin install <插件名>@ccplugin-market
 | 插件名称 | 描述 | 关键词 |
 |---------|------|--------|
 | `python` | Python 开发插件 - Python 3.13/3.14 规范 (uv/ruff/ty/pytest)、async、FastAPI | python, pep8, uv, ruff, async |
-| `golang` | Golang 开发插件 - Go 1.26 规范、lazygophers 生态、并发与现代化 | golang, go, generics, concurrency |
+| `golang` | Golang 开发插件 - Go 1.26 规范、KissFeng 生态、并发与现代化 | golang, go, generics, concurrency |
 | `typescript` | TypeScript / JavaScript 开发插件 - TS 6.0+ 严格模式与 ES2025-2026 规范，React 19 / Vue 3.5 / Node 22-24 全栈，JS 项目 JSDoc + checkJs 兜底 | typescript, ts, javascript, js, type-safety, strict-mode, react, vue |
 | `rust` | Rust 开发插件 - Edition 2024 / Rust 1.85+ 规范、所有权、async、unsafe | rust, ownership, async, memory-safety |
 | `java` | Java 开发插件 - Java 21/25 LTS 规范、Virtual Threads、Spring Boot 3.4+ | java, spring-boot, jvm, concurrency |
@@ -88,29 +88,29 @@ claude plugin install <插件名>@ccplugin-market
 
 ```bash
 # Python 开发
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin python@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin python@ccplugin-market
 
 # Golang 开发
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin golang@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin golang@ccplugin-market
 
 # TypeScript 开发
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin typescript@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin typescript@ccplugin-market
 
 # Rust 开发
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin rust@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin rust@ccplugin-market
 ```
 
 ### 安装工具插件
 
 ```bash
 # Git 操作
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin git@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin git@ccplugin-market
 
 # 深度研究
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin deepresearch@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin deepresearch@ccplugin-market
 
 # 智能记忆
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin memory@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin memory@ccplugin-market
 ```
 
 ## 环境要求
@@ -194,10 +194,10 @@ my-plugin/
 
 ```bash
 # 预览将要删除的内容
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master clean --dry-run
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master clean --dry-run
 
 # 实际执行清理
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master clean
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master clean
 ```
 
 ## 常见问题
@@ -206,10 +206,10 @@ uvx --from git+https://github.com/lazygophers/ccplugin.git@master clean
 
 ```bash
 # 推荐：一键安装
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin python@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin python@ccplugin-market
 
 # 或：传统方式
-claude plugin marketplace add lazygophers/ccplugin
+claude plugin marketplace add KissFeng/ccplugin
 claude plugin install python@ccplugin-market
 ```
 
@@ -217,7 +217,7 @@ claude plugin install python@ccplugin-market
 
 ```bash
 # 重新安装即可更新
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin python@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin python@ccplugin-market
 ```
 
 ### 如何开发新插件？

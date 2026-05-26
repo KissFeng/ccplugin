@@ -160,7 +160,7 @@ for _, item := range items {
 ### 日志缓冲
 
 ```go
-import "github.com/lazygophers/log"
+import "github.com/KissFeng/log"
 
 buf := log.GetBuffer()
 defer log.PutBuffer(buf)

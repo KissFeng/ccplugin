@@ -119,7 +119,7 @@ class MessageCollector:
 class TaskStateVerifier:
     """任务状态验证器"""
 
-    def __init__(self, task_root: Path = Path(".lazygophers/tasks")):
+    def __init__(self, task_root: Path = Path(".KissFeng/tasks")):
         self.task_root = task_root
 
     def task_exists(self, task_id: str) -> bool:

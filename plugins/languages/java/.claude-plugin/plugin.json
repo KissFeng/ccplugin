@@ -2,12 +2,12 @@
   "name": "java",
   "description": "Java 开发插件 - 提供 Java 25+ 开发规范、最佳实践和代码智能支持",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/java",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/languages/java",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/languages/java",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/languages/java",
   "license": "AGPL-3.0-or-later",
   "agents": [
     "./agents/dev.md",

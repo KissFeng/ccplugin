@@ -326,10 +326,10 @@ def test_main(
     if cleanup:
         import subprocess
 
-        lazygophers_dir = os.path.join(os.getcwd(), ".lazygophers")
-        if os.path.isdir(lazygophers_dir):
-            shutil.rmtree(lazygophers_dir, ignore_errors=True)
-            print("\n🧹 已清理 .lazygophers/")
+        KissFeng_dir = os.path.join(os.getcwd(), ".KissFeng")
+        if os.path.isdir(KissFeng_dir):
+            shutil.rmtree(KissFeng_dir, ignore_errors=True)
+            print("\n🧹 已清理 .KissFeng/")
 
         result = subprocess.run(
             ["git", "diff", "--stat", "--exit-code"],

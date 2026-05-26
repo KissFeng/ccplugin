@@ -28,7 +28,7 @@ goimports -w .
 ```bash
 go mod init github.com/username/project
 go mod tidy
-go get github.com/lazygophers/utils@latest
+go get github.com/KissFeng/utils@latest
 go list -m all
 go mod graph
 ```
@@ -66,7 +66,7 @@ go tool stringer -type=Status
 ## 依赖原则
 
 - 最小化依赖
-- 优先标准库 / lazygophers 生态
+- 优先标准库 / KissFeng 生态
 - 固定具体版本号，不用 `latest` 提交
 - 每次发布前 `govulncheck ./...`
 

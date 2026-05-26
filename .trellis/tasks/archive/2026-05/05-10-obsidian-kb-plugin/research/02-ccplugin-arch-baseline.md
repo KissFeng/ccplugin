@@ -17,7 +17,7 @@
 |------|------|------|------|
 | `name` | str | 插件名（kebab-case） | 必填 |
 | `version` | str | 与仓库根版本同步（`0.0.195`），`scripts/update_version.py` 统一 bump | 必填 |
-| `description` / `author` / `homepage` / `repository` / `license` / `keywords` | meta | 市场展示 | `lazygophers` 标准块 |
+| `description` / `author` / `homepage` / `repository` / `license` / `keywords` | meta | 市场展示 | `KissFeng` 标准块 |
 | `commands` | `string[]` | 显式列出每个 `.md` 文件 | 例：`task` 无 commands；`git` 仅 `./commands/commit.md` |
 | `agents` | `string[]` | 显式列出每个 agent | `task` 列 5 个、`deepresearch` 列 4 个 |
 | `skills` | str（目录） | 自动扫描子目录的 `SKILL.md` | 几乎所有插件用 `"./skills/"` |
@@ -41,7 +41,7 @@ docs/                        # 长文档（可选）
 pyproject.toml + uv.lock     # python 包（当前所有插件都有，但本任务不需要）
 .python-version
 README.md / llms.txt         # 文档与 LLM 索引
-.lazygophers/                # gitignore 区
+.KissFeng/                # gitignore 区
 <pkgname>.egg-info/          # 构建产物（gitignored）
 ```
 
@@ -56,7 +56,7 @@ version = "0.0.195"
 requires-python = ">=3.11"
 dependencies = ["lib"]                 # 共享库
 [tool.uv.sources.lib]
-git = "https://github.com/lazygophers/ccplugin"
+git = "https://github.com/KissFeng/ccplugin"
 subdirectory = "lib"
 rev = "master"
 ```
@@ -119,7 +119,7 @@ rev = "master"
 4. 敏感字段 redact（`_SENSITIVE_KEYS`）
 
 `task` 在此基础上扩展：`plugins/tools/task/scripts/hooks.py:14-66` 在 SessionStart 时：
-- 调 `lib.utils.gitignore.add_gitignore_rule` 维护 `.lazygophers/.gitignore`
+- 调 `lib.utils.gitignore.add_gitignore_rule` 维护 `.KissFeng/.gitignore`
 - 递归扫描 `skills/` `agents/` `commands/` 把 `${CLAUDE_PLUGIN_ROOT}` 字面量真实替换写回文件
 
 ### B.3 参考模板优先级
@@ -362,7 +362,7 @@ plugins/tools/obsidian-kb/
   "name": "obsidian-kb",
   "version": "0.0.195",
   "description": "Obsidian 知识库 CC 插件 - vault 设置、对话保存、查询、摄取、健康检查（基于 mcp-obsidian）",
-  "author": { "name": "lazygophers", "email": "admin@lazygophers.dev" },
+  "author": { "name": "KissFeng", "email": "kissfeng66@gmail.com" },
   "license": "AGPL-3.0-or-later",
   "keywords": ["obsidian", "knowledge-base", "wiki", "vault", "mcp"],
   "commands": [

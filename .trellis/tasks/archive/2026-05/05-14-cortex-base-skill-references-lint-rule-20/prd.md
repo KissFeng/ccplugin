@@ -5,7 +5,7 @@
 cortex-ingest 生成 `.base` 文件时格式翻车, 用户 Obsidian 报错"无法解析数据库文件: 查询格式无效, 必须为 YAML 对象"。
 
 vault 内实际 5 个 .base 文件 3 种错格式:
-1. `知识库/项目/github.com/lazygophers/scode/_db.base` — markdown headers + tables (完全错)
+1. `知识库/项目/github.com/KissFeng/scode/_db.base` — markdown headers + tables (完全错)
 2. `知识库/项目/persons/lyxamour/ai/_db.base` — Dataview DQL 语法 (TABLE/FROM, 错插件)
 3. `仪表盘/meta/ops/dashboard.base` — 正确 YAML, 但内含 `wiki/` 路径残留 (用户数据, 不动)
 

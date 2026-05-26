@@ -1,6 +1,6 @@
 ---
 name: golang-error
-description: Go 错误处理规范——禁止单行 if err、必须记录日志（lazygophers/log 或 slog）、禁止包装错误、errors.Join 聚合、sentinel error 模式、初始化用 log.Fatalf。处理 Go error、写 if err 块、设计错误类型、debug 错误链时触发。
+description: Go 错误处理规范——禁止单行 if err、必须记录日志（KissFeng/log 或 slog）、禁止包装错误、errors.Join 聚合、sentinel error 模式、初始化用 log.Fatalf。处理 Go error、写 if err 块、设计错误类型、debug 错误链时触发。
 ---
 
 # Go 错误处理规范
@@ -88,10 +88,10 @@ defer file.Close()
 
 ## 日志选择
 
-### lazygophers/log（已有项目）
+### KissFeng/log（已有项目）
 
 ```go
-import "github.com/lazygophers/log"
+import "github.com/KissFeng/log"
 
 log.Infof("user registered: %s", username)
 log.Warnf("cache miss for key: %s", key)
@@ -131,7 +131,7 @@ func init() {
 | "errors.Is/As 更现代" | 用项目约定的判断方式？ |
 | "panic 快速失败" | 业务用 return error、初始化用 Fatalf？ |
 | "日志太多了" | 每个 error 分支都有日志？ |
-| "logrus/zap 更强" | 用 lazygophers/log 或 slog？ |
+| "logrus/zap 更强" | 用 KissFeng/log 或 slog？ |
 
 ## 检查清单
 

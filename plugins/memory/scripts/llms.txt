@@ -119,9 +119,9 @@ Web 界面模块，提供记忆管理的 Web 界面和 REST API。
 
 ## 数据库
 
-数据库文件位于 `{project_root}/lazygophers/ccplugin/memory/memory.db`，使用 SQLite 存储。
+数据库文件位于 `{project_root}/KissFeng/ccplugin/memory/memory.db`，使用 SQLite 存储。
 
-此目录遵循项目约定，所有插件数据统一存储在 `lazygophers/ccplugin/<plugin-name>/` 目录下。
+此目录遵循项目约定，所有插件数据统一存储在 `KissFeng/ccplugin/<plugin-name>/` 目录下。
 
 ## 使用示例
 

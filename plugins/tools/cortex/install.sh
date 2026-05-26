@@ -102,7 +102,7 @@ done
 
 # 探测 plugin 树; curl|bash 远端运行时通过 claude CLI 装/升 marketplace + plugin
 CORTEX_MARKETPLACE_NAME="${CORTEX_MARKETPLACE_NAME:-ccplugin-market}"
-CORTEX_MARKETPLACE_SOURCE="${CORTEX_MARKETPLACE_SOURCE:-lazygophers/ccplugin}"
+CORTEX_MARKETPLACE_SOURCE="${CORTEX_MARKETPLACE_SOURCE:-KissFeng/ccplugin}"
 CORTEX_PLUGIN_NAME="${CORTEX_PLUGIN_NAME:-cortex}"
 
 claude_marketplace_install_location() {

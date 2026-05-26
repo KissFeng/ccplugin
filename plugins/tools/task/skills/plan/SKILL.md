@@ -21,14 +21,14 @@ agent: task:plan
 
 读取以下文件获取规划所需的全部上下文：
 
-- `.lazygophers/tasks/{task_id}/align.json` — 任务目标、验收标准、边界、锁定风格
-- `.lazygophers/tasks/{task_id}/context.json` — 相关模块、文件、代码风格、工具链
+- `.KissFeng/tasks/{task_id}/align.json` — 任务目标、验收标准、边界、锁定风格
+- `.KissFeng/tasks/{task_id}/context.json` — 相关模块、文件、代码风格、工具链
 
 从 align.json 中提取 `code_style_follow` 作为锁定风格，所有子任务必须遵循。
 
 ### 步骤 2：检索历史经验
 
-如果 `.lazygophers/lessons.json` 存在，读取并筛选与当前任务相关的经验：
+如果 `.KissFeng/lessons.json` 存在，读取并筛选与当前任务相关的经验：
 
 - 同类任务类型（task_type 匹配）
 - 涉及相同模块（modules 路径前缀匹配）
@@ -60,7 +60,7 @@ agent: task:plan
 
 ### 步骤 5：构建执行计划并写入
 
-验证通过后，构建完整执行计划并写入 `.lazygophers/tasks/{task_id}/task.json`：
+验证通过后，构建完整执行计划并写入 `.KissFeng/tasks/{task_id}/task.json`：
 
 ```json
 {

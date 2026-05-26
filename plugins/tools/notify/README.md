@@ -6,10 +6,10 @@
 
 ```bash
 # 推荐：一键安装
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin notify@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin notify@ccplugin-market
 
 # 或：传统方式
-claude plugin marketplace add lazygophers/ccplugin
+claude plugin marketplace add KissFeng/ccplugin
 claude plugin install notify@ccplugin-market
 ```
 
@@ -63,8 +63,8 @@ claude plugin install notify@ccplugin-market
 ## 配置
 
 配置文件位置：
-- 项目级: `<project>/.lazygophers/ccplugin/notify/config.yaml`
-- 用户级: `~/.lazygophers/ccplugin/notify/config.yaml`
+- 项目级: `<project>/.KissFeng/ccplugin/notify/config.yaml`
+- 用户级: `~/.KissFeng/ccplugin/notify/config.yaml`
 
 首次运行时自动从 `hooks.example.yaml` 复制到项目目录。
 

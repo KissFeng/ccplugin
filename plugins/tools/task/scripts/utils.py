@@ -65,17 +65,17 @@ def get_task_dir() -> str:
     获取任务数据目录路径
 
     根据环境判断目录位置：
-    - 插件环境：<plugins_path>/.lazygophers/tasks
-    - 开发环境：<cwd>/.lazygophers/tasks
+    - 插件环境：<plugins_path>/.KissFeng/tasks
+    - 开发环境：<cwd>/.KissFeng/tasks
 
     Returns:
         str: 任务数据目录的绝对路径
 
     Examples:
         >>> get_task_dir()
-        '/path/to/task/.lazygophers/tasks'
+        '/path/to/task/.KissFeng/tasks'
     """
-    return os.path.join(os.getcwd(), ".lazygophers", "tasks")
+    return os.path.join(os.getcwd(), ".KissFeng", "tasks")
 
 
 def get_version() -> str:

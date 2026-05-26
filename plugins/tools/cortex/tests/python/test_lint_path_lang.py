@@ -66,7 +66,7 @@ class PathLangMismatchTest(unittest.TestCase):
         """`知识库/项目/<host>/<org>/<repo>/` 前 5 段豁免."""
         with tempfile.TemporaryDirectory() as d:
             vault = make_vault(Path(d), lang="zh-CN")
-            rel = "知识库/项目/github.com/lazygophers/ccplugin/笔记/架构.md"
+            rel = "知识库/项目/github.com/KissFeng/ccplugin/笔记/架构.md"
             write_md(
                 vault / rel,
                 {"type": "project", "title": "架构", "created": "2026-05-14"},
@@ -79,7 +79,7 @@ class PathLangMismatchTest(unittest.TestCase):
         """前 5 段豁免, 但项目内的 segment 仍受检 (除 README 等专名)."""
         with tempfile.TemporaryDirectory() as d:
             vault = make_vault(Path(d), lang="zh-CN")
-            rel = "知识库/项目/github.com/lazygophers/ccplugin/notes/algorithm.md"
+            rel = "知识库/项目/github.com/KissFeng/ccplugin/notes/algorithm.md"
             write_md(
                 vault / rel,
                 {"type": "project", "title": "algo", "created": "2026-05-14"},

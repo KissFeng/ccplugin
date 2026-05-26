@@ -2,12 +2,12 @@
   "name": "git",
   "description": "Git 操作插件 - 提供 Git 仓库管理命令，包括提交、PR 管理、推送和 .gitignore 管理",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/git",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/git",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/git",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/git",
   "license": "AGPL-3.0-or-later",
   "keywords": [
     "git",

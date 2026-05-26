@@ -148,7 +148,7 @@ launchd_plist() {
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>dev.lazygophers.cortex.daily-${job}</string>
+  <string>dev.KissFeng.cortex.daily-${job}</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
@@ -190,8 +190,8 @@ install_launchd_auto() {
 
   # 先卸载/删旧 (含 fold / consolidate)
   for old in fold consolidate; do
-    local op="$agent_dir/dev.lazygophers.cortex.daily-${old}.plist"
-    local ow="$agent_dir/dev.lazygophers.cortex.weekly-${old}.plist"
+    local op="$agent_dir/dev.KissFeng.cortex.daily-${old}.plist"
+    local ow="$agent_dir/dev.KissFeng.cortex.weekly-${old}.plist"
     for f in "$op" "$ow"; do
       [[ -f "$f" ]] && launchctl unload "$f" 2>/dev/null
       [[ -f "$f" ]] && rm -f "$f" && echo "  - removed $f" >&2
@@ -201,7 +201,7 @@ install_launchd_auto() {
   local changed=0
   for entry in "${jobs[@]}"; do
     IFS=: read -r job hour minute <<< "$entry"
-    local plist="$agent_dir/dev.lazygophers.cortex.daily-${job}.plist"
+    local plist="$agent_dir/dev.KissFeng.cortex.daily-${job}.plist"
     local desired
     desired=$(launchd_plist "$job" "$hour" "$minute")
     # 比对: 内容一致 → no-op
@@ -224,7 +224,7 @@ install_launchd_auto() {
     echo "✓ launchd 已更新 (变更, 3 个 daily job)" >&2
   fi
   echo "  当前 cortex agents:" >&2
-  ls "$agent_dir" 2>/dev/null | grep -E '^dev\.lazygophers\.cortex\.' | sed 's/^/    /' >&2
+  ls "$agent_dir" 2>/dev/null | grep -E '^dev\.KissFeng\.cortex\.' | sed 's/^/    /' >&2
 }
 
 print_gha() {

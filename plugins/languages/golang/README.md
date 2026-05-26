@@ -6,10 +6,10 @@
 
 ```bash
 # 推荐：一键安装
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin golang@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin golang@ccplugin-market
 
 # 或：传统方式
-claude plugin marketplace add lazygophers/ccplugin
+claude plugin marketplace add KissFeng/ccplugin
 claude plugin install golang@ccplugin-market
 ```
 
@@ -25,7 +25,7 @@ claude plugin install golang@ccplugin-market
 
 - **开发规范指导** - 完整的 Golang 开发规范
   - **通用 Golang 标准** - 遵循官方 Effective Go 规范
-  - **Lazygophers 风格** - 基于 lazygophers 生态的最佳实践
+  - **Lazygophers 风格** - 基于 KissFeng 生态的最佳实践
 
 - **代码智能支持** - 通过 gopls LSP 提供
   - 实时代码诊断

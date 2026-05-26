@@ -81,7 +81,7 @@ debug("调试信息")
 
 **日志存储：**
 
-- 位置：`./lazygophers/ccplugin/log/`
+- 位置：`./KissFeng/ccplugin/log/`
 - 命名：`YYYYMMDDHH.log`（按小时分割）
 - 保留：最新 3 个文件（自动清理）
 
@@ -133,9 +133,9 @@ def handle_hook():
 | 函数 | 说明 |
 |------|------|
 | `get_project_dir()` | 获取项目根目录（来自 `CLAUDE_PROJECT_DIR` 或当前目录） |
-| `get_project_plugins_dir()` | 获取项目插件目录 `<project>/.lazygophers/ccplugin/` |
+| `get_project_plugins_dir()` | 获取项目插件目录 `<project>/.KissFeng/ccplugin/` |
 | `get_plugins_path()` | 获取插件路径（同上） |
-| `get_user_plugins_dir()` | 获取用户插件目录 `~/.lazygophers/ccplugin/` |
+| `get_user_plugins_dir()` | 获取用户插件目录 `~/.KissFeng/ccplugin/` |
 | `get_plugins_skills_dir()` | 获取插件 skills 目录 |
 | `get_plugins_commands_dir()` | 获取插件 commands 目录 |
 | `get_plugins_hooks_dir()` | 获取插件 hooks 目录 |
@@ -160,7 +160,7 @@ from lib.utils import get_project_dir, get_project_plugins_dir, set_app
 project_dir = get_project_dir()  # CLAUDE_PROJECT_DIR 或 os.getcwd()
 
 # 获取插件数据目录
-plugin_dir = get_project_plugins_dir()  # <project>/.lazygophers/ccplugin/
+plugin_dir = get_project_plugins_dir()  # <project>/.KissFeng/ccplugin/
 
 # 设置应用名称
 set_app("my-plugin")
@@ -343,7 +343,7 @@ info("消息")  # 自动处理文件创建
 
 **Q: 日志文件在哪里？**
 
-A: `./lazygophers/ccplugin/log/YYYYMMDDHH.log`
+A: `./KissFeng/ccplugin/log/YYYYMMDDHH.log`
 
 **Q: 如何启用 DEBUG 模式？**
 

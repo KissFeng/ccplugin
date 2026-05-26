@@ -20,12 +20,12 @@ class ResolvePathTest(unittest.TestCase):
     def test_kind_project_github(self) -> None:
         target = save._resolve_path(
             self.vault,
-            {"kind": "project", "title": "foo", "host": "github.com", "org": "lazygophers", "repo": "ccplugin"},
+            {"kind": "project", "title": "foo", "host": "github.com", "org": "KissFeng", "repo": "ccplugin"},
             self.now,
         )
         self.assertEqual(
             str(target).split("cortex-test-vault/")[-1],
-            "知识库/项目/github.com/lazygophers/ccplugin/foo.md",
+            "知识库/项目/github.com/KissFeng/ccplugin/foo.md",
         )
 
     def test_kind_project_local_rel_home(self) -> None:

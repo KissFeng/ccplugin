@@ -2,12 +2,12 @@
   "name": "memory",
   "description": "智能记忆插件 - 提供 URI 寻址的记忆存储、自动 Hooks 集成和跨会话持久化。支持项目、工作流、用户、任务等多维度记忆管理",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/memory",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/memory",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/memory",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/memory",
   "license": "MIT",
   "keywords": [
     "memory",

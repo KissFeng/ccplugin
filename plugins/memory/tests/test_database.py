@@ -62,12 +62,12 @@ class TestGetDbPath:
         assert isinstance(result, str)
         assert "memory.db" in result
     
-    def test_get_db_path_contains_lazygophers(self):
+    def test_get_db_path_contains_KissFeng(self):
         from memory.database import get_db_path
         
         result = get_db_path()
         
-        assert ".lazygophers" in result or "lazygophers" in result
+        assert ".KissFeng" in result or "KissFeng" in result
 
 
 class TestInitDb:

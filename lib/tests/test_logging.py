@@ -64,7 +64,7 @@ class TestLoggerAPI(unittest.TestCase):
         """测试日志文件创建。"""
         info("测试文件创建")
 
-        log_dir = Path.cwd() / ".lazygophers" / "ccplugin" / "log"
+        log_dir = Path.cwd() / ".KissFeng" / "ccplugin" / "log"
         self.assertTrue(log_dir.exists())
 
         log_files = list(log_dir.glob("*.log"))
@@ -75,7 +75,7 @@ class TestLoggerAPI(unittest.TestCase):
         info("格式测试")
         error("错误测试")
 
-        log_dir = Path.cwd() / ".lazygophers" / "ccplugin" / "log"
+        log_dir = Path.cwd() / ".KissFeng" / "ccplugin" / "log"
         log_files = sorted(log_dir.glob("*.log"))
 
         if log_files:
@@ -145,7 +145,7 @@ class TestLogFileContent(unittest.TestCase):
         """测试日志内容保存到文件。"""
         info("保存测试消息")
 
-        log_dir = Path.cwd() / ".lazygophers" / "ccplugin" / "log"
+        log_dir = Path.cwd() / ".KissFeng" / "ccplugin" / "log"
         log_files = sorted(log_dir.glob("*.log"))
 
         self.assertGreater(len(log_files), 0)
@@ -159,7 +159,7 @@ class TestLogFileContent(unittest.TestCase):
         error("错误消息")
         warn("警告消息")
 
-        log_dir = Path.cwd() / ".lazygophers" / "ccplugin" / "log"
+        log_dir = Path.cwd() / ".KissFeng" / "ccplugin" / "log"
         log_files = sorted(log_dir.glob("*.log"))
 
         if log_files:
@@ -192,7 +192,7 @@ class TestLoggerIntegration(unittest.TestCase):
         debug("调试信息")
 
         # 3. 检查日志文件
-        log_dir = Path.cwd() / ".lazygophers" / "ccplugin" / "log"
+        log_dir = Path.cwd() / ".KissFeng" / "ccplugin" / "log"
         self.assertTrue(log_dir.exists())
 
         log_files = list(log_dir.glob("*.log"))

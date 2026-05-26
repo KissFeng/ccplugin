@@ -219,7 +219,7 @@ allowed-tools: Bash
 ## 安装
 
 \`\`\`bash
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin plugin-name@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin plugin-name@ccplugin-market
 \`\`\`
 
 ## 功能

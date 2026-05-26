@@ -109,7 +109,7 @@ def _file_md5(path: str) -> Optional[str]:
 
 def _get_user_cache_dir(*parts: str) -> str:
 	# Keep cache in the same family as existing config paths used by this plugin.
-	base_dir = os.path.join(os.path.expanduser("~"), ".lazygophers", "ccplugin", "notify", "cache")
+	base_dir = os.path.join(os.path.expanduser("~"), ".KissFeng", "ccplugin", "notify", "cache")
 	return os.path.join(base_dir, *parts)
 
 

@@ -40,7 +40,7 @@ created: 2026-05-14
 | 豁免段 | 例 |
 |---|---|
 | host segment | `github.com`, `gitlab.com`, `gitlab.starpago.com` |
-| org segment | `lazygophers`, `microsoft`, `gofiber` |
+| org segment | `KissFeng`, `microsoft`, `gofiber` |
 | repo segment | `ccplugin`, `go-zero`, `react` |
 | 项目内子目录三段以下 (host/org/repo) | `知识库/项目/<host>/<org>/<repo>/` 的前 3 段 |
 | 文件名 ASCII 专名 stem | `README.md`, `LICENSE.md`, `CHANGELOG.md`, `pyproject.toml`, `tsconfig.json` |
@@ -132,5 +132,5 @@ def _check_path_lang_mismatch(vault, lang, whitelist):
 # 风险
 
 - zh-CN vault 历史存量英文 stem 大量 warn → 接受 (lint warn 非 error, 不阻塞)
-- 误判 (zh-CN segment 含纯英文专名如 `知识库/项目/github.com/lazygophers/ccplugin/Bases配置.md`) → ASCII 占比阈值 < 70% 时不 flag
+- 误判 (zh-CN segment 含纯英文专名如 `知识库/项目/github.com/KissFeng/ccplugin/Bases配置.md`) → ASCII 占比阈值 < 70% 时不 flag
 - 豁免清单不完整 → frontmatter `path_lang_exempt` 兜底

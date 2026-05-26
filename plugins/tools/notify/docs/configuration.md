@@ -6,8 +6,8 @@ Notify 插件的配置选项。
 
 ### 文件位置
 
-- 用户级: `~/.lazygophers/ccplugin/notify/config.yaml`
-- 项目级: `<project>/.lazygophers/ccplugin/notify/config.yaml`
+- 用户级: `~/.KissFeng/ccplugin/notify/config.yaml`
+- 项目级: `<project>/.KissFeng/ccplugin/notify/config.yaml`
 
 ### 配置示例
 

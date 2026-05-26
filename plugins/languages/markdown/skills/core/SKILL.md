@@ -164,7 +164,7 @@ description: "CommonMark 0.31 + GFM 编写约定"
 date: 2026-05-16
 updated: 2026-05-16
 tags: [docs, markdown]
-authors: [lazygophers]
+authors: [KissFeng]
 draft: false
 ---
 ```

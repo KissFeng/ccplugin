@@ -44,7 +44,7 @@ VERSION_PARTS_WITH_BUILD = 4
 
 # Subprocess configuration
 SUBPROCESS_TIMEOUT = 120
-CCPLUGIN_REPO_URL = "git+https://github.com/lazygophers/ccplugin.git@master"
+CCPLUGIN_REPO_URL = "git+https://github.com/KissFeng/ccplugin.git@master"
 
 # Concurrency settings
 MAX_WORKERS = 4  # Maximum concurrent file updates

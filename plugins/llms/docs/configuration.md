@@ -67,4 +67,4 @@ llms.txt 插件的配置选项。
 ## 相关链接
 
 - [llms.txt 标准](https://llmstxt.org/)
-- [CCPlugin Market](https://github.com/lazygophers/ccplugin)
+- [CCPlugin Market](https://github.com/KissFeng/ccplugin)

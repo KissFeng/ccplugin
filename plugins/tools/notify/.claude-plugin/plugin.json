@@ -2,12 +2,12 @@
   "name": "notify",
   "description": "系统通知插件 - 通过系统通知向用户实时提示会话状态变更、权限请求等重要事件",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/notify",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/notify",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/notify",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/notify",
   "license": "AGPL-3.0-or-later",
   "keywords": [
     "notification",

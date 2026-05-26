@@ -2,12 +2,12 @@
   "name": "cortex",
   "description": "Cortex — Obsidian 知识库协作插件: hooks 注入、CLI/MCP 操作、模板/lint/refactor、SessionStart 协作约定 + Stop 自动落档",
   "author": {
-    "name": "lazygophers",
-    "email": "admin@lazygophers.dev",
-    "url": "https://github.com/lazygophers"
+    "name": "KissFeng",
+    "email": "kissfeng66@gmail.com",
+    "url": "https://github.com/KissFeng"
   },
-  "homepage": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/cortex",
-  "repository": "https://github.com/lazygophers/ccplugin/tree/master/plugins/tools/cortex",
+  "homepage": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/cortex",
+  "repository": "https://github.com/KissFeng/ccplugin/tree/master/plugins/tools/cortex",
   "license": "AGPL-3.0-or-later",
   "agents": [
     "./agents/cortex-archivist.md",

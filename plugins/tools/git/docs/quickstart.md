@@ -6,7 +6,7 @@ Git 插件快速入门指南。
 
 ```bash
 # 推荐：一键安装
-uvx --from git+https://github.com/lazygophers/ccplugin.git@master install lazygophers/ccplugin git@ccplugin-market
+uvx --from git+https://github.com/KissFeng/ccplugin.git@master install KissFeng/ccplugin git@ccplugin-market
 ```
 
 ## 基本使用

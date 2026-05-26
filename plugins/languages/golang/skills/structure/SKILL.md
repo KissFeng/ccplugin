@@ -130,7 +130,7 @@ use (
 | 极致 QPS、可接受 fasthttp 锁定 | Fiber |
 | 标准库可组合中间件 | Chi |
 
-参考：JetBrains 2026 调查 Gin 48% / Gorilla 17% / Echo 16% / Fiber 11%。本项目 lazygophers 生态默认 Fiber。
+参考：JetBrains 2026 调查 Gin 48% / Gorilla 17% / Echo 16% / Fiber 11%。本项目 KissFeng 生态默认 Fiber。
 
 ## Red Flags
 
